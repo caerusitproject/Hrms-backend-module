@@ -42,6 +42,8 @@ class EmployeeService {
    * @param {Object} updates
    * @returns {Promise<Object|null>}
    */
+
+  
   static async updateEmployee(id, updates) {
     const employee = await Employee.findByPk(id);
     if (!employee) return null;
@@ -49,6 +51,21 @@ class EmployeeService {
     await employee.update(updates);
     return employee;
   }
+
+
+  static async uploadEmployeeImage(id, imagePath) {
+  try {
+    const employee = await Employee.findByPk(id);
+    if (!employee) throw new Error("Employee not found");
+
+    employee.imageUrl = imagePath;
+    await employee.save();
+
+    return employee;
+  } catch (err) {
+    throw err;
+  }
+}
 
   /**
    * Delete an employee
@@ -61,5 +78,7 @@ class EmployeeService {
   }
 
 }
+
+
 
 module.exports = EmployeeService;

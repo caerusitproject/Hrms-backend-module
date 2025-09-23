@@ -6,11 +6,22 @@ const employeeRoutes = require("./routes/employeeRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 const path = require('path')
 const PORT = process.env.PORT || 5000;
+const adminRoutes = require('./routes/admin/adminRoutes');
+const authRoutes = require('./routes/authRoutes');
+const roleRoutes = require("./routes/roleRoutes");
+const setupSwagger = require("./swagger");
 const app = express();
+
+// Swagger
+setupSwagger(app);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 //app.use('/api', routes);
 
+// Admin-only routes
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/roles", roleRoutes);
 
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 

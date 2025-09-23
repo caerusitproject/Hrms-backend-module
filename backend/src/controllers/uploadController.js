@@ -1,4 +1,4 @@
-const UploadService = require("../services/uploadService");
+const upload = require("../services/uploadService")
 
 exports.uploadFile = async (req, res) => {
   try {
@@ -9,7 +9,7 @@ exports.uploadFile = async (req, res) => {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
-    const fileRecord = await Upload.saveFile({
+    const fileRecord = await upload.saveFile({
       employee_id: id,
       file_path: file.path,
       file_type: file.mimetype,
