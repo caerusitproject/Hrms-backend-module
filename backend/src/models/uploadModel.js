@@ -24,16 +24,16 @@ const sequelize = require('../db');
       defaultValue: DataTypes.NOW,
     },
   }, {
-    tableName: "uploads",
+    tableName: "upload",
     timestamps: false, // since we are using uploaded_at instead
   });
 
   // Associations
-  Upload.associate = (models) => {
+  /*Upload.associate = (models) => {
     Upload.belongsTo(models.Employee, {
       foreignKey: "employee_id",
       onDelete: "CASCADE",
     });
-  };
+  });*/
 
 module.exports = Upload;

@@ -10,7 +10,7 @@ exports.createEmployee = async(req, res) => {
     return res.status(500).json({ error: err.message });
   }
 }
-
+// Get employees by id
  exports.getEmployeeById = async(req, res) => {
   try {
     const emp = await EmployeeService.getEmployeeById(req.params.id);
@@ -21,8 +21,15 @@ exports.createEmployee = async(req, res) => {
      res.status(500).json({ error: err.message });
   }
 }
-
-exports.findAllEmployee = (req, res) => {
+// Get all employees with department info
+exports.findAllEmployee = async(req, res) => {
+  try{
+    const employees = await EmployeeService.getAllEmployees();
+    res.status(200).json(employees);
+  }catch (err) {
+    console.error(err);
+    res.status(400).json({ error: err.message });
+  }
 
 };
 

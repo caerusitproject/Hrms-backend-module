@@ -1,12 +1,15 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../db');
 
-  const Employee = sequelize.define('Empolyees',{
+  const Employee = sequelize.define('empolyee',{
     id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
     empCode: { type: DataTypes.STRING, unique: true },
     name: { type: DataTypes.STRING, allowNull: false },
     email: { type: DataTypes.STRING, allowNull: false, unique: true },
-    department: { type: DataTypes.STRING },
+    //department: { type: DataTypes.STRING },
+    designation: { type: DataTypes.STRING },
+    employmentType: { type: DataTypes.STRING, defaultValue: "Full-time" },
+    status: { type: DataTypes.STRING, defaultValue: "Active" },
     dateOfBirth: {type: DataTypes.DATEONLY, allowNull: true },
     joiningDate: { type: DataTypes.DATEONLY, allowNull: true },
     gender: {type: DataTypes.STRING, allowNull: false },
@@ -18,14 +21,20 @@ const sequelize = require('../db');
     country: {type: DataTypes.STRING, allowNull: true },
     mobile: {type: DataTypes.STRING, allowNull: true },
     phone: {type: DataTypes.STRING, allowNull: true },
-    //imageUrl:{type: DataTypes.STRING, allowNull: true},
+    departmentId: {   // FK field
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: "department",
+        key: "id",
+      },},
       
     state: { type: DataTypes.STRING, allowNull: false, defaultValue: 'OFFER_CREATED' }
   }, {
     tableName: 'employee',
     timestamps: true
 
-  })
+  });
 
 
 

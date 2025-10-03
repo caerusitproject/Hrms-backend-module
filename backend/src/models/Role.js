@@ -1,16 +1,21 @@
-const { DataTypes, Model } = require("sequelize");
+const { DataTypes} = require("sequelize");
 const sequelize = require("../db");
-const User = require("./User"); // Make sure this path is correct
 
-class Role extends Model {}
 
-Role.init(
-  {
-    name: DataTypes.STRING,
+const Role = sequelize.define("Role", {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
   },
-  { sequelize, modelName: "Role" }
-);
-
-Role.belongsToMany(User, { through: "UserRoles" });
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true, // Example: "Admin", "User"
+  },
+}, {
+  tableName: "Roles",
+  timestamps: true,
+});
 
 module.exports = Role;

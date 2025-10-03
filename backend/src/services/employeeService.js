@@ -1,5 +1,7 @@
 const db = require("../models");
 const Employee = db.Employee;
+const Dept = db.Department;
+
 
 class EmployeeService {
 /**
@@ -23,6 +25,13 @@ class EmployeeService {
    */
   static async getAllEmployees() {
     return await Employee.findAll({
+       include: [
+        {
+            model: Department,
+            as: "department",
+            attributes: ["id", "name"],
+          },
+      ],
       order: [["id", "ASC"]],
     });
   }

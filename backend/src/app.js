@@ -20,7 +20,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Admin-only routes
 app.use("/api/auth", authRoutes);
-app.use("/api/admin", adminRoutes);
+//app.use("/api/admin", adminRoutes);
 app.use("/api/roles", roleRoutes);
 
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));

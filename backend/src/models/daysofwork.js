@@ -3,21 +3,21 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../db');
  const DaysWorking = sequelize.define("days_working", {
         id: {
-            type: Sequelize.INTEGER,
+            type: sequelize.INTEGER,
             autoIncrement: true,
             primaryKey: true,
             allowNull: false
         },
         day: {
-            type: Sequelize.STRING,
+            type: sequelize.STRING,
             allowNull: false
         },
         startingHour: {
-            type: Sequelize.STRING,
+            type: sequelize.STRING,
             allowNull: false
         }, 
         endingHour: {
-            type: Sequelize.STRING,
+            type: sequelize.STRING,
             allowNull: false
         }
     }, {

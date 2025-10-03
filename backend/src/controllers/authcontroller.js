@@ -1,9 +1,10 @@
-const { registerUser, loginUser } = require("../services/authService");
+const authservice  = require("../services/authService");
+const { User , Role} = require("../models/");
 
 exports.register = async (req, res) => {
   try {
-    const { username, email, password, roleId } = req.body;
-    const user = await registerUser(username, email, password, roleId);
+    const { fullname,username, email, password, roleId } = req.body;
+    const user = await authservice.registerUser(fullname,username, email, password, roleId);
     res.json({ message: "User registered successfully", user });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -13,9 +14,40 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const { token, user } = await loginUser(email, password);
-    res.json({ token, user });
+    const { accessToken , refreshToken, userData } = await authservice.loginUser(email, password);
+    res.json({accessToken, refreshToken, userData});
   } catch (err) {
     res.status(401).json({ error: err.message });
+  }
+};
+
+exports.refresh = async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+    if (!refreshToken)
+      return res.status(400).json({ message: "Refresh token required" });
+
+
+     
+     const status = await authservice.verifyRefreshToken(refreshToken);
+     if(!status){
+         res.status(403).json({
+        message: "Refresh token was expired. Please make a new signin request",
+      });
+      return;
+     } else {
+
+      const tokendata = await authservice.findRefreshToken(refreshToken);
+      let id = tokendata.id;
+      
+      const userinfo = await authservice.findUserById(tokendata.userId);
+      const {newAccessToken, newRefreshToken} = await authservice.generateNewrefreshtoken(userinfo, id);
+             
+    res.json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
+
+     }
+    
+  } catch (error) {
+    res.status(401).json({ message: error.message });
   }
 };

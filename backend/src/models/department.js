@@ -1,22 +1,25 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../db');
 
- const Department = sequelize.define("department", {
+ const Department = sequelize.define("Department", {
         id: {
-            type: Sequelize.INTEGER,
+            type: DataTypes.INTEGER,
             autoIncrement: true,
             primaryKey: true,
             allowNull: false
         },
         departmentName: {
-            type: Sequelize.STRING,
+            type: DataTypes.STRING,
             allowNull: false,
             validate: {
                 notEmpty: true
             }
         }
     }, {
+        tableName: "department",
         timestamps: false,
         underscored: true,
         freezeTableName: true
     });
+
+  module.exports = Department;
