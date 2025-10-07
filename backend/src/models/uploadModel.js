@@ -24,7 +24,7 @@ const sequelize = require('../db');
       defaultValue: DataTypes.NOW,
     },
   }, {
-    tableName: "upload",
+    tableName: "uploads",
     timestamps: false, // since we are using uploaded_at instead
   });
 

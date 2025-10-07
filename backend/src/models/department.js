@@ -14,12 +14,12 @@ const sequelize = require('../db');
             validate: {
                 notEmpty: true
             }
-        }
+        },
+        description: { type: DataTypes.STRING },
     }, {
         tableName: "department",
         timestamps: false,
-        underscored: true,
-        freezeTableName: true
+       
     });
 
   module.exports = Department;

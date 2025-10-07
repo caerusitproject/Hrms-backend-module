@@ -1,22 +1,38 @@
-const { DataTypes } = require('sequelize');
+const { DataTypes } = require("sequelize");
 const sequelize = require('../db');
-const Employee = require('./Employee');
 
-const LeaveRequest = sequelize.define('LeaveRequest', {
-  id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
-  employeeId: { type: DataTypes.BIGINT, allowNull: false },
-  leaveType: { type: DataTypes.STRING, allowNull: false },
-  fromDate: { type: DataTypes.DATEONLY, allowNull: false },
-  toDate: { type: DataTypes.DATEONLY, allowNull: false },
-  days: { type: DataTypes.DECIMAL(5,2), allowNull: false },
-  status: { type: DataTypes.STRING, defaultValue: 'Pending' },
-  reason: { type: DataTypes.TEXT }
-}, {
-  tableName: 'leave_requests',
-  timestamps: true
+const Leave = sequelize.define("Leave", {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
+  employeeId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  managerId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  startDate: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+  endDate: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+  reason: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  status: {
+    type: DataTypes.ENUM("PENDING", "APPROVED", "REJECTED"),
+    defaultValue: "PENDING",
+  },
 });
 
-LeaveRequest.belongsTo(Employee, { foreignKey: 'employeeId' });
 
 
-module.exports = LeaveRequest;
+module.exports = Leave;

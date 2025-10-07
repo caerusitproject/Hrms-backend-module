@@ -86,6 +86,68 @@ class EmployeeService {
     return deleted > 0;
   }
 
+  static async getAllEmployees() {
+    return await Employee.findAll({
+      include: [
+        {
+          model: Employee,
+          as: "manager",
+          attributes: ["id", "firstName", "lastName", "email"],
+        },
+      ],
+    })
+  }
+
+
+
+  static async getSubordinates (managerId){
+       return await Employee.findAll({
+        where: { managerId },
+        include: [{ model: Employee, as: "manager", attributes: ["id", "firstName", "lastName"] }],
+    });
+  }
+
+  static async assignManager(employeeId, managerId){
+    const employee = await Employee.findByPk(employeeId);
+  if (!employee) throw new Error("Employee not found");
+
+  const manager = await Employee.findByPk(managerId);
+  if (!manager) throw new Error("Manager not found");
+
+  employee.managerId = managerId;
+  await employee.save();
+
+  // --- Publish event to Kafka ---
+  await producer.connect();
+  await producer.send({
+    topic: "employee-manager-assignment",
+    messages: [
+      {
+        value: JSON.stringify({
+          eventType: "MANAGER_ASSIGNED",
+          manager: {
+            id: manager.id,
+            name: `${manager.firstName} ${manager.lastName}`,
+            email: manager.email,
+          },
+          employee: {
+            id: employee.id,
+            name: `${employee.firstName} ${employee.lastName}`,
+            email: employee.email,
+          },
+          timestamp: new Date(),
+        }),
+      },
+    ],
+  });
+
+  console.log("Kafka Event Published: MANAGER_ASSIGNED");
+
+  return employee;
+
+
+  }
+
 }
 
 
