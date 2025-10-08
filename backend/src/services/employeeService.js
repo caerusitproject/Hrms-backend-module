@@ -148,6 +148,63 @@ class EmployeeService {
 
   }
 
+  // 🔍 Get all employees who are Managers
+  static async getAllManagers() {
+    try {
+      const managers = await Employee.findAll({
+        include: [
+          {
+            model: Role,
+            as: 'roles',
+            where: { name: 'Manager' },
+            through: { attributes: [] }, // exclude junction table columns
+          },
+          {
+            model: Department,
+            as: 'department',
+            attributes: ['id', 'name'],
+          }
+        ],
+        attributes: ['id', 'firstName', 'lastName', 'email', 'designation'],
+      });
+      return managers;
+    } catch (error) {
+      console.error("Error fetching managers:", error);
+      throw error;
+    }
+  }
+
+  // 🧠 Get a specific manager by ID
+  static async getManagerById(managerId) {
+    try {
+      const manager = await Employee.findOne({
+        where: { id: managerId },
+        include: [
+          {
+            model: Role,
+            as: 'roles',
+            where: { name: 'Manager' },
+            through: { attributes: [] },
+          },
+          {
+            model: Department,
+            as: 'department',
+            attributes: ['id', 'name'],
+          }
+        ],
+      });
+
+      if (!manager) {
+        throw new Error(`Manager with ID ${managerId} not found`);
+      }
+
+      return manager;
+    } catch (error) {
+      console.error("Error fetching manager by ID:", error);
+      throw error;
+    }
+  }
+
 }
 
 

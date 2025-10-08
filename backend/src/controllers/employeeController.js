@@ -72,60 +72,7 @@ exports.getAllEmployees = async (req, res) => {
 
 
 
-//hr action part
-exports.createOffer = async (req, res) => {
-  try {
-    const emp = await WorkflowService.createOffer(req.body);
-    res.status(201).json(emp);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
 
-exports.uploadDocs = async (req, res) => {
-  try {
-    const emp = await WorkflowService.uploadDocs(req.params.id);
-    res.json(emp);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-exports.verifyDocs = async (req, res) => {
-  try {
-    const emp = await WorkflowService.verifyDocs(req.params.id);
-    res.json(emp);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-exports.startOnboarding = async (req, res) => {
-  try {
-    const emp = await WorkflowService.startOnboarding(req.params.id);
-    res.json(emp);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-exports.activateEmployee = async (req, res) => {
-  try {
-    const emp = await WorkflowService.activateEmployee(req.params.id);
-    res.json(emp);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-exports.startInduction = async (req, res) => {
-  try {
-    const emp = await WorkflowService.startInduction(req.params.id);
-    res.json(emp);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
 
 exports.getEmployee = async (req, res) => {
   try {
@@ -141,7 +88,7 @@ exports.getEmployee = async (req, res) => {
 exports.getSubordinates = async (req, res) => {
   try {
     const { managerId } = req.params;
-    const employees = await employeeService.getSubordinates(managerId);
+    const employees = await EmployeeService.getSubordinates(managerId);
     res.status(200).json(employees);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -152,18 +99,81 @@ exports.getSubordinates = async (req, res) => {
 exports.assignManager = async (req, res) => {
   try {
     const { employeeId, managerId } = req.body;
-    const updated = await employeeService.assignManager(employeeId, managerId);
+    const updated = await EmployeeService.assignManager(employeeId, managerId);
     res.status(200).json({ message: "Manager assigned successfully", updated });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 }
 //get manager
-exports.getManagers = async (req, res) => {
+exports.getManagersById = async (req, res) => {
   try {
-    const managers = await EmployeeService.getManagers();
+    const managers = await EmployeeService.getManagerById(req.id);
     res.json(managers);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+exports.getAllManagers = async (req, res) => {
+  try {
+    const managers = await EmployeeService.getAllManagers();
+    res.status(200).json({
+      success: true,
+      count: managers.length,
+      data: managers,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+exports.getManagerById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const manager = await EmployeeService.getManagerById(id);
+    res.status(200).json({
+      success: true,
+      data: manager,
+    });
+  } catch (error) {
+    res.status(404).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+exports.getAllManagers = async (req, res) => {
+  try {
+    const managers = await EmployeeService.getAllManagers();
+    res.status(200).json({
+      success: true,
+      count: managers.length,
+      data: managers,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+exports.getManagerById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const manager = await EmployeeService.getManagerById(id);
+    res.status(200).json({
+      success: true,
+      data: manager,
+    });
+  } catch (error) {
+    res.status(404).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
