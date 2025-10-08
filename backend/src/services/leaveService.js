@@ -23,31 +23,6 @@ exports.applyLeave = async (data) => {
     
   }
 
-  // Publish leave applied event
- /* await producer.connect();
-  await producer.send({
-    topic: "leave-events",
-    messages: [
-      {
-        value: JSON.stringify({
-          eventType: "LEAVE_APPLIED",
-          leaveId: leave.id,
-          employee: {
-            name: `${employee.name}`,
-            email: employee.email,
-          },
-          manager: {
-            name: `${manager.name}`,
-            email: manager.email,
-          },
-          startDate: leave.startDate,
-          endDate: leave.endDate,
-          reason: leave.reason,
-        }),
-      },
-    ],
-  });*/
-
   return leave;
 };
 

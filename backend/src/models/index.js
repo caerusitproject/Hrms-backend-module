@@ -1,48 +1,56 @@
+const db = require("../db"); 
+const { Sequelize, DataTypes } = require("sequelize");
 
+const sequelize = db.sequelize || db;
 
-const db = require("../db"); // this is your pg client/connection
-const dbInfo = {}
+const dbInfo = {};
 
-dbInfo.Sequelize = db.Sequelize
-dbInfo.Sequelize = db.Sequelize
-
-
-// Import models
+// Import class-based models (no function calls)
 dbInfo.Employee = require("./Employee");
 dbInfo.Department = require("./department");
-dbInfo.EmpFinancialInfo = require('./empFinanceInfo');
+dbInfo.EmpFinancialInfo = require("./empFinanceInfo");
 dbInfo.Attendance = require("./Attendance");
 dbInfo.Role = require("./Role");
 dbInfo.User = require("./User");
-dbInfo.leaveRequest = require("./LeaveRequest");
-
+dbInfo.Leave = require("./LeaveRequest");
 dbInfo.Upload = require("./uploadModel");
 dbInfo.RefreshToken = require("./RefreshToken");
-dbInfo.Leave = require('./LeaveRequest');
+dbInfo.EmployeeRole = require("./EmployeeRole");
 
-
-
-//dbInfo.Department.hasMany(dbInfo.Employee, { foreignKey: "departmentId", as: "employees" });
+// 🧩 Initialize associations AFTER loading all models
+dbInfo.Department.hasMany(dbInfo.Employee, { foreignKey: "departmentId", as: "employees" });
 dbInfo.Employee.belongsTo(dbInfo.Department, { foreignKey: "departmentId", as: "department" });
-//dbInfo.Employee.belongsTo(dbInfo.Department, { foreignKey: "DepartmentId", as: "dept" });
-//dbInfo.Department.hasMany(dbInfo.Employee, { foreignKey: "departmentId", as: "employee" },{onDelete: 'CASCADE', hooks: true})
-dbInfo.Employee.belongsTo(dbInfo.Upload, { foreignKey: "id", as: "image" });
-dbInfo.Upload.belongsTo(dbInfo.Employee,{foreignKey: "employee_id", as: "employee"},{onDelete: 'CASCADE', hooks: true});
 
-
-//dbInfo.Employee.belongsTo(dbInfo.Employee, { as: "emp_manager", foreignKey: "managerId" });
-//dbInfo.Employee.hasMany(dbInfo.Employee, { as: "employee", foreignKey: "managerId" });
+dbInfo.Employee.belongsTo(dbInfo.Upload, { foreignKey: "imageId", as: "image" });
+dbInfo.Upload.belongsTo(dbInfo.Employee, { foreignKey: "employee_id", as: "employee" });
 
 dbInfo.User.belongsTo(dbInfo.Role, { foreignKey: "roleId", as: "role" });
 dbInfo.Role.hasMany(dbInfo.User, { foreignKey: "roleId", as: "users" });
 
-dbInfo.User.hasMany(dbInfo.RefreshToken, { foreignKey: "userId" });
-dbInfo.RefreshToken.belongsTo(dbInfo.User, { foreignKey: "userId" });
+dbInfo.User.hasMany(dbInfo.RefreshToken, { foreignKey: "userId", as: "tokens" });
+dbInfo.RefreshToken.belongsTo(dbInfo.User, { foreignKey: "userId", as: "user" });
 
-dbInfo.Leave.belongsTo(dbInfo.Employee, { as: "employee", foreignKey: "employeeId" });
+dbInfo.Leave.belongsTo(dbInfo.Employee, { as: "employee", foreignKey: "eId" });
 dbInfo.Leave.belongsTo(dbInfo.Employee, { as: "manager", foreignKey: "managerId" });
 
-db.sync({ alter: true })
-  .then(() => console.log("✅ All models synced"))
-  .catch(err => console.error("❌ Sync failed:", err));
+// ✅ Many-to-Many between Employee <-> Role
+//dbInfo.Employee.belongsToMany(dbInfo.Role, {through: dbInfo.EmployeeRole, foreignKey: "employeeId", otherKey: "roleId",  as: "roles"});
+//dbInfo.Role.belongsToMany(dbInfo.Employee, {through: dbInfo.EmployeeRole, foreignKey: "roleId",  otherKey: "employeeId",  as: "employees",});
+
+// ✅ Pass sequelize reference into models (for class-based models)
+Object.values(dbInfo).forEach(model => {
+  if (model && model.init && !model.sequelize) {
+    model.sequelize = sequelize;
+  }
+});
+
+// ✅ Sync models
+sequelize
+  .sync({ alter: true })
+  .then(() => console.log("✅ All models synced successfully"))
+  .catch((err) => console.error("❌ Model sync failed:", err));
+
+dbInfo.sequelize = sequelize;
+dbInfo.Sequelize = Sequelize;
+
 module.exports = dbInfo;
