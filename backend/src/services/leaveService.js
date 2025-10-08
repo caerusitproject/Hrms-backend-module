@@ -23,10 +23,11 @@ exports.applyLeave = async (data) => {
     
   }
 
+  
   return leave;
 };
 
-exports.updateLeaveStatus = async (leaveId, status) => {
+exports.approveLeave = async (leaveId, managerId, action) => {
   const leave = await Leave.findByPk(leaveId, {
     include: [
       { model: Employee, as: "employee" },
@@ -35,11 +36,11 @@ exports.updateLeaveStatus = async (leaveId, status) => {
   });
 
   if (!leave) throw new Error("Leave not found");
-  leave.status = status;
+  leave.status = action;
   await leave.save();
 
   // Publish approval/rejection event
-  await producer.connect();
+ /* await producer.connect();
   await producer.send({
     topic: "leave-events",
     messages: [
@@ -60,7 +61,7 @@ exports.updateLeaveStatus = async (leaveId, status) => {
         }),
       },
     ],
-  });
+  });*/
 
   return leave;
 };
