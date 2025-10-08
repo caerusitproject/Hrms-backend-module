@@ -13,6 +13,7 @@ router.post("/create", ctrl.createEmployee);
 router.get("/:id", ctrl.getEmployeeById);
 router.put("/edit/:id", ctrl.updateEmployee);
 router.get("/all", ctrl.getAllEmployees);
+router.get('/managers', ctrl.getManagers);
 
 router.get("/manager/:managerId", ctrl.getSubordinates);
 router.patch("/assign-manager", ctrl.assignManager);
