@@ -1,31 +1,80 @@
 # This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
 
-name: Node.js CI
+image: node:20
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+stages:
+  - install
+  - lint
+  - test
+  - build
+  - deploy
 
-jobs:
-  build:
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - node_modules/
 
-    runs-on: ubuntu-latest
+variables:
+  NODE_ENV: test
+  # if you use PostgreSQL in CI
+  DATABASE_URL: "postgres://postgres:postgres@postgres:5432/hrms_test"
 
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x, 22.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+services:
+  - name: postgres:15
+    alias: postgres
+  # Optional: add redis or kafka services if needed
+  # - name: redis:7
+  #   alias: redis
 
-    steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
-    - run: npm run build --if-present
-    - run: npm test
+before_script:
+  - npm ci
+  - node -v
+  - npm -v
+
+install:
+  stage: install
+  script:
+    - echo "Installing dependencies..."
+    - npm install
+  artifacts:
+    paths:
+      - node_modules/
+    expire_in: 1h
+
+lint:
+  stage: lint
+  script:
+    - echo "Running ESLint..."
+    - npx eslint . || true
+  allow_failure: true
+
+test:
+  stage: test
+  script:
+    - echo "Running unit tests..."
+    - npm run test
+  artifacts:
+    when: always
+    reports:
+      junit: test-results.xml
+    expire_in: 1 week
+
+build:
+  stage: build
+  script:
+    - echo "Building application..."
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 week
+
+deploy:
+  stage: deploy
+  only:
+    - main
+  script:
+    - echo "Deploying application..."
+    # Example: use SSH or rsync to deploy to a server
+    # - ssh user@your-server "cd /opt/hrms && git pull && npm ci && pm2 restart hrms"

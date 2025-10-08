@@ -29,11 +29,10 @@ app.use("/api/roles", roleRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // Routes
-app.use("/employees", employeeRoutes);
+app.use("/api/employees", employeeRoutes);
 app.use("/upload", uploadRoutes);
 //Leave request
 app.use("/api/leave", leaveRoute);
-
 
 //workflow
 app.use('/api/workflow', workflowRoute);

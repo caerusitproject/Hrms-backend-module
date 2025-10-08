@@ -28,7 +28,14 @@ const sequelize = require('../db');
     // FK field
     departmentId: { type: DataTypes.INTEGER,allowNull: true},
       
-    state: { type: DataTypes.STRING, allowNull: false, defaultValue: 'OFFER_CREATED' }
+    state: { type: DataTypes.STRING, allowNull: false, defaultValue: 'OFFER_CREATED' },
+    roleId: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: "Roles",
+      key: "id",
+    },
+    },
   }, {
     tableName: 'employee',
     timestamps: true
