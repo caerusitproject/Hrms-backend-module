@@ -1,25 +1,22 @@
-const LeaveRequest = require('../models/LeaveRequest');
+const leaveService = require("../services/leaveService");
 
-async function createLeave(req, res) {
+exports.applyLeave = async (req, res) => {
   try {
-    const { employeeId } = req.params;
-    const { leaveType, fromDate, toDate, days, reason } = req.body;
-    const lr = await LeaveRequest.create({ employeeId, leaveType, fromDate, toDate, days, reason });
-    return res.status(201).json(lr);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: err.message });
+    const leave = await leaveService.applyLeave(req.body);
+    res.status(201).json({ message: "Leave applied successfully", leave });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
-}
+};
 
-async function listLeaves(req, res) {
+exports.manageLeave = async (req, res) => {
   try {
-    const leaves = await LeaveRequest.findAll();
-    return res.json(leaves);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: err.message });
-  }
-}
+    const { leaveId, action } = req.body; // action = "approve" or "reject"
+    const managerId = req.user.id; // from token/middleware
 
-module.exports = { createLeave, listLeaves };
+    const leave = await leaveService.approveLeave(leaveId, managerId, action);
+    res.status(200).json({ message: `Leave ${action}d successfully`, leave });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

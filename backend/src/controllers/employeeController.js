@@ -60,6 +60,16 @@ exports.updateEmployee = async (req, res) => {
   }
 };
 
+exports.getAllEmployees = async (req, res) => {
+  try {
+    const employees = await EmployeeService.getAllEmployees();
+    res.status(200).json(employees);
+  } catch (err) {
+    console.error("Error fetching employees:", err);
+    res.status(500).json({ error: "Failed to fetch employees" });
+  }
+};
+
 
 
 //hr action part
@@ -125,4 +135,26 @@ exports.getEmployee = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 
+};
+
+// Get subordinates for a manager
+exports.getSubordinates = async (req, res) => {
+  try {
+    const { managerId } = req.params;
+    const employees = await employeeService.getSubordinates(managerId);
+    res.status(200).json(employees);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Assign Manager
+exports.assignManager = async (req, res) => {
+  try {
+    const { employeeId, managerId } = req.body;
+    const updated = await employeeService.assignManager(employeeId, managerId);
+    res.status(200).json({ message: "Manager assigned successfully", updated });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 }

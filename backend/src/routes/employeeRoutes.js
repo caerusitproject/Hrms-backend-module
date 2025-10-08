@@ -12,6 +12,10 @@ const upload = require("../middleware/UploadEmployeeProfileImage");
 router.post("/create", ctrl.createEmployee);
 router.get("/:id", ctrl.getEmployeeById);
 router.put("/edit/:id", ctrl.updateEmployee);
+router.get("/all", ctrl.getAllEmployees);
+
+router.get("/manager/:managerId", ctrl.getSubordinates);
+router.patch("/assign-manager", ctrl.assignManager);
 
 //Workflow action endpoint
 router.post("/", ctrl.createOffer);

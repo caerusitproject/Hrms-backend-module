@@ -1,16 +1,20 @@
+const express = require('express');
+const router = express.Router();
 const workflow = require('../services/workflowService');
 
-async function startWorkflow(req, res) {
+// start workflow: creates employee & sends offer
+router.post('/start', async (req, res) => {
   try {
-    const emp = await workflow.createOffer(req.body);
+    const emp = await workflow.createEmployeeAndOffer(req.body);
     return res.status(201).json(emp);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: err.message });
   }
-}
+});
 
-async function acceptOffer(req, res) {
+// accept offer
+router.post('/:id/accept', async (req, res) => {
   try {
     const emp = await workflow.acceptOffer(req.params.id);
     return res.json(emp);
@@ -18,29 +22,32 @@ async function acceptOffer(req, res) {
     console.error(err);
     return res.status(500).json({ error: err.message });
   }
-}
+});
 
-async function uploadDocs(req, res) {
+// upload docs
+router.post('/:id/documents', async (req, res) => {
   try {
-    const emp = await workflow.uploadDocs(req.params.id);
+    const emp = await workflow.uploadDocuments(req.params.id, req.body);
     return res.json(emp);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: err.message });
   }
-}
+});
 
-async function verifyDocs(req, res) {
+// verify
+router.post('/:id/verify', async (req, res) => {
   try {
-    const emp = await workflow.verifyDocs(req.params.id);
+    const emp = await workflow.verifyDocuments(req.params.id, req.body);
     return res.json(emp);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: err.message });
   }
-}
+});
 
-async function onboard(req, res) {
+// onboarding steps
+router.post('/:id/onboard', async (req, res) => {
   try {
     const emp = await workflow.startOnboarding(req.params.id);
     return res.json(emp);
@@ -48,9 +55,9 @@ async function onboard(req, res) {
     console.error(err);
     return res.status(500).json({ error: err.message });
   }
-}
+});
 
-async function activate(req, res) {
+router.post('/:id/activate', async (req, res) => {
   try {
     const emp = await workflow.activateEmployee(req.params.id);
     return res.json(emp);
@@ -58,9 +65,9 @@ async function activate(req, res) {
     console.error(err);
     return res.status(500).json({ error: err.message });
   }
-}
+});
 
-async function induction(req, res) {
+router.post('/:id/induction', async (req, res) => {
   try {
     const emp = await workflow.startInduction(req.params.id);
     return res.json(emp);
@@ -68,6 +75,6 @@ async function induction(req, res) {
     console.error(err);
     return res.status(500).json({ error: err.message });
   }
-}
+});
 
-module.exports = { startWorkflow, acceptOffer, uploadDocs, verifyDocs, onboard, activate, induction };
+module.exports = router;
