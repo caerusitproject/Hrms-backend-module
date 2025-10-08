@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 5000;
 const adminRoutes = require('./routes/admin/adminRoutes');
 const authRoutes = require('./routes/authRoutes');
 const roleRoutes = require("./routes/roleRoutes");
-const leaveRoute = require("./routes/leaveRotes");
+const leaveRoute = require("./routes/leaveRoutes");
 const setupSwagger = require("./swagger");
 const workflowRoute = require('./routes/workflowRouter');
 const app = express();
@@ -32,7 +32,8 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use("/employees", employeeRoutes);
 app.use("/upload", uploadRoutes);
 //Leave request
-app.use("/api/leave/", leaveRoute);
+app.use("/api/leave", leaveRoute);
+
 
 //workflow
 app.use('/api/workflow', workflowRoute);

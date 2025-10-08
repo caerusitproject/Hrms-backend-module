@@ -51,7 +51,7 @@ exports.applyLeave = async (data) => {
   return leave;
 };
 
-exports.updateLeaveStatus = async (leaveId, status) => {
+exports.approveLeave = async (leaveId, status) => {
   const leave = await Leave.findByPk(leaveId, {
     include: [
       { model: Employee, as: "employee" },
