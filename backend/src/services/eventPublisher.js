@@ -1,4 +1,4 @@
-const { producer } = require('../kafka');
+const { producer } = require('../config/kafka/workflowKafka');
 const uuid = require('uuid');
 
 async function publish(topic, eventType, payload = {}) {

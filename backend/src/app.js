@@ -11,10 +11,12 @@ const authRoutes = require('./routes/authRoutes');
 const roleRoutes = require("./routes/roleRoutes");
 const leaveRoute = require("./routes/leaveRotes");
 const setupSwagger = require("./swagger");
+const workflowRoute = require('./routes/workflowRouter');
 const app = express();
+const cors = require('cors');
 
 // Swagger
-setupSwagger(app);
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 //app.use('/api', routes);
@@ -32,6 +34,9 @@ app.use("/upload", uploadRoutes);
 //Leave request
 app.use("/api/leave/", leaveRoute);
 
+//workflow
+app.use('/api/workflow', workflowRoute);
+
 
 
 
@@ -43,7 +48,7 @@ async function start() {
     console.log('Postgres connected');
 
     // Sync DB models (dev only). In production use migrations.
-    await sequelize.sync({ alter: true });
+    /*await sequelize.sync({ alter: true });*/
     console.log('Database synchronized');
 
     app.listen(PORT, () => {

@@ -27,7 +27,7 @@ exports.uploadFile = async (req, res) => {
 exports.getFiles = async (req, res) => {
   try {
     const { id } = req.params;
-    const files = await Upload.getFilesByEmployee(id);
+    const files = await upload.getFilesByEmployee(id);
     res.json(files);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -37,7 +37,7 @@ exports.getFiles = async (req, res) => {
 exports.getFiles = async (req, res) => {
   try {
     const { id } = req.params;
-    const files = await UploadService.getFilesByEmployee(id);
+    const files = await upload.getFilesByEmployee(id);
     res.json(files);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -47,7 +47,7 @@ exports.getFiles = async (req, res) => {
 exports.deleteFile = async (req, res) => {
   try {
     const { fileId } = req.params;
-    const deleted = await UploadService.deleteFile(fileId);
+    const deleted = await upload.deleteFile(fileId);
 
     if (!deleted) {
       return res.status(404).json({ error: "File not found" });
