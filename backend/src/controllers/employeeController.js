@@ -158,3 +158,12 @@ exports.assignManager = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 }
+//get manager
+exports.getManagers = async (req, res) => {
+  try {
+    const managers = await EmployeeService.getManagers();
+    res.json(managers);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

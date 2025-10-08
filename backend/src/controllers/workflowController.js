@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const workflow = require('../services/workflowService');
+const WorkflowService = require('../services/workflowService');
 
 // start workflow: creates employee & sends offer
 router.post('/start', async (req, res) => {
