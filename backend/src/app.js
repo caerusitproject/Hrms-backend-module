@@ -3,7 +3,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const sequelize = require('./db');
 const employeeRoutes = require("./routes/employeeRoutes");
-const department = require("./routes/departmentRoutes");
 const departmentRoutes = require('./routes/departmentRoutes');
 const adminRoutes = require('./routes/admin/adminRoutes');
 const authRoutes = require('./routes/authRoutes');
@@ -29,16 +28,13 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/api/auth", authRoutes);
 //app.use("/api/admin", adminRoutes);
 app.use("/api/roles", roleRoutes);
-
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
-
 // Routes
 app.use("/api/employees", employeeRoutes);
 //department
 
 app.use('/api/departments', departmentRoutes);
 
-
+//upload profile image and document 
 app.use("/upload", uploadRoutes);
 //Leave request
 app.use("/api/leave", leaveRoute);
