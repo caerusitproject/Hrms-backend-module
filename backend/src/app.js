@@ -3,7 +3,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const sequelize = require('./db');
 const employeeRoutes = require("./routes/employeeRoutes");
-const department = require("./routes/departmentRoutes");
 const departmentRoutes = require('./routes/departmentRoutes');
 const adminRoutes = require('./routes/admin/adminRoutes');
 const authRoutes = require('./routes/authRoutes');
