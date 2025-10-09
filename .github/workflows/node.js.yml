@@ -1,71 +1,46 @@
-name: Node.js CI - HRMS Backend
+name: Node CI
 
 on:
   push:
-    branches: [ "main", "develop" ]
-  pull_request:
-    branches: [ "main", "develop" ]
+    branches:
+      - master
 
 jobs:
-  build:
+  test:
+
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:15
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: hrms_db
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-    env:
-      NODE_ENV: test
-      DB_HOST: localhost
-      DB_USER: postgres
-      DB_PASSWORD: postgres
-      DB_NAME: hrms_db
-      DB_PORT: 5432
-      JWT_SECRET: "testsecret"
-      SMTP_HOST: smtp.test.com
-      SMTP_PORT: 587
-      SMTP_USER: test@test.com
-      SMTP_PASS: password
-      KAFKA_BROKER: localhost:9092
+    strategy:
+      matrix:
+        node-version: [8.x, 10.x, 12.x]
 
     steps:
-      - name: 🧩 Checkout code
-        uses: actions/checkout@v4
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: npm install and test
+      run: |
+        npm install
+        npm test
+      env:
+        CI: true
 
-      - name: ⚙️ Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
+  deploy:
+    needs: [test]
+    runs-on: ubuntu-latest
 
-      - name: 📦 Install dependencies
-        run: npm ci
-
-      - name: 🧹 Lint code
-        run: npm run lint --if-present
-
-      - name: 🧪 Run tests
-        run: npm test --if-present
-
-      - name: 🏗️ Build app
-        run: npm run build --if-present
-
-      - name: ✅ Check DB connection
-        run: |
-          npx sequelize-cli db:migrate
-          echo "Database connected successfully!"
-
-  
-
-   
+    steps:
+    - name: SSH and deploy node app
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script: |
+          cd ~/node-github-demo
+          git pull origin master
+          npm install --production
+          pm2 restart node-app
