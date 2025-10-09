@@ -1,12 +1,10 @@
+name: Node.js CI
+
 on:
   push:
-    branches:
-      - main
-      - develop
+    branches: [ main, develop ]
   pull_request:
-    branches:
-      - main
-      - develop
+    branches: [ main, develop ]
 
 jobs:
   build:
@@ -14,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [18.x, 20.x, 22.x]
 
     steps:
     - uses: actions/checkout@v4
@@ -22,11 +20,10 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-        cache-dependency-path: './server/package-lock.json'
+        cache: 'npm' # Or 'yarn' or 'pnpm' if you use those package managers
     - name: Install dependencies
-      run: npm ci # or yarn install --frozen-lockfile
+      run: npm ci # Use 'npm ci' for clean install in CI environments
     - name: Run tests
-      run: npm test # or yarn test
-    # - name: Build project (optional)
-    #   run: npm run build # or yarn build
+      run: npm test
+    - name: Build project (optional)
+      run: npm run build # Only if your project has a build step
