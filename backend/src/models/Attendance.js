@@ -4,7 +4,7 @@ const Employee = require('./Employee');
 
 const Attendance = sequelize.define('Attendance', {
   id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
-  employeeId: { type: DataTypes.BIGINT, allowNull: false },
+  empCode: { type: DataTypes.STRING, allowNull: false },
   date: { type: DataTypes.DATEONLY, allowNull: false },
   checkIn: { type: DataTypes.TIME },
   checkOut: { type: DataTypes.TIME },
@@ -12,10 +12,10 @@ const Attendance = sequelize.define('Attendance', {
 }, {
   tableName: 'attendance',
   timestamps: true,
-  indexes: [{ fields: ['employeeId', 'date'] }]
+  indexes: [{ fields: ['empCode', 'date'] }]
 });
 
-Attendance.belongsTo(Employee, { foreignKey: 'employeeId' });
+//Attendance.belongsTo(Employee, { foreignKey: 'employeeId' });
 
 
 module.exports = Attendance;

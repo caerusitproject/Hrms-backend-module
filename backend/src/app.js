@@ -12,6 +12,7 @@ const roleRoutes = require("./routes/roleRoutes");
 const leaveRoute = require("./routes/leaveRotes");
 const setupSwagger = require("./swagger");
 const workflowRoute = require('./routes/workflowRouter');
+const attendanceRoutes = require('./routes/attendanceRoutes');
 const app = express();
 const cors = require('cors');
 
@@ -36,6 +37,10 @@ app.use("/api/leave", leaveRoute);
 
 //workflow
 app.use('/api/workflow', workflowRoute);
+
+//attendance
+app.use('/api/attendance', attendanceRoutes);
+
 
 
 
