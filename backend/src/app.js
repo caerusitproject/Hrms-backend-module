@@ -3,17 +3,20 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const sequelize = require('./db');
 const employeeRoutes = require("./routes/employeeRoutes");
-const uploadRoutes = require("./routes/uploadRoutes");
-const path = require('path')
-const PORT = process.env.PORT || 5000;
+const department = require("./routes/departmentRoutes");
+const departmentRoutes = require('./routes/departmentRoutes');
 const adminRoutes = require('./routes/admin/adminRoutes');
 const authRoutes = require('./routes/authRoutes');
 const roleRoutes = require("./routes/roleRoutes");
 const leaveRoute = require("./routes/leaveRotes");
 const setupSwagger = require("./swagger");
 const workflowRoute = require('./routes/workflowRouter');
+const uploadRoutes = require('./routes/uploadRoutes')
 const app = express();
 const cors = require('cors');
+const path = require('path')
+const PORT = process.env.PORT || 5000;
+
 
 // Swagger
 app.use(cors());
@@ -30,6 +33,11 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // Routes
 app.use("/api/employees", employeeRoutes);
+//department
+
+app.use('/api/departments', departmentRoutes);
+
+
 app.use("/upload", uploadRoutes);
 //Leave request
 app.use("/api/leave", leaveRoute);
