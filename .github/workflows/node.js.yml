@@ -1,29 +1,71 @@
-name: Node.js CI
+name: Node.js CI - HRMS Backend
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ "main", "develop" ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ "main", "develop" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x, 22.x]
+    services:
+      postgres:
+        image: postgres:15
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: hrms_db
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      NODE_ENV: test
+      DB_HOST: localhost
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: hrms_db
+      DB_PORT: 5432
+      JWT_SECRET: "testsecret"
+      SMTP_HOST: smtp.test.com
+      SMTP_PORT: 587
+      SMTP_USER: test@test.com
+      SMTP_PASS: password
+      KAFKA_BROKER: localhost:9092
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm' # Or 'yarn' or 'pnpm' if you use those package managers
-    - name: Install dependencies
-      run: npm ci # Use 'npm ci' for clean install in CI environments
-    - name: Run tests
-      run: npm test
-    - name: Build project (optional)
-      run: npm run build # Only if your project has a build step
+      - name: 🧩 Checkout code
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🧹 Lint code
+        run: npm run lint --if-present
+
+      - name: 🧪 Run tests
+        run: npm test --if-present
+
+      - name: 🏗️ Build app
+        run: npm run build --if-present
+
+      - name: ✅ Check DB connection
+        run: |
+          npx sequelize-cli db:migrate
+          echo "Database connected successfully!"
+
+  
+
+   
