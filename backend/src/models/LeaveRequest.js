@@ -36,3 +36,16 @@ const Leave = sequelize.define("Leave", {
 
 
 module.exports = Leave;
+
+/*const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database.js');
+const Employee = require('./Employee.js');
+
+const Leave = sequelize.define('Leave', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  employeeId: { type: DataTypes.INTEGER, references: { model: Employee, key: 'id' } },
+  status: DataTypes.ENUM('pending', 'accepted', 'rejected'),
+  dates: DataTypes.JSON
+});
+
+module.exports = Leave;*/
