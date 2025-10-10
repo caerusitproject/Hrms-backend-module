@@ -3,7 +3,7 @@ const sequelize = require('../db');
 
 const SalaryStructure = sequelize.define('SalaryStructure', {
   id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
-  employeeId: { type: DataTypes.BIGINT, allowNull: true },
+  empCode: { type: DataTypes.STRING, allowNull: true },
   effectiveFrom: { type: DataTypes.DATEONLY },
   effectiveTo: { type: DataTypes.DATEONLY },
   basic: { type: DataTypes.DECIMAL(12,2), allowNull: false, defaultValue: 0 },

@@ -8,6 +8,7 @@ const sequelize = require('../db');
             primaryKey: true,
             allowNull: false
         },
+        
         departmentName: {
             type: DataTypes.STRING,
             allowNull: false,
