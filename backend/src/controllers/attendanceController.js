@@ -1,32 +1,3 @@
-/*const Attendance = require('../models/Attendance');
-
-async function addAttendance(req, res) {
-  try {
-    const { employeeId } = req.params;
-    const { date, checkIn, checkOut, status } = req.body;
-    const att = await Attendance.create({ employeeId, date, checkIn, checkOut, status });
-    return res.status(201).json(att);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: err.message });
-  }
-}
-
-async function getAttendanceForEmployee(req, res) {
-  try {
-    const { employeeId } = req.params;
-    const records = await Attendance.findAll({ where: { employeeId } });
-    return res.json(records);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: err.message });
-  }
-}
-
-module.exports = { addAttendance, getAttendanceForEmployee };*/
-
-
-
 const fs = require('fs');
 const path = require('path');
 const CsvService = require('../services/csvService');
@@ -77,14 +48,14 @@ async function getAllAttendance(req, res) {
 
 async function getAttendanceByEmployee(req, res) {
   try {
-    const { empCode } = req.params;
-    if (!empCode) {
+    const {empCode,month,year}   = req.params;
+    if (!empCode && !month) {
       return res.status(400).json({
         success: false,
-        message: 'Employee Code is required'
+        message: 'Employee Code & Month is required'
       });
-    }
-    const records = await CsvService.getAttendanceByEmployeeId(empCode);
+    }  
+    const records = await CsvService.getAttendanceByEmployeeId(empCode,month,year);
     return res.status(200).json({
       success: true,
       message: `Attendance records for employee ${empCode} retrieved successfully`,
