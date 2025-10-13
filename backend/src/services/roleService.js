@@ -1,8 +1,8 @@
 const { Role } = require("../models");
 
-const createRole = async (name) => {
-  const role = await Role.create({ name });
-  return role;
+const createRole = async (name, role) => {
+  const roledata = await Role.create({ name , role});
+  return roledata;
 };
 
 const getRoles = async () => {

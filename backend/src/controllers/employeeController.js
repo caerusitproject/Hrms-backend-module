@@ -1,13 +1,29 @@
 const EmployeeService = require("../services/employeeService");
 
+
+exports.registerEmployee = async (req, res) => {
+  try {
+    const { name, email, password, roleIds } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const employee = await Employee.create({ name, email, password: hashedPassword });
+
+    if (roleIds && roleIds.length > 0) {
+      await employee.setRoles(roleIds);
+    }
+
+    res.status(201).json({ message: "Employee created successfully", employee });
+  } catch (err) {
+    res.status(500).json({ message: "Error creating employee", error: err.message });
+  }
+};
+
 exports.createEmployee = async(req, res) => {
   try {
-    console.log(req.body);
-    const employee = await EmployeeService.createEmployee(req.body);
-    res.status(201).json(employee);
+    
+  const employee = await EmployeeService.createEmployee(req.body);
+  res.status(201).json({ message: "Employee created successfully", employee });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: err.message });
+    res.status(500).json({ message: "Error creating employee", error: err.message });
   }
 }
 // Get employees by id
