@@ -3,12 +3,12 @@ const { createRole, getRoles } = require("../services/roleService");
 exports.addRole = async (req, res) => {
   try {
     
-    const { name } = req.body;
+    const { name , role} = req.body;
     console.log("role name", req.body);
     if (!name) return res.status(400).json({ error: "Role name is required" });
 
-    const role = await createRole(name);
-    res.json({ message: "Role created successfully", role });
+    const roledata = await createRole(name, role);
+    res.json({ message: "Role created successfully", roledata });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

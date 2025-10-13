@@ -1,5 +1,6 @@
 const db = require("../models");
 const Employee = db.Employee;
+const EmployeeRole = db.EmployeeRole;
 const Dept = db.Department;
 
 
@@ -15,7 +16,19 @@ class EmployeeService {
       payload.joining_date = new Date();
     }
 
+    const roleIds = payload.roleIds;
+    
     const employee = await Employee.create(payload);
+    if (roleIds) {
+       
+      await EmployeeRole.create({ employeeId: employee.id, roleId : roleIds });
+      /*await Promise.all(
+        roleIds.map((roleId) =>
+          db.EmployeeRole.create({ employeeId: employee.id, roleId : roleIds })
+        )
+      );*/
+    }
+    
     return employee;
   }
 
@@ -92,7 +105,7 @@ class EmployeeService {
         {
           model: Employee,
           as: "manager",
-          attributes: ["id", "firstName", "lastName", "email"],
+          attributes: ["id", "name", "lastName", "email"],
         },
       ],
     })

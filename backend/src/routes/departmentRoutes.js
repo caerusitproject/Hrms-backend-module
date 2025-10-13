@@ -1,12 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const departmentController = require("../controllers/departmentController");
+const { authenticate, authorizeRoles } = require("../middleware/authMiddleWare");
 
 
-
-router.get("/", departmentController.getAll);
-router.get("/:id", departmentController.getById);
-router.post("/", departmentController.create);
-router.put("/:id", departmentController.update);
-router.delete("/:id", departmentController.delete);
+router.get("/",authenticate, authorizeRoles("ADMIN"), departmentController.getAll);
+router.get("/:id", authenticate, authorizeRoles("ADMIN"), departmentController.getById);
+router.post("/", authenticate, authorizeRoles("ADMIN"), departmentController.create);
+router.put("/:id", authenticate, authorizeRoles("ADMIN"), departmentController.update);
+router.delete("/:id", authenticate, authorizeRoles("ADMIN"), departmentController.delete);
 module.exports = router;

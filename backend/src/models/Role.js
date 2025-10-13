@@ -13,6 +13,11 @@ const Role = sequelize.define("Role", {
     allowNull: false,
     unique: true, // Example: "Admin", "User"
   },
+  role: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true, // Example: "Admin", "User"
+  },
 }, {
   tableName: "Roles",
   timestamps: true,
