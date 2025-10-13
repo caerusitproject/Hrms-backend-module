@@ -1,7 +1,7 @@
 const authservice  = require("../services/authService");
-const { User , Role} = require("../models/");
 
-exports.register = async (req, res) => {
+
+const register = async (req, res) => {
   try {
     const { fullname,username, email, password, roleId } = req.body;
     const user = await authservice.registerUser(fullname,username, email, password, roleId);
@@ -11,7 +11,7 @@ exports.register = async (req, res) => {
   }
 };
 
-exports.login = async (req, res) => {
+const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const { accessToken , refreshToken, userData } = await authservice.loginUser(email, password);
@@ -21,7 +21,7 @@ exports.login = async (req, res) => {
   }
 };
 
-exports.refresh = async (req, res) => {
+const refresh = async (req, res) => {
   try {
     const { refreshToken } = req.body;
     if (!refreshToken)
@@ -51,3 +51,5 @@ exports.refresh = async (req, res) => {
     res.status(401).json({ message: error.message });
   }
 };
+
+module.exports = {register, login, refresh}

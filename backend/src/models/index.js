@@ -33,9 +33,19 @@ dbInfo.RefreshToken.belongsTo(dbInfo.User, { foreignKey: "userId", as: "user" })
 dbInfo.Leave.belongsTo(dbInfo.Employee, { as: "employee", foreignKey: "eId" });
 dbInfo.Leave.belongsTo(dbInfo.Employee, { as: "manager", foreignKey: "managerId" });
 
-// ✅ Many-to-Many between Employee <-> Role
-//dbInfo.Employee.belongsToMany(dbInfo.Role, {through: dbInfo.EmployeeRole, foreignKey: "employeeId", otherKey: "roleId",  as: "roles"});
-//dbInfo.Role.belongsToMany(dbInfo.Employee, {through: dbInfo.EmployeeRole, foreignKey: "roleId",  otherKey: "employeeId",  as: "employees",});
+dbInfo.Employee.belongsToMany(dbInfo.Role, {
+  through: dbInfo.EmployeeRole,
+  foreignKey: "employeeId",
+  as: "roles",
+});
+
+dbInfo.Role.belongsToMany(dbInfo.Employee, {
+  through: dbInfo.EmployeeRole,
+  foreignKey: "roleId",
+  as: "employees",
+});
+
+
 
 // ✅ Pass sequelize reference into models (for class-based models)
 Object.values(dbInfo).forEach(model => {
@@ -45,10 +55,10 @@ Object.values(dbInfo).forEach(model => {
 });
 
 // ✅ Sync models
-/*sequelize
+sequelize
   .sync({ alter: false })
   .then(() => console.log("✅ All models synced successfully"))
-  .catch((err) => console.error("❌ Model sync failed:", err));*/
+  .catch((err) => console.error("❌ Model sync failed:", err));
 
 dbInfo.sequelize = sequelize;
 dbInfo.Sequelize = Sequelize;

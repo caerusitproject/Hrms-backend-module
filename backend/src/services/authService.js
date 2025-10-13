@@ -31,7 +31,7 @@ const loginUser = async (email, password) => {
       let authorities = [];
       let role = await Role.findOne({ where: { id : user.roleId}});
       if(role){
-          authorities.push(role.name.toUpperCase());
+          authorities.push(role.role.toUpperCase());
       }
     
       
@@ -45,23 +45,32 @@ const loginUser = async (email, password) => {
 
 
 const generateAccessToken = async (user) => {
-  const accesstoken = jwt.sign(
-    { id: user.id, roleId: user.roleId },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXP_ACCESS}
-  );
+console.log(user.role.role);
+  const payload = {
+    id: user.id,
+    email: user.email,
+    roles: user.role.role || ["USER"], // default role
+  };
+  const accesstoken = jwt.sign(payload, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN || "1h",
+  });
 
    console.log("data==", accesstoken);
   return accesstoken;
 };
 
 const generateRefreshToken = async (user) => {
-  const token = jwt.sign({ id: user.id }, process.env.JWT_REFRESH_SECRET, {
-    expiresIn: process.env.JWT_EXP_REFRESH,
+  const payload = {
+    id: user.id,
+    email: user.email,
+    roles: user.roles || ["USER"], // default role
+  };
+  const token = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
+    expiresIn: process.env.JWT_EXP_REFRESH || "5d",
   });
 
   const expiryDate = new Date();
-  expiryDate.setDate(expiryDate.getDate() + process.env.JWT_REFRESH);
+  expiryDate.setDate(expiryDate.getDate() + 5);
   let userId = user.id;
  
   const data = await storerefreshToken( token, expiryDate, userId );
