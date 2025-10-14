@@ -25,11 +25,12 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 //app.use('/api', routes);
-app.use(authenticate)
+
 // Admin-only routes
 app.use("/api/admin", adminRoutes);
 
 app.use("/api/auth", authRoutes);
+//app.use(authenticate)
 //app.use("/api/admin", adminRoutes);
 app.use("/api/roles", roleRoutes);
 // Routes
@@ -48,12 +49,6 @@ app.use('/api/workflow', workflowRoute);
 
 //attendance
 app.use('/api/attendance', attendanceRoutes);
-
-
-
-
-
-
 
 async function start() {
   try {
