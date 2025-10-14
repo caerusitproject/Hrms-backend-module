@@ -11,12 +11,12 @@ router.get("/all", authenticate, authorizeRoles("HR", "MANAGER", "ADMIN"), ctrl.
 
 router.get('/managers', authenticate, authorizeRoles("HR", "ADMIN"), ctrl.getAllManagers);
 // Get manager by ID
-router.get('/managers/:id', authenticate, authorizeRoles("HR", "ADMIN"), ctrl.getManagersById);
+router.get('/manager/:id', authenticate, authorizeRoles("HR", "ADMIN"), ctrl.getManagersById);
 router.get("/manager/:managerId", authenticate, authorizeRoles("HR", "ADMIN"), ctrl.getSubordinates);
 router.patch("/assign-manager", authenticate, authorizeRoles("ADMIN"), ctrl.assignManager);
 
-router.get("/:id", authenticate, authorizeRoles("USER"), ctrl.getEmployeeById);
-router.put("/edit/:id", authenticate, authorizeRoles("USER"), ctrl.updateEmployee);
+router.get("/:id", authenticate, authorizeRoles("HR","USER"), ctrl.getEmployeeById);
+router.put("/edit/:id", authenticate, authorizeRoles("HR","USER"), ctrl.updateEmployee);
 
 //Workflow action endpoint
 /*router.post("/", ctrl.createOffer);
