@@ -6,8 +6,8 @@ const { authenticate, authorizeRoles } = require("../middleware/authMiddleWare")
 
 router.post("/login", ctrl.loginEmployee);
 
-router.post("/create", authenticate, authorizeRoles("HR", "MANAGER"), ctrl.createEmployee);
-router.get("/all", authenticate, authorizeRoles("HR", "MANAGER"), ctrl.getAllEmployees);
+router.post("/create", authenticate, authorizeRoles("HR", "MANAGER","ADMIN"), ctrl.createEmployee);
+router.get("/all", authenticate, authorizeRoles("HR", "MANAGER", "ADMIN"), ctrl.getAllEmployees);
 
 router.get('/managers', authenticate, authorizeRoles("HR", "ADMIN"), ctrl.getAllManagers);
 // Get manager by ID
