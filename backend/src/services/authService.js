@@ -33,6 +33,7 @@ const loginUser = async (email, password) => {
   let role = await Role.findOne({ where: { id: user.roleId } });
   if (role) {
     authorities.push(role.role);
+    user.role = role.role //for user role mapping
   }
 
 
@@ -47,6 +48,7 @@ const loginUser = async (email, password) => {
 
 const generateAccessToken = async (user) => {
   console.log(user.role);
+
   const payload = {
     id: user.id,
     empId: user.empId,
@@ -139,12 +141,12 @@ const loginEmployee = async (email, password) => {
           as: "department",
           attributes: ["id", "departmentName"],
         },
-        {
+        /*{
           model: Role,
           as: "roles",
-          attributes: ["id", "name"],
+          attributes: ["id", "name", "role"],
           through: { attributes: [] }, // hides pivot table data (EmployeeRole)
-        },
+        },*/
       ],
       attributes: [
         "id",
