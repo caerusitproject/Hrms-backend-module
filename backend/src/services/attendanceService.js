@@ -50,9 +50,9 @@ class CsvService {
           const attendanceRecord = await this.validateAndTransformRecord(record, i + 2);
 
           // --- Calculate timeSpent ---
-          if (attendanceRecord.checkin && attendanceRecord.checkout) {
-            const checkinTime = new Date(`1970-01-01T${attendanceRecord.checkin}Z`);
-            const checkoutTime = new Date(`1970-01-01T${attendanceRecord.checkout}Z`);
+          if (attendanceRecord.checkIn && attendanceRecord.checkOut) {
+            const checkinTime = new Date(`1970-01-01T${attendanceRecord.checkIn}Z`);
+            const checkoutTime = new Date(`1970-01-01T${attendanceRecord.checkOut}Z`);
             const diffMs = checkoutTime - checkinTime;
 
             if (diffMs < 0) {

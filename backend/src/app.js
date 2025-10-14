@@ -6,11 +6,14 @@ const employeeRoutes = require("./routes/employeeRoutes");
 const departmentRoutes = require('./routes/departmentRoutes');
 const authRoutes = require('./routes/authRoute');
 const roleRoutes = require("./routes/roleRoutes");
-const leaveRoute = require("./routes/leaveRotes");
+const leaveRoute = require("./routes/leaveRoutes");
 const setupSwagger = require("./swagger");
 const workflowRoute = require('./routes/workflowRouter');
+const managerRoutes = require('./routes/managerRoutes.js');
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const hrRoutes = require('./routes/hrRoutes.js');
+const broadcastRoutes = require('./routes/broadcastRoutes.js');
 const adminRoutes = require("./routes/admin/adminRoutes");
 const app = express();
 const cors = require('cors');
@@ -25,10 +28,10 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 //app.use('/api', routes);
-app.use(authenticate)
+
 // Admin-only routes
 app.use("/api/admin", adminRoutes);
-
+//app.use(authenticate);
 app.use("/api/auth", authRoutes);
 //app.use("/api/admin", adminRoutes);
 app.use("/api/roles", roleRoutes);
@@ -50,8 +53,16 @@ app.use('/api/workflow', workflowRoute);
 app.use('/api/attendance', attendanceRoutes);
 
 
+//manager
+app.use('/api/manager', managerRoutes);
 
 
+//Broadcasts
+app.use('/api/broadcast', broadcastRoutes);
+
+
+//HR ROUTES
+app.use('/api/hr', hrRoutes);
 
 
 

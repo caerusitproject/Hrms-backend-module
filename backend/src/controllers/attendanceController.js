@@ -29,7 +29,7 @@ module.exports = { addAttendance, getAttendanceForEmployee };*/
 
 const fs = require('fs');
 const path = require('path');
-const CsvService = require('../services/csvService');
+const CsvService = require('../services/attendanceService');
 
 async function uploadCsv(req, res) {
   try {

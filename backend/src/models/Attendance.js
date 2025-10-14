@@ -8,6 +8,7 @@ const Attendance = sequelize.define('Attendance', {
   date: { type: DataTypes.DATEONLY, allowNull: false },
   checkIn: { type: DataTypes.TIME },
   checkOut: { type: DataTypes.TIME },
+  timeSpent: { type: DataTypes.TIME},
   status: { type: DataTypes.STRING, defaultValue: 'Present' }
 }, {
   tableName: 'attendance',

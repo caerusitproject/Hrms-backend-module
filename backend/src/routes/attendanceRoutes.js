@@ -11,6 +11,6 @@ router.post('/upload/csv', upload.single('csvfile'), AttendanceController.upload
 router.get('/records', AttendanceController.getAllAttendance);
 
 // Get attendance records by employee ID
-router.get('/records/:empid', AttendanceController.getAttendanceByEmployee);
+router.get('/record/:empCode', AttendanceController.getAttendanceByEmployee);
 
 module.exports = router;
