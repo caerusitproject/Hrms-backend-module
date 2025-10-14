@@ -9,6 +9,9 @@ router.post("/register", authController.register);
 // Login
 router.post("/login", authController.login);
 
+//employee
+router.post("/emplogin", authController.login);
+
 router.post("/refresh", authController.refresh);
 
 module.exports = router;

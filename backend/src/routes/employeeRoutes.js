@@ -4,17 +4,19 @@ const ctrl = require("../controllers/employeeController");
 //const upload = require("../middleware/UploadEmployeeProfileImage");
 const { authenticate, authorizeRoles } = require("../middleware/authMiddleWare");
 
+router.post("/login", ctrl.loginEmployee);
 
+router.post("/create", authenticate, authorizeRoles("HR", "MANAGER","ADMIN"), ctrl.createEmployee);
+router.get("/all", authenticate, authorizeRoles("HR", "MANAGER", "ADMIN"), ctrl.getAllEmployees);
 
-router.post("/create", authenticate, authorizeRoles("HR","MANAGER"),ctrl.createEmployee);
-router.get("/:id", authenticate, authorizeRoles("USER"),ctrl.getEmployeeById);
-router.put("/edit/:id",authenticate, authorizeRoles("USER"), ctrl.updateEmployee);
-router.get("/all",authenticate, authorizeRoles("HR","MANAGER"),ctrl.getAllEmployees);
-router.get('/managers', authenticate, authorizeRoles("HR","ADMIN"), ctrl.getAllManagers);
+router.get('/managers', authenticate, authorizeRoles("HR", "ADMIN"), ctrl.getAllManagers);
 // Get manager by ID
-router.get('/managers/:id', authenticate, authorizeRoles("HR","ADMIN"), ctrl.getManagersById);
-router.get("/manager/:managerId", authenticate, authorizeRoles("HR","ADMIN"), ctrl.getSubordinates);
-router.patch("/assign-manager", authenticate, authorizeRoles("ADMIN"),ctrl.assignManager);
+router.get('/managers/:id', authenticate, authorizeRoles("HR", "ADMIN"), ctrl.getManagersById);
+router.get("/manager/:managerId", authenticate, authorizeRoles("HR", "ADMIN"), ctrl.getSubordinates);
+router.patch("/assign-manager", authenticate, authorizeRoles("ADMIN"), ctrl.assignManager);
+
+router.get("/:id", authenticate, authorizeRoles("USER"), ctrl.getEmployeeById);
+router.put("/edit/:id", authenticate, authorizeRoles("USER"), ctrl.updateEmployee);
 
 //Workflow action endpoint
 /*router.post("/", ctrl.createOffer);
