@@ -219,24 +219,46 @@ class EmployeeService {
   static async getAllManagers() {
 
     try {
-      const managers = await Employee.findAll({
+      /*const managers = await Employee.findAll({
         attributes: [
           [Sequelize.fn('DISTINCT', Sequelize.col('manager.id')), 'managerId'],
           [Sequelize.col('manager.name'), 'managerName'],
-          [db.Sequelize.col('manager.email'), 'managerEmail']
+          [Sequelize.col('manager.email'), 'managerEmail']
         ],
         include: [
           {
+             model: Role,
+             as: 'roles',
+             where: { role: 'MANAGER' },
+             through: { attributes: [] },
+           },
+          {
             model: Employee,
             as: 'manager', // use alias defined in Employee model
-            attributes: [],
-            required: true,
+            attributes: ['id','name','email'],
+            required: false,
             where: {
-              managerId: { [Sequelize.Op.ne]: null }
+              managerId: { [Sequelize.Op.eq]: null }
             }
-          }
+          },
+          
         ],
-        raw: true
+        raw: false
+      });*/
+      const managers = await Employee.findAll({
+        include: [
+          {
+            model: Role,
+            as: 'roles',
+            where: { role: 'MANAGER' },
+            through: { attributes: [] }, // hide join table
+            attributes: ['role'],
+          },
+        ],
+        where: {
+          managerId: null,
+        },
+        attributes: ['id', 'name', 'email'],
       });
 
 
@@ -287,16 +309,17 @@ class EmployeeService {
       const employee = await Employee.findOne({
         where: { id: employeeId },
         attributes: ['id', 'email'],
-        include: [
-          {
-            model: Role,
-            as: 'roles',
-            through: { attributes: [] }, // hides join table
-            attributes: ['id', 'name', 'role']
-          }
-        ]
+       include: [
+        {
+          model: Role,
+          as: 'roles',
+          through: { attributes: [] }, // hides join table
+          attributes: ['id', 'name','role']
+        }
+      ]
       });
-
+      //const roles = await Role.findOne({where: {Id: employeeId}});
+      //employee.roles = roles;
       if (!employee) {
         return null;
       }
