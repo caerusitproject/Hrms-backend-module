@@ -39,8 +39,8 @@ dbInfo.RefreshToken.belongsTo(dbInfo.User, { foreignKey: "userId", as: "user" })
 dbInfo.Leave.belongsTo(dbInfo.Employee, { as: "employee", foreignKey: "eId" });
 dbInfo.Leave.belongsTo(dbInfo.Employee, { as: "manager", foreignKey: "managerId" });
 
-
-
+//dbInfo.Employee.belongsTo(User, { foreignKey: 'id', targetKey: 'id', as: 'user' })
+//dbInfo.User.belongsTo(Role, { foreignKey: 'roleId', as: 'role' });
 
 
 // ✅ Pass sequelize reference into models (for class-based models)
@@ -51,10 +51,10 @@ Object.values(dbInfo).forEach(model => {
 });
 
 // ✅ Sync models
-/*sequelize
+sequelize
   .sync({ alter: false })
   .then(() => console.log("✅ All models synced successfully"))
-  .catch((err) => console.error("❌ Model sync failed:", err));*/
+  .catch((err) => console.error("❌ Model sync failed:", err));
 
 dbInfo.sequelize = sequelize;
 dbInfo.Sequelize = Sequelize;

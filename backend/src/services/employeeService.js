@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const EmployeeRole = db.EmployeeRole;
 const Department = db.Department;
 const Role = db.Role;
+const { Op } = require('sequelize');
 
 
 class EmployeeService {
@@ -17,8 +18,12 @@ class EmployeeService {
     if (!payload.joining_date) {
       payload.joining_date = new Date();
     }
+    // const hashedPassword = await bcrypt.hash(payload.password, 10);
+    // payload.password = hashedPassword;
+     if (payload.password) {
     const hashedPassword = await bcrypt.hash(payload.password, 10);
     payload.password = hashedPassword;
+  }
 
     const roleIds = payload.roleIds;
     //if(!payload.departmentId){
@@ -118,12 +123,25 @@ class EmployeeService {
 
 
 
+  // static async getSubordinates(managerId) {
+  //   return await Employee.findAll({
+  //     where: { managerId },
+  //     include: [{ model: Employee, as: "manager", attributes: ["id", "firstName", "lastName"] }],
+  //   });
+  // }
+
   static async getSubordinates(managerId) {
-    return await Employee.findAll({
-      where: { managerId },
-      include: [{ model: Employee, as: "manager", attributes: ["id", "firstName", "lastName"] }],
-    });
-  }
+  return await Employee.findAll({
+    where: { managerId },
+    include: [
+      {
+        model: Employee,
+        as: "manager", // This matches the alias in the association
+        attributes: ["id", "name"], // use correct field names from your model
+      },
+    ],
+  });
+}
 
   static async assignManager(employeeId, managerId) {
     const employee = await Employee.findByPk(employeeId);
@@ -190,13 +208,13 @@ class EmployeeService {
             model: Department,
             as: 'department',
             attributes: ['id', 'departmentName']
-          },
-          {
-            model: Role,
-            as: 'roles',
-            through: { attributes: [] },
-            attributes: ['id', 'role']
           }
+          // {
+          //   model: Role,
+          //   as: 'roles',
+          //   through: { attributes: [] },
+          //   attributes: ['id', 'role']
+          // }
         ],
         attributes: ['id', 'name', 'email']
       });
@@ -215,16 +233,16 @@ class EmployeeService {
       const manager = await Employee.findOne({
         where: { id: managerId },
         include: [
-          {
-            model: Role,
-            as: 'roles',
-            where: { name: 'Manager' },
-            through: { attributes: [] },
-          },
+          // {
+          //   model: Role,
+          //   as: 'roles',
+          //   where: { name: 'Manager' },
+          //   through: { attributes: [] },
+          // },
           {
             model: Department,
             as: 'department',
-            attributes: ['id', 'name'],
+            attributes: ['id', 'departmentName'],
           }
         ],
       });

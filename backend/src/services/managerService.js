@@ -8,7 +8,7 @@ const { Op } = require('sequelize');
 
 
 
-const getTeam = async (managerId) => Employee.findAll({ where: { managerId } });
+const getTeam = async (managerId) => Employee.findAll({ where: { managerId: managerId } });
 
 const getEmployeeProfile = async (id) => Employee.findByPk(id);
 

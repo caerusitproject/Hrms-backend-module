@@ -12,7 +12,7 @@ router.get("/all", authenticate, authorizeRoles("HR", "MANAGER", "ADMIN"), ctrl.
 router.get('/managers', authenticate, authorizeRoles("HR", "ADMIN"), ctrl.getAllManagers);
 // Get manager by ID
 router.get('/manager/:id', authenticate, authorizeRoles("HR", "ADMIN"), ctrl.getManagersById);
-router.get("/manager/:managerId", authenticate, authorizeRoles("HR", "ADMIN"), ctrl.getSubordinates);
+router.get("/managerSub/:id", authenticate, authorizeRoles("HR", "ADMIN"), ctrl.getSubordinates);
 router.patch("/assign-manager", authenticate, authorizeRoles("ADMIN"), ctrl.assignManager);
 
 router.get("/:id", authenticate, authorizeRoles("HR","USER"), ctrl.getEmployeeById);
