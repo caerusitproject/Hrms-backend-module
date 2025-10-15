@@ -40,4 +40,14 @@ const Employee = sequelize.define('employee', {
 });
 
 
+Employee.belongsTo(Employee, {
+    as: 'manager',
+    foreignKey: 'managerId'
+  });
+
+  Employee.hasMany(Employee, {
+    as: 'subordinates',
+    foreignKey: 'managerId'
+  });
+
 module.exports = Employee;

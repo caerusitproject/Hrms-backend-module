@@ -4,7 +4,7 @@ const bcrypt = require("bcryptjs");
 const EmployeeRole = db.EmployeeRole;
 const Department = db.Department;
 const Role = db.Role;
-const { Op } = require('sequelize');
+const { Sequelize } = require("sequelize");;
 
 
 class EmployeeService {
@@ -26,17 +26,25 @@ class EmployeeService {
   }
 
     const roleIds = payload.roleIds;
-    //if(!payload.departmentId){
-    //  return 
-    //}
-
     const employee = await Employee.create(payload);
-
     if (roleIds) {
-
       await EmployeeRole.create({ employeeId: employee.id, roleId: roleIds });
-
     }
+    //// ✅ Send Kafka message for email notification
+    const message = {
+      type: 'EMPLOYEE_REGISTRATION',
+      to: employee.email,
+      subject: 'Welcome to HRMS!',
+      template: 'employee_welcome',
+      payload: {
+        name: employee.name,
+        department: employee.departmentId,
+      },
+    };
+
+    await sendKafkaMessage('NOTIFICATION_TOPIC', message);
+    console.log('✅ Kafka event published for employee registration');
+
 
     return employee;
   }
@@ -131,17 +139,40 @@ class EmployeeService {
   // }
 
   static async getSubordinates(managerId) {
-  return await Employee.findAll({
-    where: { managerId },
-    include: [
-      {
-        model: Employee,
-        as: "manager", // This matches the alias in the association
-        attributes: ["id", "name"], // use correct field names from your model
-      },
-    ],
-  });
-}
+    /*return await Employee.findAll({
+      where: { managerId },
+      include: [{ model: Employee, as: "manager", attributes: ["id", "name"] }],
+    });*/
+
+    try {
+      // Validate input
+      if (!managerId) {
+        throw new Error('Manager ID is required');
+      }
+
+      // Fetch manager with subordinates
+      const manager = await Employee.findOne({
+        where: { id: managerId },
+        include: [
+          {
+            model: Employee,
+            as: 'subordinates',
+            attributes: ['id', 'name', 'email'],
+          },
+        ],
+        attributes: ['id', 'name', 'email'],
+      });
+
+      if (!manager) {
+        throw new Error('Manager not found');
+      }
+
+      return manager;
+    } catch (error) {
+      console.error('❌ Error fetching manager with employees:', error.message);
+      throw error;
+    }
+  }
 
   static async assignManager(employeeId, managerId) {
     const employee = await Employee.findByPk(employeeId);
@@ -188,36 +219,27 @@ class EmployeeService {
   static async getAllManagers() {
 
     try {
-      // Find all distinct managerIds that appear in the employee table
-      const managerIds = await Employee.findAll({
-        attributes: ['managerId'],
-        where: {
-          managerId: { [Op.ne]: null } // Exclude nulls
-        },
-        group: ['managerId'],
+      const managers = await Employee.findAll({
+        attributes: [
+          [Sequelize.fn('DISTINCT', Sequelize.col('manager.id')), 'managerId'],
+          [Sequelize.col('manager.name'), 'managerName'],
+          [db.Sequelize.col('manager.email'), 'managerEmail']
+        ],
+        include: [
+          {
+            model: Employee,
+            as: 'manager', // use alias defined in Employee model
+            attributes: [],
+            required: true,
+            where: {
+              managerId: { [Sequelize.Op.ne]: null }
+            }
+          }
+        ],
         raw: true
       });
 
-      const ids = managerIds.map(m => m.managerId);
 
-      // Now find all employees whose id is in that manager list
-      const managers = await Employee.findAll({
-        where: { id: ids },
-        include: [
-          {
-            model: Department,
-            as: 'department',
-            attributes: ['id', 'departmentName']
-          }
-          // {
-          //   model: Role,
-          //   as: 'roles',
-          //   through: { attributes: [] },
-          //   attributes: ['id', 'role']
-          // }
-        ],
-        attributes: ['id', 'name', 'email']
-      });
 
       return managers;
     } catch (error) {
@@ -233,12 +255,12 @@ class EmployeeService {
       const manager = await Employee.findOne({
         where: { id: managerId },
         include: [
-          // {
-          //   model: Role,
-          //   as: 'roles',
-          //   where: { name: 'Manager' },
-          //   through: { attributes: [] },
-          // },
+          /* {
+             model: Role,
+             as: 'roles',
+             where: { name: 'Manager' },
+             through: { attributes: [] },
+           },*/
           {
             model: Department,
             as: 'department',
@@ -282,6 +304,33 @@ class EmployeeService {
       return employee;
     } catch (error) {
       console.error('Error fetching employee details by ID:', error);
+      throw error;
+    }
+  };
+
+
+  static async getAllManagersWithEmployees() {
+    try {
+      // Fetch all employees who have at least one subordinate
+      console.log("employee-manager-list");
+      const managers = await Employee.findAll({
+        include: [
+          {
+            model: Employee,
+            as: "subordinates",
+            attributes: ["id", "name", "email"],
+            where: {
+              managerId: { [Sequelize.Op.ne]: null } // Exclude those with no managerId
+            },
+            required: true // Only include employees who are managers
+          }
+        ],
+        attributes: ["id", "name", "email"]
+      });
+
+      return managers;
+    } catch (error) {
+      console.error("❌ Error fetching managers with employees:", error);
       throw error;
     }
   };
