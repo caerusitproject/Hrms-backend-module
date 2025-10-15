@@ -6,12 +6,14 @@ const employeeRoutes = require("./routes/employeeRoutes");
 const departmentRoutes = require('./routes/departmentRoutes');
 const authRoutes = require('./routes/authRoute');
 const roleRoutes = require("./routes/roleRoutes");
-const leaveRoute = require("./routes/leaveRotes");
+const leaveRoute = require("./routes/leaveRoutes");
 const setupSwagger = require("./swagger");
 const workflowRoute = require('./routes/workflowRouter');
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const adminRoutes = require("./routes/admin/adminRoutes");
+const managerRoutes = require("./routes/managerRoutes");
+const broadcastRoutes = require("./routes/broadcastRoutes");
 const app = express();
 const cors = require('cors');
 const path = require('path')
@@ -51,6 +53,13 @@ app.use('/api/workflow', workflowRoute);
 
 //attendance
 app.use('/api/attendance', attendanceRoutes);
+
+//manager routes
+app.use('/api/manager', managerRoutes);
+
+//Broadcast routes
+app.use('/api/broadcast', broadcastRoutes);
+
 
 async function start() {
   try {

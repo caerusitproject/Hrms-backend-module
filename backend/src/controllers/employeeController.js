@@ -119,7 +119,7 @@ exports.getEmployee = async (req, res) => {
 exports.getSubordinates = async (req, res) => {
   console.log(req.params);
   try {
-    const { managerId } = req.params;
+    const  managerId = req.params.id;
     const employees = await EmployeeService.getSubordinates(managerId);
     res.status(200).json(employees);
   } catch (err) {
@@ -140,7 +140,7 @@ exports.assignManager = async (req, res) => {
 //get manager
 exports.getManagersById = async (req, res) => {
   try {
-    const managers = await EmployeeService.getManagerById(req.id);
+    const managers = await EmployeeService.getManagerById(req.params.id);
     res.json(managers);
   } catch (err) {
     res.status(500).json({ error: err.message });

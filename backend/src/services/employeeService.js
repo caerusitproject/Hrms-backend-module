@@ -18,8 +18,12 @@ class EmployeeService {
     if (!payload.joining_date) {
       payload.joining_date = new Date();
     }
+    // const hashedPassword = await bcrypt.hash(payload.password, 10);
+    // payload.password = hashedPassword;
+     if (payload.password) {
     const hashedPassword = await bcrypt.hash(payload.password, 10);
     payload.password = hashedPassword;
+  }
 
     const roleIds = payload.roleIds;
     const employee = await Employee.create(payload);
@@ -27,7 +31,7 @@ class EmployeeService {
       await EmployeeRole.create({ employeeId: employee.id, roleId: roleIds });
     }
     //// ✅ Send Kafka message for email notification
-    const message = {
+   /* const message = {
       type: 'EMPLOYEE_REGISTRATION',
       to: employee.email,
       subject: 'Welcome to HRMS!',
@@ -39,7 +43,7 @@ class EmployeeService {
     };
 
     await sendKafkaMessage('NOTIFICATION_TOPIC', message);
-    console.log('✅ Kafka event published for employee registration');
+    console.log('✅ Kafka event published for employee registration');*/
 
 
     return employee;
@@ -126,6 +130,13 @@ class EmployeeService {
   }*/
 
 
+
+  // static async getSubordinates(managerId) {
+  //   return await Employee.findAll({
+  //     where: { managerId },
+  //     include: [{ model: Employee, as: "manager", attributes: ["id", "firstName", "lastName"] }],
+  //   });
+  // }
 
   static async getSubordinates(managerId) {
     /*return await Employee.findAll({

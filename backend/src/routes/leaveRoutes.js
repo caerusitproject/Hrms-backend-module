@@ -7,6 +7,8 @@ const authMiddleware = require("../middleware/authMiddleWare");
 router.post("/apply", leaveController.applyLeave);
 
 // Manager approves/rejects leave
-router.post("/manage", leaveController.manageLeave);
-
+//router.post("/manage",  leaveController.manageLeave);
+//tanmay's manage leave module
+router.put("/approve/:id", authMiddleware.authenticate, leaveController.approveLeave);//to be reviewed later
+router.put("/reject/:id", authMiddleware.authenticate, leaveController.rejectLeave);
 module.exports = router;

@@ -58,10 +58,10 @@ Object.values(dbInfo).forEach(model => {
 });
 
 // ✅ Sync models
-/*sequelize
+sequelize
   .sync({ alter: false })
   .then(() => console.log("✅ All models synced successfully"))
-  .catch((err) => console.error("❌ Model sync failed:", err));*/
+  .catch((err) => console.error("❌ Model sync failed:", err));
 
 dbInfo.sequelize = sequelize;
 dbInfo.Sequelize = Sequelize;
