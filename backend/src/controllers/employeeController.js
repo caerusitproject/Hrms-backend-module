@@ -19,15 +19,6 @@ exports.registerEmployee = async (req, res) => {
 };
 
 
-/*const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const { accessToken , refreshToken, userData } = await authService.loginEmployee(email, password);
-    res.json({accessToken, refreshToken, userData});
-  } catch (err) {
-    res.status(401).json({ error: err.message });
-  }
-};*/
 
 exports.createEmployee = async (req, res) => {
   try {
@@ -114,9 +105,6 @@ exports.getAllEmployees = async (req, res) => {
 };
 
 
-
-
-
 exports.getEmployee = async (req, res) => {
   try {
     const emp = await Employee.findById(req.params.id);
@@ -129,6 +117,7 @@ exports.getEmployee = async (req, res) => {
 
 // Get subordinates for a manager
 exports.getSubordinates = async (req, res) => {
+  console.log(req.params);
   try {
     const { managerId } = req.params;
     const employees = await EmployeeService.getSubordinates(managerId);
@@ -205,7 +194,7 @@ exports.getAllManagers = async (req, res) => {
   }
 };
 
-exports.getManagerById = async (req, res) => {
+/*exports.getManagerById = async (req, res) => {
   try {
     const { id } = req.params;
     const manager = await EmployeeService.getManagerById(id);
@@ -217,6 +206,24 @@ exports.getManagerById = async (req, res) => {
     res.status(404).json({
       success: false,
       message: error.message,
+    });
+  }
+};*/
+
+
+//get all employee by manager
+exports.getAllManagersWithEmployees = async (req, res) => {
+  try {
+    const managers = await EmployeeService.getAllManagersWithEmployees();
+    res.status(200).json({
+      success: true,
+      data: managers
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching managers with employees",
+      error: error.message
     });
   }
 };
