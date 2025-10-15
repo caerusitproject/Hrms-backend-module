@@ -44,17 +44,17 @@ dbInfo.Leave.belongsTo(dbInfo.Employee, { as: "manager", foreignKey: "managerId"
 
 
 // ✅ Pass sequelize reference into models (for class-based models)
-Object.values(dbInfo).forEach(model => {
-  if (model && model.init && !model.sequelize) {
-    model.sequelize = sequelize;
-  }
-});
+// Object.values(dbInfo).forEach(model => {
+//   if (model && model.init && !model.sequelize) {
+//     model.sequelize = sequelize;
+//   }
+// });
 
 // ✅ Sync models
-/*sequelize
+sequelize
   .sync({ alter: false })
   .then(() => console.log("✅ All models synced successfully"))
-  .catch((err) => console.error("❌ Model sync failed:", err));*/
+  .catch((err) => console.error("❌ Model sync failed:", err));
 
 dbInfo.sequelize = sequelize;
 dbInfo.Sequelize = Sequelize;
