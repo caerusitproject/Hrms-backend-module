@@ -77,14 +77,14 @@ async function getAllAttendance(req, res) {
 
 async function getAttendanceByEmployee(req, res) {
   try {
-    const { empCode } = req.params;
-    if (!empCode) {
+    const {empCode,month,year}   = req.params;
+    if (!empCode && !month) {
       return res.status(400).json({
         success: false,
-        message: 'Employee Code is required'
+        message: 'Employee Code & Month is required'
       });
-    }
-    const records = await CsvService.getAttendanceByEmployeeId(empCode);
+    }  
+    const records = await CsvService.getAttendanceByEmployeeId(empCode,month,year);
     return res.status(200).json({
       success: true,
       message: `Attendance records for employee ${empCode} retrieved successfully`,
@@ -100,6 +100,8 @@ async function getAttendanceByEmployee(req, res) {
     });
   }
 }
+
+
 
 module.exports = {
   uploadCsv,

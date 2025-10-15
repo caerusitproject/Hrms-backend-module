@@ -31,7 +31,7 @@ class EmployeeService {
       await EmployeeRole.create({ employeeId: employee.id, roleId: roleIds });
     }
     //// ✅ Send Kafka message for email notification
-    const message = {
+   /* const message = {
       type: 'EMPLOYEE_REGISTRATION',
       to: employee.email,
       subject: 'Welcome to HRMS!',
@@ -43,7 +43,7 @@ class EmployeeService {
     };
 
     await sendKafkaMessage('NOTIFICATION_TOPIC', message);
-    console.log('✅ Kafka event published for employee registration');
+    console.log('✅ Kafka event published for employee registration');*/
 
 
     return employee;

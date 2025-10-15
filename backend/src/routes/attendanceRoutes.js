@@ -12,5 +12,7 @@ router.get('/records', authenticate, authorizeRoles('HR', 'ADMIN'), AttendanceCo
 
 // Get attendance records by employee ID
 router.get('/record/:empCode',authenticate, authorizeRoles('HR', 'ADMIN'), AttendanceController.getAttendanceByEmployee);
+//month year wise of an employee code
+router.get('/record/:empCode/:month/:year', AttendanceController.getAttendanceByEmployee);
 
 module.exports = router;

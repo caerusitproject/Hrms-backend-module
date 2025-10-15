@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const Attendance = require('../models/Attendance');
 const Employee = require('../models/Employee');
+const { Op, where, literal } = require('sequelize');
 
 class CsvService {
   /**
@@ -144,11 +145,34 @@ class CsvService {
     });
   }
 
-  static async getAttendanceByEmployeeId(empCode) {
-    return Attendance.findAll({
-      where: { empCode },
-      order: [['date', 'DESC']],
-    });
+  static async getAttendanceByEmployeeId(empCode, month, year) {
+    try {
+      // Default to current year if not provided
+      const selectedYear = year || new Date().getFullYear();
+ 
+      const records = await Attendance.findAll({
+        where: {
+          empCode,
+          [Op.and]: [
+            // PostgreSQL EXTRACT for month and year
+            where(
+              literal(`EXTRACT(MONTH FROM "date"::date)`),
+              month
+            ),
+            where(
+              literal(`EXTRACT(YEAR FROM "date"::date)`),
+              selectedYear
+            ),
+          ],
+        },
+        order: [["date", "DESC"]],
+      });
+ 
+      return records;
+    } catch (error) {
+      console.error("Error fetching attendance:", error);
+      throw error;
+    }
   }
 }
 
