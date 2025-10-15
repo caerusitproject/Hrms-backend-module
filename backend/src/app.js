@@ -20,6 +20,8 @@ const {authenticate} = require("../src/middleware/authMiddleWare");
 
 
 
+
+
 // Swagger
 app.use(cors());
 app.use(bodyParser.json());
