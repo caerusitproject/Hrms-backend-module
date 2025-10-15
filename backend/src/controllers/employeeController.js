@@ -1,4 +1,5 @@
 const EmployeeService = require("../services/employeeService");
+const authService = require("../services/authService");
 
 
 exports.registerEmployee = async (req, res) => {
@@ -17,32 +18,58 @@ exports.registerEmployee = async (req, res) => {
   }
 };
 
-exports.createEmployee = async(req, res) => {
+
+/*const login = async (req, res) => {
   try {
-    
-  const employee = await EmployeeService.createEmployee(req.body);
-  res.status(201).json({ message: "Employee created successfully", employee });
+    const { email, password } = req.body;
+    const { accessToken , refreshToken, userData } = await authService.loginEmployee(email, password);
+    res.json({accessToken, refreshToken, userData});
+  } catch (err) {
+    res.status(401).json({ error: err.message });
+  }
+};*/
+
+exports.createEmployee = async (req, res) => {
+  try {
+
+    const employee = await EmployeeService.createEmployee(req.body);
+    res.status(201).json({ message: "Employee created successfully", employee });
   } catch (err) {
     res.status(500).json({ message: "Error creating employee", error: err.message });
   }
 }
+
+exports.loginEmployee = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const { accessToken, refreshToken, userData } = await authService.loginEmployee(email, password);
+    res.json({ accessToken, refreshToken, userData });
+  } catch (err) {
+    res.status(401).json({ error: err.message });
+  }
+
+
+
+}
+
+
 // Get employees by id
- exports.getEmployeeById = async(req, res) => {
+exports.getEmployeeById = async (req, res) => {
   try {
     const emp = await EmployeeService.getEmployeeById(req.params.id);
     if (!emp) return res.status(404).json({ error: 'Not found' });
     res.json(emp);
   } catch (err) {
     console.error(err);
-     res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 }
 // Get all employees with department info
-exports.findAllEmployee = async(req, res) => {
-  try{
+exports.findAllEmployee = async (req, res) => {
+  try {
     const employees = await EmployeeService.getAllEmployees();
     res.status(200).json(employees);
-  }catch (err) {
+  } catch (err) {
     console.error(err);
     res.status(400).json({ error: err.message });
   }

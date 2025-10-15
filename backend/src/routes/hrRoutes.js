@@ -2,6 +2,7 @@ const express = require('express');
 const { addEmployeeHandler, getDashboard, getAllEmployees, getEmployee, editEmployee, uploadDocumentHandler, getOwnProfileHandler } = require('../controllers/hrController.js');
 const { authenticate, authorizeRoles } = require('../middleware/authMiddleWare.js');
 const { validateId } = require('../middleware/validation.js');
+const ctrl = require("../controllers/employeeController");
 
 const router = express.Router();
 
@@ -37,7 +38,7 @@ const router = express.Router();
  *       200:
  *         description: Created employee
  */
-router.post('/add-employee', authenticate, authorizeRoles('HR'), addEmployeeHandler);
+router.post('/add/employee', authenticate, authorizeRoles('HR'), ctrl.createEmployee);
 
 /**
  * @swagger
@@ -63,7 +64,7 @@ router.get('/dashboard', authenticate, authorizeRoles('HR'), getDashboard);
  *       200:
  *         description: List of employees
  */
-router.get('/all-employees', authenticate, authorizeRoles('HR'), getAllEmployees);
+router.get('/all/employees', authenticate, authorizeRoles('HR'), getAllEmployees);
 
 /**
  * @swagger
@@ -122,7 +123,7 @@ router.get('/employee/:empCode', authenticate, authorizeRoles('HR'), validateId,
  *       200:
  *         description: Updated employee
  */
-router.put('/employee/:empCode', authenticate, authorizeRoles('HR'), validateId, editEmployee);
+//router.put('/employee/edit/:empCode', authenticate, authorizeRoles('HR'), validateId, editEmployee);
 
 /**
  * @swagger

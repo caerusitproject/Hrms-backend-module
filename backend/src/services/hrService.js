@@ -17,7 +17,9 @@ const getAllEmployeesDetails = async () => {
 };
 
 const getUpcomingBroadcasts = async () => {
-  const today = new Date(2025, 9, 14); // October 14, 2025
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // reset time to midnight
+
   return await Broadcast.findAll({
     where: {
       createdAt: {
@@ -27,6 +29,7 @@ const getUpcomingBroadcasts = async () => {
     order: [['createdAt', 'ASC']]
   });
 };
+
 
 const getHrDashboardData = async () => {
   const totalEmployees = await getTotalEmployees();
