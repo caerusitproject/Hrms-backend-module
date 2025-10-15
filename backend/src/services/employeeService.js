@@ -276,16 +276,17 @@ class EmployeeService {
       const employee = await Employee.findOne({
         where: { id: employeeId },
         attributes: ['id', 'email'],
-        include: [
-          {
-            model: Role,
-            as: 'roles',
-            through: { attributes: [] }, // hides join table
-            attributes: ['id', 'name', 'role']
-          }
-        ]
+       include: [
+        {
+          model: Role,
+          as: 'roles',
+          through: { attributes: [] }, // hides join table
+          attributes: ['id', 'name','role']
+        }
+      ]
       });
-
+      //const roles = await Role.findOne({where: {Id: employeeId}});
+      //employee.roles = roles;
       if (!employee) {
         return null;
       }
