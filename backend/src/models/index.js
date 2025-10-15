@@ -39,8 +39,15 @@ dbInfo.RefreshToken.belongsTo(dbInfo.User, { foreignKey: "userId", as: "user" })
 dbInfo.Leave.belongsTo(dbInfo.Employee, { as: "employee", foreignKey: "eId" });
 dbInfo.Leave.belongsTo(dbInfo.Employee, { as: "manager", foreignKey: "managerId" });
 
-//dbInfo.Employee.belongsTo(User, { foreignKey: 'id', targetKey: 'id', as: 'user' })
-//dbInfo.User.belongsTo(Role, { foreignKey: 'roleId', as: 'role' });
+// Many-to-Many with Role
+    dbInfo.Employee.belongsToMany(dbInfo.Role, {
+      through: dbInfo.EmployeeRole,
+      foreignKey: 'employeeId',
+      otherKey: 'roleId',
+      as: 'roles',
+    });
+  
+
 
 
 // ✅ Pass sequelize reference into models (for class-based models)
