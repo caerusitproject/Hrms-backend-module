@@ -50,4 +50,6 @@ Employee.belongsTo(Employee, {
     foreignKey: 'managerId'
   });
 
+  
+
 module.exports = Employee;
