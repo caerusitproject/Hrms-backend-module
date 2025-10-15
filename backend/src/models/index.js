@@ -39,7 +39,14 @@ dbInfo.RefreshToken.belongsTo(dbInfo.User, { foreignKey: "userId", as: "user" })
 dbInfo.Leave.belongsTo(dbInfo.Employee, { as: "employee", foreignKey: "eId" });
 dbInfo.Leave.belongsTo(dbInfo.Employee, { as: "manager", foreignKey: "managerId" });
 
-
+// Many-to-Many with Role
+    dbInfo.Employee.belongsToMany(dbInfo.Role, {
+      through: dbInfo.EmployeeRole,
+      foreignKey: 'employeeId',
+      otherKey: 'roleId',
+      as: 'roles',
+    });
+  
 
 
 
