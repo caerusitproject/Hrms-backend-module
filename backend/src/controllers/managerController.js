@@ -1,7 +1,7 @@
-const { getTeam, getEmployeeProfile, getAttendance, getBroadcasts } = require('../services/managerService.js');
+const { getTeam, getEmployeeProfile, getAttendance, getBroadcasts, getDashboardData } = require('../services/managerService.js');
 
 const getTeamList = async (req, res) => {
-  const team = await getTeam(req.user.id);
+  const team = await getTeam(req.params.id);//-->changed to req.user.id
   res.json(team);
 };
 
@@ -20,4 +20,9 @@ const getDashboardBroadcasts = async (req, res) => {
   res.json(broadcasts);
 };
 
-module.exports = { getTeamList, getEmployeeDetails, getEmployeeAttendance, getDashboardBroadcasts };
+const getDashboard = async (req, res) => {
+  const data = await getDashboardData(req.params.id);//changed from req.user.id
+  res.json(data);
+};
+
+module.exports = { getTeamList, getEmployeeDetails, getEmployeeAttendance, getDashboardBroadcasts,getDashboard };

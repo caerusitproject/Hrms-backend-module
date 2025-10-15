@@ -3,7 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const Attendance = require('../models/Attendance');
 const Employee = require('../models/Employee');
-const { Op, fn, col, where,literal } = require('sequelize');
+const { Op, where, literal } = require('sequelize');
+
 class CsvService {
   /**
    * Parse and import CSV file to database
@@ -50,9 +51,9 @@ class CsvService {
           const attendanceRecord = await this.validateAndTransformRecord(record, i + 2);
 
           // --- Calculate timeSpent ---
-          if (attendanceRecord.checkin && attendanceRecord.checkout) {
-            const checkinTime = new Date(`1970-01-01T${attendanceRecord.checkin}Z`);
-            const checkoutTime = new Date(`1970-01-01T${attendanceRecord.checkout}Z`);
+          if (attendanceRecord.checkIn && attendanceRecord.checkOut) {
+            const checkinTime = new Date(`1970-01-01T${attendanceRecord.checkIn}Z`);
+            const checkoutTime = new Date(`1970-01-01T${attendanceRecord.checkOut}Z`);
             const diffMs = checkoutTime - checkinTime;
 
             if (diffMs < 0) {
@@ -148,7 +149,7 @@ class CsvService {
     try {
       // Default to current year if not provided
       const selectedYear = year || new Date().getFullYear();
-
+ 
       const records = await Attendance.findAll({
         where: {
           empCode,
@@ -166,7 +167,7 @@ class CsvService {
         },
         order: [["date", "DESC"]],
       });
-
+ 
       return records;
     } catch (error) {
       console.error("Error fetching attendance:", error);
