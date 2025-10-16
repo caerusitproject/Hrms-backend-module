@@ -7,7 +7,7 @@ const Role = db.Role;
 const { Sequelize } = require("sequelize");;
 const { sendNotificationEvent } = require('../services/notification/notificationProducer')
 const { startConsumerScheduler } = require('./notification/notificationConsumer')
-
+const { sendEmailNotification } = require('./notification/notificationHandler')
 class EmployeeService {
 
   constructor() {
@@ -15,24 +15,26 @@ class EmployeeService {
   }
 
   //mail-send process
-  async initKafka() {
+  static async initKafka() {
     try {
-      //await connectProducer();
+      await connectProducer();
       //console.log('✅ Kafka Producer connected');
 
       // Start consumer scheduler (runs every 1 hour)
-      await startConsumerScheduler();
-      console.log('🕐 Kafka Consumer Scheduler started');
+     // await startConsumerScheduler();
+     // console.log('🕐 Kafka Consumer Scheduler started');
     } catch (err) {
       console.error('❌ Kafka init failed:', err);
     }
-  }
+  };
   /**
      * Create a new employee
      * @param {Object} payload - employee details
      * @returns {Promise<Object>}
      */
   static async createEmployee(payload) {
+
+    //await this.initKafka();
     // if no joining_date provided, set to today
     if (!payload.joining_date) {
       payload.joining_date = new Date();
@@ -52,7 +54,7 @@ class EmployeeService {
     //// ✅ Send Kafka message for email notification
     const message = {
       type: 'EMPLOYEE_REGISTRATION',
-      to: employee.email,
+      email: employee.email,
       subject: 'Welcome to HRMS!',
       template: 'employee_welcome',
       payload: {
@@ -61,10 +63,12 @@ class EmployeeService {
       },
     };
 
-    await sendNotificationEvent(message);
-    console.log('✅ Kafka event published for employee registration');
+    await sendEmailNotification(message);
+
+    //await sendNotificationEvent(message);
+    //console.log('✅ Kafka event published for employee registration');
     
-    await startConsumerScheduler();
+    //await startConsumerScheduler();
 
     return employee;
   }
