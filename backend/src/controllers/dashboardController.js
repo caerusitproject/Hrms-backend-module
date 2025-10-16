@@ -1,11 +1,32 @@
-exports.hrDashboard = (req, res) => {
-  res.json({ message: "Welcome to HR Dashboard" });
+
+const dashboardService = require('../services/dashboardService.js');
+
+const hrDashboard = async (req, res) => {
+  try {
+    const dashboardData = await dashboardService.getHrDashboardData();
+    res.status(200).json(dashboardData);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch HR dashboard data' });
+  }
 };
 
-exports.managerDashboard = (req, res) => {
-  res.json({ message: "Welcome to Manager Dashboard" });
+
+const managerDashboard = async (req, res) => {
+  try {
+    const data = await dashboardService.getManagerDashboardData(req.params.id);
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch manager dashboard data' });
+  }
 };
 
-exports.employeeDashboard = (req, res) => {
-  res.json({ message: "Welcome to Employee Dashboard" });
+const employeeDashboard = async (req, res) => {
+  try {
+    const data = await dashboardService.getEmployeeDashboardData(req.params.id);
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch employee dashboard data' });
+  }
 };
+
+module.exports = { hrDashboard, managerDashboard, employeeDashboard };

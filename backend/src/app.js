@@ -14,6 +14,7 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const adminRoutes = require("./routes/admin/adminRoutes");
 const managerRoutes = require("./routes/managerRoutes");
 const broadcastRoutes = require("./routes/broadcastRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
 const app = express();
 const cors = require('cors');
 const path = require('path')
@@ -59,6 +60,9 @@ app.use('/api/manager', managerRoutes);
 
 //Broadcast routes
 app.use('/api/broadcast', broadcastRoutes);
+
+//Dashboard routes
+app.use('/api/dashboard', dashboardRoutes);
 
 
 async function start() {

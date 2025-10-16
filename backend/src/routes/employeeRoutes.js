@@ -18,7 +18,7 @@ router.patch("/assign/manager", authenticate, authorizeRoles("ADMIN","HR"), ctrl
 router.get("/:id", authenticate, authorizeRoles("HR","USER","MANAGER", "ADMIN"), ctrl.getEmployeeById);
 router.put("/edit/:id", authenticate, authorizeRoles("HR","USER"), ctrl.updateEmployee);
 
-router.get('/managers/subordinate',authenticate, authorizeRoles("HR","ADMIN"),ctrl.getAllManagersWithEmployees);
+router.get('/managers/subordinate',authenticate, authorizeRoles("HR","ADMIN"),ctrl.getAllManagersWithEmployees);//will go into hr routes
 
 //Workflow action endpoint
 /*router.post("/", ctrl.createOffer);
