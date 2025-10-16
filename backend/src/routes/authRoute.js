@@ -10,7 +10,7 @@ router.post("/register", authController.register);
 router.post("/login", authController.login);
 
 //employee
-router.post("/emplogin", authController.login);
+//router.post("/emplogin", authController.login);
 
 router.post("/refresh", authController.refresh);
 
