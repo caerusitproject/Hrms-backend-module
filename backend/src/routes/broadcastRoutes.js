@@ -1,5 +1,5 @@
 const express = require('express');
-const { create, getAll, update } = require('../controllers/broadcastController.js');
+const { create, getAllOnly, getAll, update } = require('../controllers/broadcastController.js');
 const { authenticate, authorizeRoles } = require('../middleware/authMiddleWare.js');
 const { validateId } = require('../middleware/validation.js');
 
@@ -40,7 +40,9 @@ router.post('/create', authenticate, authorizeRoles('HR'), create);
  *       200:
  *         description: List of broadcasts
  */
-router.get('/all', authenticate, getAll);
+router.get('/all', authenticate, getAllOnly);  
+router.get('/all/:filter', authenticate, getAll);
+
 
 /**
  * @swagger
