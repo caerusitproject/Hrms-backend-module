@@ -5,9 +5,28 @@ const EmployeeRole = db.EmployeeRole;
 const Department = db.Department;
 const Role = db.Role;
 const { Sequelize } = require("sequelize");;
-
+const { sendNotificationEvent } = require('../services/notification/notificationProducer')
+const { startConsumerScheduler } = require('./notification/notificationConsumer')
 
 class EmployeeService {
+
+  constructor() {
+    this.initKafka();
+  }
+
+  //mail-send process
+  async initKafka() {
+    try {
+      //await connectProducer();
+      //console.log('✅ Kafka Producer connected');
+
+      // Start consumer scheduler (runs every 1 hour)
+      await startConsumerScheduler();
+      console.log('🕐 Kafka Consumer Scheduler started');
+    } catch (err) {
+      console.error('❌ Kafka init failed:', err);
+    }
+  }
   /**
      * Create a new employee
      * @param {Object} payload - employee details
@@ -25,13 +44,13 @@ class EmployeeService {
     payload.password = hashedPassword;
   }
 
-    const roleIds = payload.roleIds;
-    const employee = await Employee.create(payload);
-    if (roleIds) {
-      await EmployeeRole.create({ employeeId: employee.id, roleId: roleIds });
-    }
+     const roleIds = payload.roleIds;
+     const employee = await Employee.create(payload);
+      if (roleIds) {
+        await EmployeeRole.create({ employeeId: employee.id, roleId: roleIds });
+      }
     //// ✅ Send Kafka message for email notification
-   /* const message = {
+    const message = {
       type: 'EMPLOYEE_REGISTRATION',
       to: employee.email,
       subject: 'Welcome to HRMS!',
@@ -42,9 +61,10 @@ class EmployeeService {
       },
     };
 
-    await sendKafkaMessage('NOTIFICATION_TOPIC', message);
-    console.log('✅ Kafka event published for employee registration');*/
-
+    await sendNotificationEvent(message);
+    console.log('✅ Kafka event published for employee registration');
+    
+    await startConsumerScheduler();
 
     return employee;
   }
@@ -130,20 +150,7 @@ class EmployeeService {
   }*/
 
 
-
-  // static async getSubordinates(managerId) {
-  //   return await Employee.findAll({
-  //     where: { managerId },
-  //     include: [{ model: Employee, as: "manager", attributes: ["id", "firstName", "lastName"] }],
-  //   });
-  // }
-
   static async getSubordinates(managerId) {
-    /*return await Employee.findAll({
-      where: { managerId },
-      include: [{ model: Employee, as: "manager", attributes: ["id", "name"] }],
-    });*/
-
     try {
       // Validate input
       if (!managerId) {
@@ -183,31 +190,7 @@ class EmployeeService {
 
     employee.managerId = managerId;
     await employee.save();
-
-    // --- Publish event to Kafka ---
-    await producer.connect();
-    await producer.send({
-      topic: "employee-manager-assignment",
-      messages: [
-        {
-          value: JSON.stringify({
-            eventType: "MANAGER_ASSIGNED",
-            manager: {
-              id: manager.id,
-              name: `${manager.firstName} ${manager.lastName}`,
-              email: manager.email,
-            },
-            employee: {
-              id: employee.id,
-              name: `${employee.firstName} ${employee.lastName}`,
-              email: employee.email,
-            },
-            timestamp: new Date(),
-          }),
-        },
-      ],
-    });
-
+        
     console.log("Kafka Event Published: MANAGER_ASSIGNED");
 
     return employee;
@@ -219,32 +202,7 @@ class EmployeeService {
   static async getAllManagers() {
 
     try {
-      /*const managers = await Employee.findAll({
-        attributes: [
-          [Sequelize.fn('DISTINCT', Sequelize.col('manager.id')), 'managerId'],
-          [Sequelize.col('manager.name'), 'managerName'],
-          [Sequelize.col('manager.email'), 'managerEmail']
-        ],
-        include: [
-          {
-             model: Role,
-             as: 'roles',
-             where: { role: 'MANAGER' },
-             through: { attributes: [] },
-           },
-          {
-            model: Employee,
-            as: 'manager', // use alias defined in Employee model
-            attributes: ['id','name','email'],
-            required: false,
-            where: {
-              managerId: { [Sequelize.Op.eq]: null }
-            }
-          },
-          
-        ],
-        raw: false
-      });*/
+      
       const managers = await Employee.findAll({
         include: [
           {
@@ -258,7 +216,7 @@ class EmployeeService {
         where: {
           managerId: null,
         },
-        attributes: ['id', 'name', 'email'],
+        attributes: ['id', 'name', 'email','managerId'],
       });
 
 
