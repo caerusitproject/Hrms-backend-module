@@ -162,6 +162,8 @@ const loginEmployee = async (email, password) => {
     if (!employee) throw new Error("Employee not found");
 
     const isMatch = await bcrypt.compare(password, emp.password);
+
+    if (!isMatch) throw new Error("Invalid email or password");
     let authorities = [];
 
     let rolemap = await EmployeeRole.findOne({ where: { employeeId: emp.id } });
