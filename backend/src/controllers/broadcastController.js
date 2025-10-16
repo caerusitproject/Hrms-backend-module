@@ -1,4 +1,4 @@
-const { createBroadcast, getAllBroadcasts, updateBroadcast } = require('../services/broadcastService.js');
+const { createBroadcast,getAllBroadcastsOnly, getAllBroadcasts, updateBroadcast } = require('../services/broadcastService.js');
 
 const create = async (req, res) => {
   const { title, content } = req.body;
@@ -6,9 +6,22 @@ const create = async (req, res) => {
   res.json(broadcast);
 };
 
+
+const getAllOnly = async (req, res) => {
+  try{
+    const broadcasts = await getAllBroadcastsOnly();
+    res.json(broadcasts);}catch(error){
+      res.status(400).json({ error: error.message });
+    }
+};
+
 const getAll = async (req, res) => {
-  const broadcasts = await getAllBroadcasts();
-  res.json(broadcasts);
+  try{
+    const { filter } = req.params;
+    const broadcasts = await getAllBroadcasts(filter);
+    res.json(broadcasts);}catch(error){
+      res.status(400).json({ error: error.message });
+    }
 };
 
 const update = async (req, res) => {
@@ -17,4 +30,4 @@ const update = async (req, res) => {
   res.json(broadcast);
 };
 
-module.exports = { create, getAll, update };
+module.exports = { create, getAllOnly, getAll, update };
