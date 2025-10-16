@@ -1,6 +1,6 @@
 const express = require('express');
 const controllerAction = require('../controllers/managerController.js');
-//
+const ctrl = require("../controllers/employeeController");
 const auth = require('../middleware/authMiddleWare.js');
 const { validateId } = require('../middleware/validation.js');
 
@@ -12,4 +12,7 @@ router.get('/employee/:id',auth.authenticate, validateId, controllerAction.getEm
 router.get('/attendance/:id',auth.authenticate, validateId, controllerAction.getEmployeeAttendance);
 router.get('/broadcasts',auth.authenticate, controllerAction.getDashboardBroadcasts);
 router.get('/dashboard/:id',auth.authenticate, controllerAction.getDashboard);//:id added
+router.get('/managers', auth.authenticate, auth.authorizeRoles("HR", "ADMIN"), ctrl.getAllManagers);
+router.get('/manager/:id', auth.authenticate, auth.authorizeRoles("HR", "ADMIN"), ctrl.getManagersById);// Get manager by ID
+router.get("/managers/subordinate/:managerId", auth.authenticate, auth.authorizeRoles("HR", "ADMIN"), ctrl.getSubordinates);
 module.exports = router;

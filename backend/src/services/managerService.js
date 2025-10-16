@@ -4,74 +4,70 @@ const Attendance = require('../models/Attendance.js');
 const Broadcast = require('../models/Broadcast.js');
 const { Op } = require('sequelize');
 
+class ManagerService {
+  static async getTeam(managerId) {
+    return Employee.findAll({ where: { managerId } });
+  }
 
+  static async getEmployeeProfile(id) {
+    return Employee.findByPk(id);
+  }
 
+  static async getAttendance(empCode) {
+    return Attendance.findAll({ where: { empCode } });
+  }
 
+  static async handleLeave(id, status) {
+    const leave = await Leave.findByPk(id);
+    if (!leave) throw new Error('Leave not found');
+    leave.status = status.toUpperCase();
+    await leave.save();
+    // const emp = await Employee.findByPk(leave.employeeId);
+    // sendEmail(emp.email, 'Leave Update', `Status: ${status}`);
+    return leave;
+  }
 
-const getTeam = async (managerId) => Employee.findAll({ where: { managerId: managerId } });
+  static async getBroadcasts() {
+    return Broadcast.findAll();
+  }
 
-const getEmployeeProfile = async (id) => Employee.findByPk(id);
+  static async getPendingLeaves(managerId) {
+    return Leave.findAll({
+      where: {
+        status: 'PENDING',
+        managerId
+      }
+    });
+  }
 
-const getAttendance = async (empCode) => Attendance.findAll({ where: { empCode } });
+  static async getTodaysBroadcast() {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
 
-const handleLeave = async (id, status) => {
-  const leave = await Leave.findByPk(id);
-  leave.status = status.toUpperCase();
-  await leave.save();
-  //const emp = await Employee.findByPk(leave.employeeId);
-  //sendEmail(emp.email, 'Leave Update', `Status: ${status}`);
-  return leave;
-};
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
 
-const getBroadcasts = async () => Broadcast.findAll();
-
-
-/*const getPendingLeaves = async (managerId) => {
-  return Leave.findAll({
-    where: { status: 'pending' },
-    include: [{ model: Employee, as: 'manager', where: { id: managerId } }]
-  });
-};*/
-
-const getPendingLeaves = async (managerId) => {
-  return Leave.findAll({
-    where: {
-      status: 'PENDING',
-      managerId: managerId  // directly filter by managerId in the Leaves table
-    }
-  });
-};
-
-
-const getTodaysBroadcast = async () => {
-  const startOfDay = new Date();
-  startOfDay.setHours(0, 0, 0, 0);
-
-  const endOfDay = new Date();
-  endOfDay.setHours(23, 59, 59, 999);
-
-  return await Broadcast.findAll({
-    where: {
-      createdAt: {
-        [Op.between]: [startOfDay, endOfDay],
+    return Broadcast.findAll({
+      where: {
+        createdAt: {
+          [Op.between]: [startOfDay, endOfDay],
+        },
       },
-    },
-    order: [['createdAt', 'DESC']],
-  });
-};
+      order: [['createdAt', 'DESC']],
+    });
+  }
 
-const getTeamCount = async (managerId) => {
-  return Employee.count({ where: { managerId } });
-};
+  static async getTeamCount(managerId) {
+    return Employee.count({ where: { managerId } });
+  }
 
-const getDashboardData = async (managerId) => {
-  const totalTeamMembers = await getTeamCount(managerId);
-  const teamMembers = await getTeam(managerId);
-  const pendingLeaves = await getPendingLeaves(managerId);
-  const recentBroadcast = await getTodaysBroadcast();
-  return { totalTeamMembers, teamMembers, pendingLeaves, recentBroadcast };
-};
+  static async getDashboardData(managerId) {
+    const totalTeamMembers = await this.getTeamCount(managerId);
+    const teamMembers = await this.getTeam(managerId);
+    const pendingLeaves = await this.getPendingLeaves(managerId);
+    const recentBroadcast = await this.getTodaysBroadcast();
+    return { totalTeamMembers, teamMembers, pendingLeaves, recentBroadcast };
+  }
+}
 
-
-
-module.exports = { getTeam, getEmployeeProfile, getAttendance, handleLeave, getBroadcasts, getDashboardData };
+module.exports = ManagerService;
