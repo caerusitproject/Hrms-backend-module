@@ -13,7 +13,7 @@ const hrDashboard = async (req, res) => {
 
 const managerDashboard = async (req, res) => {
   try {
-    const data = await dashboardService.getManagerDashboardData(req.params.id);
+    const data = await dashboardService.getManagerDashboardData(req.user.id);
     res.status(200).json(data);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch manager dashboard data' });
@@ -22,7 +22,7 @@ const managerDashboard = async (req, res) => {
 
 const employeeDashboard = async (req, res) => {
   try {
-    const data = await dashboardService.getEmployeeDashboardData(req.params.id);
+    const data = await dashboardService.getEmployeeDashboardData(req.user.id);
     res.status(200).json(data);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch employee dashboard data' });
