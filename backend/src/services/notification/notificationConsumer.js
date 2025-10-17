@@ -3,8 +3,8 @@ const { Kafka } = require('kafkajs');
 const { sendEmail } = require('./notificationHandler');
 
 const kafka = new Kafka({
-  clientId: 'notification-service',
-  brokers: [process.env.KAFKA_BROKERS || 'localhost:9092'],
+  clientId: 'hrms-service',
+  brokers: [process.env.KAFKA_BROKER], // Update for your Docker setup
 });
 
 const consumer = kafka.consumer({ groupId: 'notification-group' });
@@ -17,7 +17,7 @@ let messageBuffer = [];
  */
 const initializeConsumer = async () => {
   await consumer.connect();
-  await consumer.subscribe({ topic: 'hrms_notifications', fromBeginning: false });
+  await consumer.subscribe({ topic: 'NOTIFICATION_EVENT', fromBeginning: false });
 
   console.log('✅ Kafka Consumer initialized (scheduled mode)');
 };
@@ -79,7 +79,7 @@ const startScheduler = () => {
   runCycle();
 
   // Schedule subsequent runs every 1 hour
-  setInterval(runCycle, 60 * 60 * 1000);
+  setInterval(runCycle, 60 * 1000);
 };
 
 /**
