@@ -65,6 +65,8 @@ app.use('/api/broadcast', broadcastRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
 
+
+
 async function start() {
   try {
     await sequelize.authenticate();

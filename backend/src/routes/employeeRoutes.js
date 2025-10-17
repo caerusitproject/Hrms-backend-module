@@ -8,7 +8,7 @@ router.post("/login", ctrl.loginEmployee);
 
 router.post("/create", authenticate, authorizeRoles("HR", "MANAGER","ADMIN"), ctrl.createEmployee);
 router.get("/all", authenticate, authorizeRoles("HR", "MANAGER", "ADMIN"), ctrl.getAllEmployees);
-
+router.get("/list", authenticate, authorizeRoles("HR", "MANAGER", "ADMIN"), ctrl.getAllRoleWiseEmployees);
 router.get('/managers', authenticate, authorizeRoles("HR", "ADMIN"), ctrl.getAllManagers);
 // Get manager by ID
 router.get('/manager/:id', authenticate, authorizeRoles("HR", "ADMIN"), ctrl.getManagersById);
