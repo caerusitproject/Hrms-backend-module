@@ -19,7 +19,7 @@ const createTemplate = async (req, res) => {
 
 const updateTemplate = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.query;
     const updated = await emailTemplateService.updateTemplate(id, req.body);
     res.json({ message: 'Template updated', updated });
   } catch (error) {
@@ -40,9 +40,19 @@ const getTemplateByType = async (req, res) => {
   }
 };
 
+const getAllTemplates = async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+    const templates = await emailTemplateService.getAllTemplates({ page, limit });
+    res.json({ message: 'Templates retrieved', templates });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 const deleteTemplate = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.query;
     await emailTemplateService.deleteTemplate(id);
     res.json({ message: 'Template deleted' });
   } catch (error) {
@@ -51,4 +61,4 @@ const deleteTemplate = async (req, res) => {
 };
 
 
-module.exports = { createTemplate, updateTemplate, getTemplateByType, deleteTemplate };
+module.exports = { createTemplate, updateTemplate, getTemplateByType, getAllTemplates, deleteTemplate };

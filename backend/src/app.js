@@ -16,6 +16,7 @@ const managerRoutes = require("./routes/managerRoutes");
 const broadcastRoutes = require("./routes/broadcastRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const hrRoutes = require('./routes/hrRoutes');
+const emailTemplateRoutes = require('./routes/emailTemplateRoutes');
 const app = express();
 const cors = require('cors');
 const path = require('path')
@@ -68,6 +69,9 @@ app.use('/api/dashboard', dashboardRoutes);
 //HR Routes
 
 app.use('/api/hr', hrRoutes);
+
+// Email Template routes
+app.use('/api/email', emailTemplateRoutes);
 
 
 

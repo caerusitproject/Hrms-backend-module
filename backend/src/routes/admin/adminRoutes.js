@@ -15,13 +15,6 @@ router.delete("/roles/:id", adminController.deleteRole);
 router.post("/department", adminController.createDepartment);
 //email template creation
 
-// POST - Create new email template
-router.post('/email', emailTemplateController.createTemplate);
-// PUT - Update a template by ID or type
-router.put('/email/:id', emailTemplateController.updateTemplate);
-
-// DELETE - Delete template
-router.delete('/email/delete/:id', emailTemplateController.deleteTemplate);
 
 
 // 🔹 Employee management

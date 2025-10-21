@@ -20,9 +20,19 @@ class emailTemplateService {
     return await template.update(updateData);
   }
   async getTemplateByType(type) {
-    const template = await EmailTemplate.findOne({ where: { type } , attributes: ['id', 'type', 'subject', 'body', 'allowedVariables']});
+    const template = await EmailTemplate.findOne({ where: { type }, attributes: ['id', 'type', 'subject', 'body', 'allowedVariables'] });
     return template;
   };
+
+  async getAllTemplates({ page = 1, limit = 10 }){
+    const offset = (page - 1) * limit;
+    return await EmailTemplate.findAndCountAll({
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      attributes: ['id', 'type']
+    });
+  };
+
   async deleteTemplate(id) {
     const template = await EmailTemplate.findByPk(id);
     if (!template) throw new Error('Template not found');
