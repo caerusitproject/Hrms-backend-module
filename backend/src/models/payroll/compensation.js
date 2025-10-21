@@ -45,8 +45,7 @@ const Compensation = sequelize.define('Compensation', {
     timestamps: true
   });
 
-  //Compensation.associate = (models) => {
-  //Compensation.belongsTo(Employee, { foreignKey: 'employeeId' });
-  //};
+ Employee.hasOne(Compensation, { foreignKey: 'employeeId' });
+ Compensation.belongsTo(Employee, { foreignKey: 'employeeId' });
 
 module.exports = Compensation;

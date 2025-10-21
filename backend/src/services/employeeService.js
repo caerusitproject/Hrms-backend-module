@@ -5,7 +5,7 @@ const EmployeeRole = db.EmployeeRole;
 const Department = db.Department;
 const Role = db.Role;
 //const { Sequelize } = require("sequelize");;
-const { sendEmailNotification } = require('./notification/notificationHandler');
+const { sendEmailNotification } = require('../services/notification/notificationService');
 
 class EmployeeService {
 
