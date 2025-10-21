@@ -19,6 +19,8 @@ const hrRoutes = require('./routes/hrRoutes');
 const emailTemplateRoutes = require('./routes/emailTemplateRoutes');
 const compensationRoutes = require('./routes/payroll/compensationRoutes')
 const payrollRoutes = require('./routes/payroll/payrollRoutes');
+const compensationRoutes = require('./routes/payroll/compensationRoutes')
+const payrollRoutes = require('./routes/payroll/payrollRoutes');
 const app = express();
 const cors = require('cors');
 const path = require('path')
@@ -78,6 +80,7 @@ app.use('/api/hr', hrRoutes);
 
 // Email Template routes
 app.use('/api/email', emailTemplateRoutes);
+
 
 
 
