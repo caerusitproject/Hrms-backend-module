@@ -34,3 +34,13 @@ exports.sendEmailNotification = async (notification) => {
     console.error(`❌ Failed to send email notification:`, err.message);
   }
 };
+
+exports.sendPayslipEmail = async (to, filePath) => {
+    await transporter.sendMail({
+    from: process.env.SMTP_USER,
+    to,
+    subject: 'Your Monthly Payslip',
+    html: '<h3> <p>Please find your payslip attached.</p></h3>',
+    attachments: [{ filename: filePath.split('/').pop(), content: fs.createReadStream(filePath) }]
+  });
+};
