@@ -40,16 +40,25 @@ const getTemplateByType = async (req, res) => {
   }
 };
 
-const getAllTemplates = async (req, res) => {
+const getAllTemplateTypes = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
-    const templates = await emailTemplateService.getAllTemplates({ page, limit });
+    const templates = await emailTemplateService.getAllTemplateTypes({ page, limit });
     res.json({ message: 'Templates retrieved', templates });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
+const getAllTemplate = async (req, res) => {
+  try {
+    
+    const templates = await emailTemplateService.getAllTemplate();
+    res.json({ message: 'Templates retrieved', templates });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 const deleteTemplate = async (req, res) => {
   try {
     const { id } = req.query;
@@ -61,4 +70,4 @@ const deleteTemplate = async (req, res) => {
 };
 
 
-module.exports = { createTemplate, updateTemplate, getTemplateByType, getAllTemplates, deleteTemplate };
+module.exports = { createTemplate, updateTemplate, getTemplateByType, getAllTemplateTypes, getAllTemplate, deleteTemplate };

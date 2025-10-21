@@ -24,15 +24,21 @@ class emailTemplateService {
     return template;
   };
 
-  async getAllTemplates({ page = 1, limit = 10 }){
+  async getAllTemplateTypes({ page = 1, limit = 10 }){
     const offset = (page - 1) * limit;
     return await EmailTemplate.findAndCountAll({
       limit: parseInt(limit),
       offset: parseInt(offset),
-      attributes: ['id', 'type']
+      attributes: ['id', 'type','allowedVariables']
     });
   };
 
+  
+  async getAllTemplate(){
+    return await EmailTemplate.findAndCountAll({
+      attributes: ['id', 'type','allowedVariables','subject','body']
+    });
+  };
   async deleteTemplate(id) {
     const template = await EmailTemplate.findByPk(id);
     if (!template) throw new Error('Template not found');
