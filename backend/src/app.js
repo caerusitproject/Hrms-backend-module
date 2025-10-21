@@ -17,13 +17,14 @@ const broadcastRoutes = require("./routes/broadcastRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const hrRoutes = require('./routes/hrRoutes');
 const emailTemplateRoutes = require('./routes/emailTemplateRoutes');
+const compensationRoutes = require('./routes/payroll/compensationRoutes')
+const payrollRoutes = require('./routes/payroll/payrollRoutes');
 const app = express();
 const cors = require('cors');
 const path = require('path')
 const PORT = process.env.PORT || 5000;
-const {authenticate} = require("../src/middleware/authMiddleWare");
 
-
+app.use(express.json());
 
 
 
@@ -35,6 +36,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Admin-only routes
 app.use("/api/admin", adminRoutes);
+//Payroll
+//app.use("/api/payroll/", payrollRouters);
+
+app.use('/api/compensations', compensationRoutes);
+app.use('/api/payrolls', payrollRoutes);
 
 app.use("/api/auth", authRoutes);
 //app.use(authenticate)
@@ -76,6 +82,7 @@ app.use('/api/email', emailTemplateRoutes);
 
 
 
+
 async function start() {
   try {
     await sequelize.authenticate();
@@ -94,4 +101,4 @@ async function start() {
   }
 }
 
-start();
+start().catch(err => { console.error(err); process.exit(1); });

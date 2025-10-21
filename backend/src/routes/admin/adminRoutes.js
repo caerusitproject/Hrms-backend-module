@@ -15,6 +15,9 @@ router.delete("/roles/:id", adminController.deleteRole);
 router.post("/department", adminController.createDepartment);
 //email template creation
 
+//payroll- compensation
+
+
 
 
 // 🔹 Employee management
