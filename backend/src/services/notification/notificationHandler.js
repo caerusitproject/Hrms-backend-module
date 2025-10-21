@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const { leaveNotificationConsumer } = require('../notificationService');
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -12,17 +13,24 @@ const transporter = nodemailer.createTransport({
 
 exports.sendEmailNotification = async (notification) => {
   const { email, subject, payload } = notification;
-  const html = `<h3> <p>Hi  ${payload.name}, </p><p> your email is ${email} </p> <P>Your account has been created successfully!</p></h3>`;
+
   try {
+    const compiled = await leaveNotificationConsumer(payload);
+    if (!compiled) {
+      console.warn("⚠️ No compiled email data returned.");
+      return;
+    }
+
+    // Send email using the compiled template
     await transporter.sendMail({
       from: '"HRMS Notification" <no-reply@hrms.com>',
-      to: email,
-      subject,
-      html: html,
+      to: compiled.toEmail || email,
+      subject: compiled.subject || subject || "Notification",
+      html: compiled.body,
     });
 
-    console.log(`✅ Email sent to ${email}`);
+    console.log(`✅ Email sent to ${compiled.toEmail || email}`);
   } catch (err) {
-    console.error(`❌ Failed to send email to ${email}:`, err.message);
+    console.error(`❌ Failed to send email notification:`, err.message);
   }
 };

@@ -7,7 +7,7 @@ const Role = db.Role;
 const { Sequelize } = require("sequelize");;
 const { sendNotificationEvent } = require('../services/notification/notificationProducer')
 const { startConsumerScheduler } = require('./notification/notificationConsumer')
-const { sendEmailNotification } = require('./notification/notificationHandler')
+const  {sendEmailNotification } = require('./notification/notificationHandler')
 class EmployeeService {
 
   constructor() {
@@ -21,8 +21,8 @@ class EmployeeService {
       //console.log('✅ Kafka Producer connected');
 
       // Start consumer scheduler (runs every 1 hour)
-     // await startConsumerScheduler();
-     // console.log('🕐 Kafka Consumer Scheduler started');
+      // await startConsumerScheduler();
+      // console.log('🕐 Kafka Consumer Scheduler started');
     } catch (err) {
       console.error('❌ Kafka init failed:', err);
     }
@@ -41,17 +41,17 @@ class EmployeeService {
     }
     // const hashedPassword = await bcrypt.hash(payload.password, 10);
     // payload.password = hashedPassword;
-     if (payload.password) {
-    const hashedPassword = await bcrypt.hash(payload.password, 10);
-    payload.password = hashedPassword;
-  }
+    if (payload.password) {
+      const hashedPassword = await bcrypt.hash(payload.password, 10);
+      payload.password = hashedPassword;
+    }
 
-     const roleIds = payload.roleIds;
-     const employee = await Employee.create(payload);
-      if (roleIds) {
-        await EmployeeRole.create({ employeeId: employee.id, roleId: roleIds });
-      }
-    //// ✅ Send Kafka message for email notification
+    const roleIds = payload.roleIds;
+    const employee = await Employee.create(payload);
+    if (roleIds) {
+      await EmployeeRole.create({ employeeId: employee.id, roleId: roleIds });
+    }
+    //// ✅ Send mail message for email notification
     const message = {
       type: 'EMPLOYEE_REGISTRATION',
       email: employee.email,
@@ -60,6 +60,9 @@ class EmployeeService {
       payload: {
         name: employee.name,
         department: employee.departmentId,
+        email: employee.email,
+        type: "employee_registration",
+        empCode: employee.empCode
       },
     };
 
@@ -67,7 +70,7 @@ class EmployeeService {
 
     //await sendNotificationEvent(message);
     //console.log('✅ Kafka event published for employee registration');
-    
+
     //await startConsumerScheduler();
 
     return employee;
@@ -194,7 +197,7 @@ class EmployeeService {
 
     employee.managerId = managerId;
     await employee.save();
-        
+
     console.log("Kafka Event Published: MANAGER_ASSIGNED");
 
     return employee;
@@ -206,7 +209,7 @@ class EmployeeService {
   static async getAllManagers() {
 
     try {
-      
+
       const managers = await Employee.findAll({
         include: [
           {
@@ -220,7 +223,7 @@ class EmployeeService {
         where: {
           managerId: null,
         },
-        attributes: ['id', 'name', 'email','managerId'],
+        attributes: ['id', 'name', 'email', 'managerId'],
       });
 
 
@@ -271,14 +274,14 @@ class EmployeeService {
       const employee = await Employee.findOne({
         where: { id: employeeId },
         attributes: ['id', 'email'],
-       include: [
-        {
-          model: Role,
-          as: 'roles',
-          through: { attributes: [] }, // hides join table
-          attributes: ['id', 'name','role']
-        }
-      ]
+        include: [
+          {
+            model: Role,
+            as: 'roles',
+            through: { attributes: [] }, // hides join table
+            attributes: ['id', 'name', 'role']
+          }
+        ]
       });
       //const roles = await Role.findOne({where: {Id: employeeId}});
       //employee.roles = roles;
@@ -319,6 +322,83 @@ class EmployeeService {
       throw error;
     }
   };
+  static async getAllRoleWiseEmployees(employeeId, roles) {
+    try {
+      let employeeList = [];
+      let totalEmployees = 0;
+
+      if (roles.includes('ADMIN') || roles.includes('HR')) {
+        // Admins and HR can see all employees
+        const employees = await Employee.findAndCountAll({
+          attributes: [
+            'id',
+            'empCode',
+            'email',
+            'name',
+            'status',
+            'idNumber',
+            'managerId',
+            'imageId',
+            'designation'
+          ]
+        });
+
+        totalEmployees = employees.count;
+        employeeList = employees.rows;
+
+      } else if (roles.includes('MANAGER')) {
+        // Managers can see their subordinates
+        const employees = await Employee.findAndCountAll({
+          where: { managerId: employeeId },
+          attributes: [
+            'id',
+            'empCode',
+            'email',
+            'name',
+            'status',
+            'idNumber',
+            'managerId',
+            'imageId',
+            'designation'
+          ]
+        });
+
+        totalEmployees = employees.count;
+        employeeList = employees.rows;
+
+      } else if (roles.includes('USER')) {
+        // Regular users can only see themselves
+        const employees = await Employee.findAndCountAll({
+          where: { id: employeeId },
+          attributes: [
+            'id',
+            'empCode',
+            'email',
+            'name',
+            'status',
+            'idNumber',
+            'managerId',
+            'imageId',
+            'designation'
+          ]
+        });
+
+        totalEmployees = employees.count;
+        employeeList = employees.rows;
+
+      } else {
+        // If role is not recognized
+        throw new Error('Access denied: Unauthorized role');
+      }
+
+      return { totalEmployees, employeeList };
+
+    } catch (error) {
+      console.error("❌ Error fetching role-wise employees:", error.message);
+      throw error;
+    }
+  }
+
 }
 
 

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const adminController = require("../../controllers/admin/adminController");
+const emailTemplateController = require('../../controllers/emailTemplateController');
 const { authenticate, authorizeRoles } = require("../../middleware/authMiddleWare");
 
 // All routes restricted to Admins
@@ -12,6 +13,7 @@ router.get("/roles", adminController.getRoles);
 router.delete("/roles/:id", adminController.deleteRole);
 //Department
 router.post("/department", adminController.createDepartment);
+//email template creation
 
 
 
