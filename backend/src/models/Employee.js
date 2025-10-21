@@ -2,7 +2,7 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../db');
 
 const Employee = sequelize.define('employee', {
-  id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   empCode: { type: DataTypes.STRING, allowNull: false },
   name: { type: DataTypes.STRING, allowNull: false },
   email: { type: DataTypes.STRING, allowNull: false, unique: true },
@@ -40,7 +40,7 @@ const Employee = sequelize.define('employee', {
 });
 
 
-Employee.belongsTo(Employee, {
+  Employee.belongsTo(Employee, {
     as: 'manager',
     foreignKey: 'managerId'
   });
