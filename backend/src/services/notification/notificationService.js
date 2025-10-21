@@ -122,7 +122,7 @@ const startLeaveNotificationConsumer = async () => {
 module.exports = startLeaveNotificationConsumer;*/
 
 
-const EmailTemplate = require("../models/EmailTemplate");
+const EmailTemplate = require("../../models/EmailTemplate");
 const Handlebars = require("handlebars");
 
 exports.leaveNotificationConsumer = async (payload) => {
