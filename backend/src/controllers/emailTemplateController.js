@@ -29,7 +29,7 @@ const updateTemplate = async (req, res) => {
 
 const getTemplateByType = async (req, res) => {
   try {
-    const { type } = req.params;
+    const { type } = req.query;
     const template = await emailTemplateService.getTemplateByType(type);
     if (!template) {
       return res.status(404).json({ error: 'Template not found' });

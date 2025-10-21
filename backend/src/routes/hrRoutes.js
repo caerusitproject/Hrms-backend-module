@@ -165,6 +165,6 @@ router.post('/upload-document', authenticate, authorizeRoles('HR'), uploadDocume
  */
 router.get('/own-profile', authenticate, authorizeRoles('HR'), getOwnProfileHandler);
 
-router.get('/email-template/:type', authenticate, authorizeRoles('HR'), getTemplateByType);
+router.get('/email-template', authenticate, authorizeRoles('HR'), getTemplateByType);
 
 module.exports = router;
