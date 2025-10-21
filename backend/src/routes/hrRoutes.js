@@ -164,4 +164,6 @@ router.post('/upload-document', authenticate, authorizeRoles('HR'), uploadDocume
  */
 router.get('/own-profile', authenticate, authorizeRoles('HR'), getOwnProfileHandler);
 
+
+
 module.exports = router;

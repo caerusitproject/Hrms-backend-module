@@ -178,6 +178,24 @@ exports.getManagerById = async (req, res) => {
   }
 };
 
+exports.getAllRoleWiseEmployees = async (req, res) => {
+  try {
+   
+     const { id, roles: role } = req.user;
+    const employees = await EmployeeService.getAllRoleWiseEmployees(id, role);  
+    res.status(200).json({
+      success: true,
+      data: employees
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false, 
+      message: "Error fetching role-wise employees",
+      error: error.message
+    });
+  }
+};
+
 
 
 /*exports.getManagerById = async (req, res) => {
