@@ -1,5 +1,5 @@
 const nodemailer = require('nodemailer');
-const { leaveNotificationConsumer } = require('../notificationService');
+const { leaveNotificationConsumer } = require('../notification/notificationService');
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
