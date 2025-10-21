@@ -4,30 +4,12 @@ const bcrypt = require("bcryptjs");
 const EmployeeRole = db.EmployeeRole;
 const Department = db.Department;
 const Role = db.Role;
-const { Sequelize } = require("sequelize");;
-const { sendNotificationEvent } = require('../services/notification/notificationProducer')
-const { startConsumerScheduler } = require('./notification/notificationConsumer')
-const  {sendEmailNotification } = require('./notification/notificationHandler')
+//const { Sequelize } = require("sequelize");;
+const { sendEmailNotification } = require('../services/notification/notificationService');
+
 class EmployeeService {
 
-  constructor() {
-    this.initKafka();
-  }
-
-  //mail-send process
-  static async initKafka() {
-    try {
-      await connectProducer();
-      //console.log('✅ Kafka Producer connected');
-
-      // Start consumer scheduler (runs every 1 hour)
-      // await startConsumerScheduler();
-      // console.log('🕐 Kafka Consumer Scheduler started');
-    } catch (err) {
-      console.error('❌ Kafka init failed:', err);
-    }
-  };
-  /**
+   /**
      * Create a new employee
      * @param {Object} payload - employee details
      * @returns {Promise<Object>}

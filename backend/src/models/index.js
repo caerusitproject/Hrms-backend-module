@@ -1,9 +1,11 @@
 const db = require("../db");
-const { Sequelize, DataTypes } = require("sequelize");
+const { Sequelize} = require("sequelize");
 
 const sequelize = db.sequelize || db;
-
 const dbInfo = {};
+
+
+
 
 // Import class-based models (no function calls)
 dbInfo.Employee = require("./Employee");
@@ -16,6 +18,17 @@ dbInfo.Leave = require("./LeaveRequest");
 dbInfo.Upload = require("./uploadModel");
 dbInfo.RefreshToken = require("./RefreshToken");
 dbInfo.EmployeeRole = require("./EmployeeRole");
+//payroll
+dbInfo.Compensation = require('./payroll/compensation');
+dbInfo.Payroll = require('./payroll/payroll');
+dbInfo.PayrollLineItem = require('./payroll/payrollLineItem');
+dbInfo.Payslip = require('./payroll/payslip');
+
+dbInfo.Employee.hasMany(dbInfo.Payroll, { foreignKey: 'employeeId' });
+dbInfo.Payroll.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
+
+dbInfo.Payroll.hasMany(dbInfo.PayrollLineItem, { foreignKey: 'payrollId' });
+dbInfo.PayrollLineItem.belongsTo(dbInfo.Payroll, { foreignKey: 'payrollId' });
 
 // 🧩 Initialize associations AFTER loading all models
 dbInfo.Department.hasMany(dbInfo.Employee, { foreignKey: "departmentId", as: "employees" });
@@ -34,10 +47,17 @@ dbInfo.User.hasMany(dbInfo.RefreshToken, { foreignKey: "userId", as: "tokens" })
 dbInfo.Employee.hasMany(dbInfo.RefreshToken, { foreignKey: "empId", as: "tokens" });
 dbInfo.RefreshToken.belongsTo(dbInfo.Employee, { foreignKey: "empId", as: "employee" });
 dbInfo.RefreshToken.belongsTo(dbInfo.User, { foreignKey: "userId", as: "user" });
-
-
 dbInfo.Leave.belongsTo(dbInfo.Employee, { as: "employee", foreignKey: "eId" });
 dbInfo.Leave.belongsTo(dbInfo.Employee, { as: "manager", foreignKey: "managerId" });
+
+// Associations
+
+dbInfo.Employee.hasMany(dbInfo.Payroll, { foreignKey: 'employeeId' });
+dbInfo.Payroll.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
+dbInfo.Payroll.hasMany(dbInfo.PayrollLineItem, { foreignKey: 'payrollId' });
+dbInfo.PayrollLineItem.belongsTo(dbInfo.Payroll, { foreignKey: 'payrollId' });
+
+
 
 // Many-to-Many with Role
     dbInfo.Employee.belongsToMany(dbInfo.Role, {
@@ -63,7 +83,7 @@ sequelize
   .then(() => console.log("✅ All models synced successfully"))
   .catch((err) => console.error("❌ Model sync failed:", err));
 
-dbInfo.sequelize = sequelize;
-dbInfo.Sequelize = Sequelize;
+db.Sequelize = Sequelize;
+db.sequelize = sequelize;
 
 module.exports = dbInfo;
