@@ -1,0 +1,46 @@
+const compensationService = require('../../services/payroll/compensationService');
+exports.createOrUpdateCompensation = async (req, res) => {
+  try {
+    const { employeeId, ...data } = req.body;
+    if (!employeeId) return res.status(400).json({ message: 'Employee ID is required' });
+
+    const result = await compensationService.createOrUpdateCompensation(employeeId, data);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('[CompensationController]', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getCompensationByEmployee = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+    const comp = await compensationService.getCompensationByEmployee(employeeId);
+    if (!comp) return res.status(404).json({ message: 'Compensation not found' });
+    res.status(200).json(comp);
+  } catch (error) {
+    console.error('[CompensationController]', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getAllCompensations = async (req, res) => {
+  try {
+    const comps = await compensationService.getAllCompensations();
+    res.status(200).json(comps);
+  } catch (error) {
+    console.error('[CompensationController]', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.deleteCompensation = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await compensationService.deleteCompensation(id);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('[CompensationController]', error);
+    res.status(500).json({ error: error.message });
+  }
+};
