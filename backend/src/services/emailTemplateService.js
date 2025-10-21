@@ -10,8 +10,7 @@ class emailTemplateService {
       type: data.type,
       subject: data.subject,
       body: data.body,
-      allowedVariables: data.allowedVariables || [],
-      isHtml: data.isHtml ?? true
+      allowedVariables: data.allowedVariables || []
     });
   }
 
@@ -20,7 +19,10 @@ class emailTemplateService {
     if (!template) throw new Error('Template not found');
     return await template.update(updateData);
   }
-
+  async getTemplateByType(type) {
+    const template = await EmailTemplate.findOne({ where: { type } , attributes: ['id', 'type', 'subject', 'body', 'allowedVariables']});
+    return template;
+  };
   async deleteTemplate(id) {
     const template = await EmailTemplate.findByPk(id);
     if (!template) throw new Error('Template not found');

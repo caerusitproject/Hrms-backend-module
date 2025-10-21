@@ -27,6 +27,19 @@ const updateTemplate = async (req, res) => {
   }
 };
 
+const getTemplateByType = async (req, res) => {
+  try {
+    const { type } = req.params;
+    const template = await emailTemplateService.getTemplateByType(type);
+    if (!template) {
+      return res.status(404).json({ error: 'Template not found' });
+    }
+    res.json({ message: 'Template retrieved', template });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 const deleteTemplate = async (req, res) => {
   try {
     const { id } = req.params;
@@ -38,4 +51,4 @@ const deleteTemplate = async (req, res) => {
 };
 
 
-module.exports = { createTemplate, updateTemplate, deleteTemplate };
+module.exports = { createTemplate, updateTemplate, getTemplateByType, deleteTemplate };

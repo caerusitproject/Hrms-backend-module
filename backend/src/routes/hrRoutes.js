@@ -1,5 +1,6 @@
 const express = require('express');
 const { addEmployeeHandler, getDashboard, getAllEmployees, getEmployee, editEmployee, uploadDocumentHandler, getOwnProfileHandler } = require('../controllers/hrController.js');
+const { getTemplateByType } = require('../controllers/emailTemplateController.js');
 const { authenticate, authorizeRoles } = require('../middleware/authMiddleWare.js');
 const { validateId } = require('../middleware/validation.js');
 const ctrl = require("../controllers/employeeController");
@@ -163,5 +164,7 @@ router.post('/upload-document', authenticate, authorizeRoles('HR'), uploadDocume
  *         description: HR profile
  */
 router.get('/own-profile', authenticate, authorizeRoles('HR'), getOwnProfileHandler);
+
+router.get('/email-template/:type', authenticate, authorizeRoles('HR'), getTemplateByType);
 
 module.exports = router;
