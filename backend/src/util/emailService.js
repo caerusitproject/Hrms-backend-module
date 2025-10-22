@@ -1,17 +1,26 @@
-
+const fs = require("fs");
+const transporter = require("../../config/emailTransporter");
+const { emailTemplateGetter } = require("../services/notification/emailTemplateGetter");
 
 const sendPayslipEmail = async (employee, filePath) => {
+  const payload = {
+    ...employee,
+    type: "payslip",
+    attachmentFilePath: filePath,
+  };
+  const compiled = await emailTemplateGetter(payload);
+  if (!compiled) {
+    console.warn("⚠️ No compiled email data returned.");
+    return;
+  }
+  let attachments = compiled.attachments || [];
+
   await transporter.sendMail({
     from: process.env.SMTP_USER,
     to: employee.email,
-    subject: 'Your Monthly Payslip',
-    text: `Dear ${employee.name},\n\nYour payslip for this month is attached.\n\nRegards,\nHR Department`,
-    attachments: [
-      {
-        filename: `${employee.name}_payslip.pdf`,
-        path: filePath,
-      },
-    ],
+    subject: compiled.subject || "Your Monthly Payslip",
+    html: compiled.body,
+    attachments
   });
 };
 

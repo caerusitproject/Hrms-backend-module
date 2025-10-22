@@ -1,5 +1,5 @@
 const nodemailer = require('nodemailer');
-const { leaveNotificationConsumer } = require('../notification/notificationService');
+const { emailTemplateGetter } = require('./emailTemplateGetter');
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -15,7 +15,7 @@ exports.sendEmailNotification = async (notification) => {
   const { email, subject, payload } = notification;
 
   try {
-    const compiled = await leaveNotificationConsumer(payload);
+    const compiled = await emailTemplateGetter(payload);
     if (!compiled) {
       console.warn("⚠️ No compiled email data returned.");
       return;
