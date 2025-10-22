@@ -48,7 +48,7 @@ exports.processPayroll = async (payrollId) => {
   const employee = payroll.Employee;
 
   // Generate PDF
-  //const pdfPath = await generatePDF.
+  const pdfPath = await generatePDF.generatePayslipPDF(employee , payroll)
 
   // Send email
 //  await sendPayslipEmail(employee, pdfPath);
@@ -93,25 +93,43 @@ exports.finalizePayrollForMonth = async (month , year) => {
       employeeId: emp.id,
       month,
       year,
-      basicSalary,
-      hra,
-      da,
-      conveyance,
-      bonus,
-      pf,
-      esi,
-      tax,      
+      basicSalary :basicSalary,
+      hra : hra,
+      da : da,
+      conveyance :conveyance,
+      bonus : bonus,
+      pf: pf,
+      esi : esi,
+      tax : tax,      
       deductions: totalDeductions,
-      grossSalary,
-      netSalary,
+      grossSalary: grossSalary,
+      netSalary : netSalary,
       status: 'FINALIZED'
     });
 
+    const payLoad = {
+      employeeId: emp.id,
+      month,
+      year,
+      basicSalary :basicSalary,
+      hra : hra,
+      da : da,
+      conveyance :conveyance,
+      bonus : bonus,
+      pf: pf,
+      esi : esi,
+      tax : tax,      
+      deductions: totalDeductions,
+      grossSalary: grossSalary,
+      netSalary : netSalary,
+      status: 'FINALIZED'
+    }
+
     // ---- GENERATE PAYSLIP PDF ----
-    const pdfPath = await generatePDF.generatePayslipPDF(emp , payroll)
+    const pdfPath = await generatePDF.generatePayslip(emp , payLoad)
 
     // ---- SEND PAYSLIP EMAIL ----
-    //await sendPayslipEmail(emp, pdfPath);
+   // await sendPayslipEmail(emp, pdfPath);
 
     results.push({
       employee: emp.name,
@@ -127,3 +145,56 @@ exports.finalizePayrollForMonth = async (month , year) => {
     employees: results
   };
 }; 
+
+
+exports.createOrUpdatePayroll = async (employeeId, month, year, payrollData) => {
+  try {
+    // Check if payroll exists
+    let payroll = await Payroll.findOne({
+      where: { employeeId, month, year },
+    });
+
+    if (payroll) {
+      // ✅ Update existing payroll
+      await payroll.update(payrollData);
+      console.log(`[PayrollService] Updated payroll for ${employeeId} (${month}-${year})`);
+    } else {
+      // ✅ Create new payroll
+      payroll = await Payroll.create({
+        employeeId,
+        month,
+        year,
+        ...payrollData,
+      });
+      console.log(`[PayrollService] Created new payroll for ${employeeId} (${month}-${year})`);
+    }
+
+    // Optionally, sync compensation data
+    const compensation = await Compensation.findOne({ where: { employeeId } });
+    if (compensation) {
+      const grossSalary =
+        (Number(compensation.basicSalary || 0) +
+          Number(compensation.hra || 0) +
+          Number(compensation.allowance || 0) +
+          Number(compensation.bonus || 0)) || 0;
+
+      const totalDeductions =
+        (Number(compensation.tax || 0) +
+          Number(compensation.pf || 0) +
+          Number(compensation.insurance || 0)) || 0;
+
+      const netSalary = grossSalary - totalDeductions;
+
+      await payroll.update({
+        grossSalary,
+        netSalary,
+      });
+    }
+
+    return payroll;
+  } catch (err) {
+    console.error('[PayrollService] Error:', err);
+    throw err;
+  }
+};
+

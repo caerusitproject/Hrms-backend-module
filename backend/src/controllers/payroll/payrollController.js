@@ -1,33 +1,5 @@
 const payrollService = require('../../services/payroll/payrollService');
 
-/*exports.generatePayroll = async (req, res) => {
-  try {
-    const { month, year } = req.body;
-    const payrolls = await payrollService.generatePayroll(month, year);
-    res.status(200).json({ message: 'Payroll generated successfully', data: payrolls });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
-  }
-};*/
-
-/*exports.finalizePay = async (req, res) => {
-  try{
-
-    const { month } = req.body;
-    if (!month) return res.status(400).json({ error: 'Month (YYYY-MM) is required' });
-
-    const result = await payrollService.finalizePayrollForMonth(month);
-    res.status(200).json(result);
-
-  }catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
-  }
-
-
-};*/
-
 /**
  * @desc  Finalize payroll for all employees for a given month
  * @route POST /api/payroll/finalize
@@ -35,21 +7,14 @@ const payrollService = require('../../services/payroll/payrollService');
  */
 exports.finalizePayroll = async (req, res) => {
   try {
-    const { monthyear } = req.body;
-    const parts = monthyear.split('-');
-    let month = "";
-    let  year = "";
-    if (!monthyear) {
+    //const { month } = req.body;
+    var monthyear = req.body.monthyear;
+    const [month, year] = monthyear.split('-').map(Number);;
+    if (!month) {
       return res.status(400).json({ message: 'Month (YYYY-MM) is required' });
     }
 
-    if(monthyear.length > 2){
-      
-     month = parseInt(parts[0], 10); // Converts "10" to the number 10
-     year = parseInt(parts[1], 10);
-    }
-
-    console.log(`[PayrollController] Finalizing payroll for ${month} - ${year}`);
+    console.log(`[PayrollController] Finalizing payroll for ${month}`);
 
     const result = await payrollService.finalizePayrollForMonth(month, year);
 
