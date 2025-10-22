@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
-const { leaveNotificationConsumer } = require('../notification/notificationService');
+const fs = require("fs");
+const { emailTemplateGetter } = require('./emailTemplateGetter');
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -15,7 +16,7 @@ exports.sendEmailNotification = async (notification) => {
   const { email, subject, payload } = notification;
 
   try {
-    const compiled = await leaveNotificationConsumer(payload);
+    const compiled = await emailTemplateGetter(payload);
     if (!compiled) {
       console.warn("⚠️ No compiled email data returned.");
       return;
@@ -35,12 +36,25 @@ exports.sendEmailNotification = async (notification) => {
   }
 };
 
-exports.sendPayslipEmail = async (to, filePath) => {
-    await transporter.sendMail({
-    from: process.env.SMTP_USER,
-    to,
-    subject: 'Your Monthly Payslip',
-    html: '<h3> <p>Please find your payslip attached.</p></h3>',
-    attachments: [{ filename: filePath.split('/').pop(), content: fs.createReadStream(filePath) }]
+exports.sendPayslipEmail = async (employee, filePath) => {
+  const payload = {
+    ...employee,
+    type: "payslip",
+    attachmentFilePath: filePath,
+  };
+  const compiled = await emailTemplateGetter(payload);
+  if (!compiled || compiled === null) {
+    console.warn("⚠️ No compiled email data returned.");
+    //return;
+  }
+  let attachments = compiled.attachments || [];
+
+  await transporter.sendMail({
+    from: '"HRMS Notification" <no-reply@hrms.com>',
+    to: employee.email,
+    subject: compiled.subject,
+    html: compiled.body,
+    attachments
   });
 };
+

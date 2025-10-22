@@ -3,6 +3,7 @@ const Payroll = require('../../models/payroll/payroll');
 const PayrollLineItem  = require('../../models/payroll/payrollLineItem');
 const Employee = require('../../models/Employee');
 const generatePDF = require('../../util/payslipGenerator')
+const {sendPayslipEmail} = require('../../services/notification/notificationHandler');
 
 exports.generatePayroll = async (month, year) => {
   const employees = await Employee.findAll({ include: [Compensation] });
@@ -129,7 +130,7 @@ exports.finalizePayrollForMonth = async (month , year) => {
     const pdfPath = await generatePDF.generatePayslip(emp , payLoad)
 
     // ---- SEND PAYSLIP EMAIL ----
-   // await sendPayslipEmail(emp, pdfPath);
+    await sendPayslipEmail(emp, pdfPath);
 
     results.push({
       employee: emp.name,

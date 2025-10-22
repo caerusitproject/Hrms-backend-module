@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
+const auth = require("../middleware/authMiddleWare");
 const upload = require("../middleware/uploadMiddleware");
+const uploadEmployeeMiddleware = require("../middleware/UploadEmployeeProfileImage");
 const ctrl = require("../controllers/uploadController");
 
 // Upload profile image
