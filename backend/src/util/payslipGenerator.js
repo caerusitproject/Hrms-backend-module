@@ -125,7 +125,7 @@ exports.generatePayslip = async (employee, payroll) => {
   for (let i = 0; i < maxRows; i++) {
     if (incomeFields[i]) {
       const [label, value] =  incomeFields[i] || 0;
-      doc.text(label, 80, currentY).text(value.toFixed(2), 200, currentY, { align: 'right' });
+      doc.text(label, 80, currentY).text((value?? 0).toFixed(2), 200, currentY, { align: 'right' });
     }
     if (deductionFields[i]) {
       const [label, value] = deductionFields[i] || 0;

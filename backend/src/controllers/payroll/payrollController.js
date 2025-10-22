@@ -9,7 +9,7 @@ exports.finalizePayroll = async (req, res) => {
   try {
     //const { month } = req.body;
     var monthyear = req.body.monthyear;
-    const [month, year] = monthyear.split('-').map(Number);;
+    const [month, year] = monthyear.split('-');
     if (!month) {
       return res.status(400).json({ message: 'Month (YYYY-MM) is required' });
     }
@@ -45,7 +45,7 @@ exports.generatePayrollForEmployee = async (req, res) => {
       return res.status(400).json({ message: 'Employee ID and month are required' });
     }
 
-    const payroll = await payrollService.generatePayrollForEmployee(employeeId, month);
+    const payroll = await payrollService.processPayroll(employeeId, month);
 
     res.status(201).json({
       status: 'success',

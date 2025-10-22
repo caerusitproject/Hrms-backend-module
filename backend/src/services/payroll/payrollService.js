@@ -51,8 +51,8 @@ exports.processPayroll = async (payrollId) => {
   // Generate PDF
   const pdfPath = await generatePDF.generatePayslipPDF(employee , payroll)
 
-  // Send email
-//  await sendPayslipEmail(employee, pdfPath);
+   // ---- SEND PAYSLIP EMAIL ----
+    await sendPayslipEmail(employee, pdfPath);
 
   return { message: 'Payslip generated and emailed successfully', pdfPath };
 };
@@ -69,63 +69,22 @@ exports.finalizePayrollForMonth = async (month , year) => {
   const results = [];
 
   for (const emp of employees) {
-    const comp = emp.Compensation;
-    if (!comp) continue;
-
-    // ---- SALARY BREAKUP CALCULATION ----
-    const basicSalary = comp.baseSalary || 0;
-    const hra = comp.hra || (basicSalary * 0.4);
-    const da = comp.da || (basicSalary * 0.1);
-    const conveyance = comp.conveyance || 1600;
-    const bonus = comp.bonus || 0;
-
-    const grossSalary = basicSalary + hra + da + conveyance + bonus;
-
-    const pf = comp.pf || (basicSalary * 0.12);
-    const esi = comp.esi || (grossSalary * 0.0075);
-    const tax = comp.tax || (grossSalary * 0.1);
-    const otherDeductions = comp.otherDeductions || 0;
-
-    const totalDeductions = pf + esi + tax + otherDeductions;
-    const netSalary = grossSalary - totalDeductions;
-
-    // ---- CREATE PAYROLL RECORD ----
-    const payroll = await Payroll.create({
-      employeeId: emp.id,
-      month,
-      year,
-      basicSalary :basicSalary,
-      hra : hra,
-      da : da,
-      conveyance :conveyance,
-      bonus : bonus,
-      pf: pf,
-      esi : esi,
-      tax : tax,      
-      deductions: totalDeductions,
-      grossSalary: grossSalary,
-      netSalary : netSalary,
+    const payLoad = await this.processSalary(emp, month, year);
+    if(payLoad){
+      var payroll ={
+        employeeId: payLoad.employeeId,
+        month : payLoad.month,
+        year: payLoad.year,
+      basicSalary :payLoad.basicSalary,       
+      deductions: payLoad.totalDeductions,
+      grossSalary: payLoad.grossSalary,
+      netSalary : payLoad.netSalary,
       status: 'FINALIZED'
-    });
 
-    const payLoad = {
-      employeeId: emp.id,
-      month,
-      year,
-      basicSalary :basicSalary,
-      hra : hra,
-      da : da,
-      conveyance :conveyance,
-      bonus : bonus,
-      pf: pf,
-      esi : esi,
-      tax : tax,      
-      deductions: totalDeductions,
-      grossSalary: grossSalary,
-      netSalary : netSalary,
-      status: 'FINALIZED'
+      }
+      await this.createOrUpdatePayroll(emp.id, month , year, payLoad);
     }
-
+    //const payroll = await this.createOrUpdatePayroll(emp.id, month , year, payLoad);
     // ---- GENERATE PAYSLIP PDF ----
     const pdfPath = await generatePDF.generatePayslip(emp , payLoad)
 
@@ -135,7 +94,7 @@ exports.finalizePayrollForMonth = async (month , year) => {
     results.push({
       employee: emp.name,
       email: emp.email,
-      netSalary,
+      netSalary:payLoad.netSalary,
       pdfPath
     });
   }
@@ -199,3 +158,56 @@ exports.createOrUpdatePayroll = async (employeeId, month, year, payrollData) => 
   }
 };
 
+
+exports.processSalary = async (emp, month, year) =>{
+    var payload ={};
+  try{
+
+    const comp = emp.Compensation;
+    if (comp) {
+
+    // ---- SALARY BREAKUP CALCULATION ----
+    const basicSalary = comp.baseSalary || 0;
+    const hra = comp.hra || (basicSalary * 0.4);
+    const da = comp.da || (basicSalary * 0.1);
+    const conveyance = comp.conveyance || 1600;
+    const bonus = comp.bonus || 0;
+
+    const grossSalary = basicSalary + hra + da + conveyance + bonus;
+
+    const pf = comp.pf || (basicSalary * 0.12);
+    const esi = comp.esi || (grossSalary * 0.0075);
+    const tax = comp.tax || (grossSalary * 0.1);
+    const otherDeductions = comp.otherDeductions || 0;
+
+    const totalDeductions = pf + esi + tax + otherDeductions;
+    const netSalary = grossSalary - totalDeductions;
+
+    // ---- CREATE PAYROLL RECORD ----
+    payload = {
+      employeeId: emp.id,
+      month,
+      year,
+      basicSalary ,
+      hra ,
+      da,
+      conveyance,
+      bonus,
+      pf,
+      esi,
+      tax,      
+      deductions: totalDeductions,
+      grossSalary: grossSalary,
+      netSalary : netSalary,
+      status: 'FINALIZED'
+    }
+  }
+
+  }catch(err){
+    console.error('[PayrollService] Error:', err);
+    throw err;
+  }
+
+  return payload;
+
+};
