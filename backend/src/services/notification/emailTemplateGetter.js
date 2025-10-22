@@ -10,7 +10,19 @@ exports.emailTemplateGetter = async (payload) => {
 
     if (!template) {
       console.warn(`⚠️ No email template found for event type: ${payload.type}`);
-      return null;
+      let attachments = [];
+      if (payload.attachmentFilePath) {
+        attachments.push({
+          filename: payload.attachmentFilePath.split('/').pop(),
+          content: fs.createReadStream(payload.attachmentFilePath),
+        });
+      }
+      return {
+        toEmail: payload.email,
+        subject: "<p>You have an email notification</p>",
+        body: "<p>Sorry! No email template body is configured for this type of notification.</p>",
+        attachments: attachments
+      }
     }
 
     const templateData = {
@@ -29,14 +41,16 @@ exports.emailTemplateGetter = async (payload) => {
         if (templateData[key] !== undefined) filteredData[key] = templateData[key];
       });
     }
-
-    const compiledSubject = Handlebars.compile(template.subject)(filteredData);
-    const compiledBody = Handlebars.compile(template.body)(filteredData);
+    const compiledSubject = Handlebars.compile(template.subject || "<p>You have an email.</p>")(filteredData);
+    const compiledBody = Handlebars.compile(template.body || "<p>You have an email. Please check if any attachments.</p>")(filteredData);
 
     let toEmail = payload.email;
-    if (payload.type === "leave_applied") {
-      toEmail = payload.manager?.email;
+    if (template) {
+      if (payload.type === "leave_applied") {
+        toEmail = payload.manager?.email;
+      }
     }
+
 
     let attachments = [];
     if (payload.attachmentFilePath) {
@@ -50,8 +64,8 @@ exports.emailTemplateGetter = async (payload) => {
       toEmail,
       subject: compiledSubject,
       body: compiledBody,
-      attachments,
-    };
+      attachments: attachments
+    }
   } catch (err) {
     console.error("❌ Error while getting the email template or processing the attachments :", err.message);
     throw err;
