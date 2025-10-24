@@ -1,5 +1,7 @@
-const  Compensation  = require('../../models/payroll/compensation');
-const Employee  = require('../../models/Employee');
+const Compensation = require('../../models/payroll/compensation');
+const Employee = require('../../models/Employee');
+const { where } = require('sequelize');
+const { Op } = require('sequelize');
 
 exports.createOrUpdateCompensation = async (employeeId, data) => {
   const emp = await Employee.findByPk(employeeId);
@@ -33,6 +35,17 @@ exports.getCompensationByEmployee = async (employeeId) => {
 
 exports.getAllCompensations = async () => {
   return Compensation.findAll({ include: Employee });
+};
+exports.getEmployeeList = async () => {
+  return Employee.findAll({
+    where: {
+      status: 'Active',
+      id: {
+        [Op.notIn]: await Compensation.findAll({ attributes: ['employeeId'] }).then(records => records.map(record => record.employeeId))
+      }
+    },
+    attributes: ['id', 'name', 'email', 'departmentId', 'designation', 'empCode']
+  });
 };
 
 exports.deleteCompensation = async (id) => {
