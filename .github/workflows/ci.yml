@@ -14,7 +14,7 @@ jobs:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_DB: hrms
+          POSTGRES_DB: hrms_test
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: Welcome@1234
         options: >
@@ -22,7 +22,7 @@ jobs:
           --health-interval=5s
           --health-timeout=5s
           --health-retries=10
-          -c max_connections=10
+          --command "postgres -c max_connections=10"
         ports:
           - "5432:5432"
 
