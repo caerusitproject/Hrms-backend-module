@@ -18,7 +18,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
         with:
           context: .
-          file: ../backend/Dockerfile
+          file: ./backend/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/hrms-app:latest
       # ✅ Login to Docker Hub
