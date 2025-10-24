@@ -104,4 +104,14 @@ async function start() {
   }
 }
 
+// 🧹 Graceful shutdown handler
+process.on('SIGINT', async () => {
+  console.log('\n🛑 Caught SIGINT, closing database connection...');
+  await db.sequelize.close();
+  console.log('✅ Database connection closed. Exiting...');
+  process.exit(0);
+});
+
+
+
 start().catch(err => { console.error(err); process.exit(1); });

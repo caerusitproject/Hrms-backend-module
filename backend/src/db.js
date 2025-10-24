@@ -1,15 +1,3 @@
-/*const { Sequelize } = require('sequelize');
-require('dotenv').config();
-
-const connString = process.env.DATABASE_URL
-console.log("database-string=",connString)
-const sequelize = new Sequelize(connString, {
-  dialect: 'postgres',
-  logging: false
-});
-
-module.exports = sequelize;*/
-
 
 
 const Sequelize = require("sequelize");
