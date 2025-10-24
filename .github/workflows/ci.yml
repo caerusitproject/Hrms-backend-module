@@ -14,7 +14,7 @@ jobs:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_DB: hrms_test
+          POSTGRES_DB: hrms
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: Welcome@1234
         options: >
