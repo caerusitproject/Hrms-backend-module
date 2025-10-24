@@ -21,8 +21,8 @@ jobs:
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: cearususer123
+          password: password123#
 
       # ✅ Build & Push Image
       - name: Build and Push Docker Image
@@ -32,8 +32,8 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/hrms-service:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/hrms-service:${{ github.sha }}
+            cearususer123/hrms-service:latest
+            cearususer123/hrms-service:${{ github.sha }}
 
       # ✅ Logout
       - name: Docker Logout
