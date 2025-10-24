@@ -1,0 +1,75 @@
+name: HRMS CI Pipeline
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: hrms_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+          -c max_connections=10
+        ports:
+          - "5432:5432"
+
+      kafka:
+        image: wurstmeister/kafka:latest
+        env:
+          KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+        ports:
+          - "9092:9092"
+
+      zookeeper:
+        image: wurstmeister/zookeeper:latest
+        ports:
+          - "2181:2181"
+
+    env:
+      NODE_ENV: test
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: hrms
+     
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
+
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Lint Check
+      run: npm run lint --if-present
+
+    - name: Run DB Migrations
+      run: npx sequelize-cli db:migrate
+
+    - name: Run Tests
+      run: npm test
+
+    - name: Build Docker Image
+      run: docker build -t hrms-backend:latest .
