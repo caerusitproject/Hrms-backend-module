@@ -22,7 +22,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           username: cearususer123
-          password: password123#
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       # ✅ Build & Push Image
       - name: Build and Push Docker Image
