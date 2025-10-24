@@ -14,9 +14,9 @@ jobs:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_DB: hrms_test
+          POSTGRES_DB: hrms
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_PASSWORD: Welcome@1234
         options: >
           --health-cmd="pg_isready -U postgres"
           --health-interval=5s
@@ -25,21 +25,6 @@ jobs:
           -c max_connections=10
         ports:
           - "5432:5432"
-
-      kafka:
-        image: wurstmeister/kafka:latest
-        env:
-          KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
-        ports:
-          - "9092:9092"
-
-      zookeeper:
-        image: wurstmeister/zookeeper:latest
-        ports:
-          - "2181:2181"
 
     env:
       NODE_ENV: test
