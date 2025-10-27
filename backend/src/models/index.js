@@ -15,6 +15,7 @@ dbInfo.Attendance = require("./Attendance");
 dbInfo.Role = require("./Role");
 dbInfo.User = require("./User");
 dbInfo.Leave = require("./LeaveRequest");
+dbInfo.LeaveInfo = require("./LeaveInfo");
 dbInfo.Upload = require("./uploadModel");
 dbInfo.RefreshToken = require("./RefreshToken");
 dbInfo.EmployeeRole = require("./EmployeeRole");
@@ -47,8 +48,9 @@ dbInfo.User.hasMany(dbInfo.RefreshToken, { foreignKey: "userId", as: "tokens" })
 dbInfo.Employee.hasMany(dbInfo.RefreshToken, { foreignKey: "empId", as: "tokens" });
 dbInfo.RefreshToken.belongsTo(dbInfo.Employee, { foreignKey: "empId", as: "employee" });
 dbInfo.RefreshToken.belongsTo(dbInfo.User, { foreignKey: "userId", as: "user" });
-dbInfo.Leave.belongsTo(dbInfo.Employee, { as: "employee", foreignKey: "eId" });
+dbInfo.Leave.belongsTo(dbInfo.Employee, { as: "employee", foreignKey: "employeeId" });
 dbInfo.Leave.belongsTo(dbInfo.Employee, { as: "manager", foreignKey: "managerId" });
+dbInfo.LeaveInfo.belongsTo(dbInfo.Employee, { as: "employee", foreignKey: "employeeId" });
 
 // Associations
 

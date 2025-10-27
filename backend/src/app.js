@@ -7,6 +7,7 @@ const departmentRoutes = require('./routes/departmentRoutes');
 const authRoutes = require('./routes/authRoute');
 const roleRoutes = require("./routes/roleRoutes");
 const leaveRoute = require("./routes/leaveRoutes");
+const leaveInfoRoutes = require("./routes/leaveInfoRoutes");
 const setupSwagger = require("./swagger");
 const workflowRoute = require('./routes/workflowRouter');
 const attendanceRoutes = require('./routes/attendanceRoutes');
@@ -36,6 +37,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Admin-only routes
 app.use("/api/admin", adminRoutes);
+app.use("/api/leaveInfo", leaveInfoRoutes);
 //Payroll
 //app.use("/api/payroll/", payrollRouters);
 
