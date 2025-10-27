@@ -33,6 +33,15 @@ exports.getAllCompensations = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+exports.getEmployeeList = async (req, res) => {
+  try {
+    const employees = await compensationService.getEmployeeList();
+    res.status(200).json(employees);
+  } catch (error) {
+    console.error('[CompensationController]', error);
+    res.status(500).json({ error: error.message });
+  }                       
+};
 
 exports.deleteCompensation = async (req, res) => {
   try {

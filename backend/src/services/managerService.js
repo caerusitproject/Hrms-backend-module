@@ -1,10 +1,50 @@
 const Employee = require('../models/Employee.js');
 const Leave = require('../models/LeaveRequest.js');
+const LeaveInfo = require('../models/LeaveInfo.js');
 const Attendance = require('../models/Attendance.js');
 const Broadcast = require('../models/Broadcast.js');
 const { Op } = require('sequelize');
+const { stat } = require('fs');
 
 class ManagerService {
+
+  static async handleLeave(id, status) {
+
+    if (status.toUpperCase() === 'APPROVED') {
+      const leave = await this.approvalProcess(id);
+      return leave;
+    }
+    const leave = await Leave.findByPk(id);
+    if (!leave) throw new Error('Leave not found');
+    leave.status = status.toUpperCase();
+    await leave.save();
+    return leave;
+  }
+
+  static async approvalProcess(leaveId) {
+    const leave = await Leave.findByPk(leaveId);
+    if (!leave) throw new Error('Leave not found');
+    const employeeId = leave.employeeId;
+    const leaveInfo = await LeaveInfo.findOne({ where: { employeeId } });
+    if (!leaveInfo) throw new Error('Leave record not found');
+    const startDate = new Date(leave.startDate);
+    const endDate = new Date(leave.endDate);
+    const daysApplied = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+    const availableCasualLeaves = leaveInfo.casualLeave || 0;
+    let message = 'Leave approved successfully';
+    let newCasualLeaves = availableCasualLeaves - daysApplied;
+    if (newCasualLeaves < 0) {
+      message = 'Leave approved, but your casual leaves are not enough. It will be deducted from attendance.';
+      newCasualLeaves = 0;
+    }
+    await leave.update({ status: 'APPROVED' });
+    await leaveInfo.update({ casualLeave: newCasualLeaves });
+    return {
+      leave,
+      message
+    };
+  }
+
   static async getTeam(managerId) {
     return Employee.findAll({ where: { managerId } });
   }
@@ -17,15 +57,7 @@ class ManagerService {
     return Attendance.findAll({ where: { empCode } });
   }
 
-  static async handleLeave(id, status) {
-    const leave = await Leave.findByPk(id);
-    if (!leave) throw new Error('Leave not found');
-    leave.status = status.toUpperCase();
-    await leave.save();
-    // const emp = await Employee.findByPk(leave.employeeId);
-    // sendEmail(emp.email, 'Leave Update', `Status: ${status}`);
-    return leave;
-  }
+
 
   static async getBroadcasts() {
     return Broadcast.findAll();
@@ -68,6 +100,8 @@ class ManagerService {
     const recentBroadcast = await this.getTodaysBroadcast();
     return { totalTeamMembers, teamMembers, pendingLeaves, recentBroadcast };
   }
+
+
 }
 
 module.exports = ManagerService;
