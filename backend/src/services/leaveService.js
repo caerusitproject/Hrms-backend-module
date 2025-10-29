@@ -68,6 +68,9 @@ exports.approveLeave = async (leaveId, managerId, action) => {
 };
 
 exports.getLeavesCount = async (employeeId, flag) => {
+  const emp= Employee.findByPk(employeeId);
+  if (!emp) throw new Error('Employee not found');
+  
   let startOfYear= 0;
   let endOfYear = 0;
   const now = new Date();
@@ -101,6 +104,7 @@ exports.getLeavesList = async (employeeId) => {
     attributes: ['id', 'startDate', 'endDate', 'reason', 'status', 'createdAt'],  
     order: [['createdAt', 'DESC']]
   });
+  if(leaves.length === 0){ return { message: 'No leave requests found', leaves: [] }; }
   return leaves;
 };
 
@@ -119,5 +123,5 @@ exports.deleteLeave = async (leaveId) => {
     throw new Error("Leave record not found");
   }
   await leave.destroy();
-  return { message: "Leave record deleted successfully" };
+  return true;
 };
