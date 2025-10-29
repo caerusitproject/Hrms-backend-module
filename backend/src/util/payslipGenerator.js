@@ -14,7 +14,7 @@ function formatCurrency(value) {
 
 exports.generatePayslip = async (employee, payroll) => {
   if (!employee) throw new Error('Employee not found');
-
+  if (!payroll) throw new Error('Payroll not found');
   const payslipDir = path.join(__dirname, '../../payslips');
   if (!fs.existsSync(payslipDir)) fs.mkdirSync(payslipDir);
   const filePath = path.join(payslipDir, `Payslip_${employee.name}_${payroll.month}_${payroll.year}.pdf`);
@@ -29,12 +29,6 @@ exports.generatePayslip = async (employee, payroll) => {
   // Sky blue solid header
   const headerHeight = 100;
   doc.rect(0, 0, pageWidth, headerHeight).fill('#e619b2ff');
-
-  // Company logo (circular)
-//   doc.circle(70, 50, 28).lineWidth(3).strokeOpacity(0.8).stroke('#ffffff');
-//   doc.circle(70, 50, 20).lineWidth(2).strokeOpacity(0.6).stroke('#ffffff');
-
-  // Company name and details
   doc.fillColor('#ffffff')
      .fontSize(26)
      .font('Helvetica-Bold')
@@ -71,7 +65,7 @@ exports.generatePayslip = async (employee, payroll) => {
      .font('Helvetica-Bold')
      .fillColor('#111827')
      .text(employee.name || 'N/A', leftColX + 100, cardStartY + 20)
-     .text(employee.id || 'N/A', leftColX + 100, cardStartY + 45)
+     .text(employee.empCode || 'N/A', leftColX + 100, cardStartY + 45)
      .text(employee.department || 'N/A', leftColX + 100, cardStartY + 70)
      .text(employee.designation || 'Manager', rightColX + 75, cardStartY + 20)
      .text(`${moment().month(payroll.month - 1).format('MMMM')} ${payroll.year}`, rightColX + 75, cardStartY + 45)

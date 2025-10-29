@@ -19,15 +19,19 @@ exports.addOrUpdateLeave = async (employeeId, data) => {
 };
 
 exports.getAllLeaveInfo = async () => {
-  return LeaveInfo.findAll({ include:[{model : Employee , as :'employee',attributes: ['id', 'name', 'empCode', 'email'],},]  });
+  const leaveInfo= await LeaveInfo.findAll({ include:[{model : Employee , as :'employee',attributes: ['id', 'name', 'empCode', 'email'],},]  });
+  if (!Array.isArray(leaveInfo) || leaveInfo.length === 0) { return { message: 'No leave info found', leaveInfo: [] }; }
+  return leaveInfo;
 };
 
 exports.getLeaveInfoByEmployee = async (employeeId) => {
+  const emp= await Employee.findByPk(employeeId);
+  if (!emp) throw new Error('Employee not found');
   return LeaveInfo.findOne({ where: { employeeId } });
 };
 
 exports.deleteLeaveInfo = async (id) => {
   const deleted = await LeaveInfo.destroy({ where: { id } });
-  if (!deleted) throw new Error('Leave info not found');
+  if (!deleted) throw new Error('Leave info record not found');
   return { message: 'Leave info deleted successfully' };
 };

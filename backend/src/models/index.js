@@ -58,6 +58,8 @@ dbInfo.Employee.hasMany(dbInfo.Payroll, { foreignKey: 'employeeId' });
 dbInfo.Payroll.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
 dbInfo.Payroll.hasMany(dbInfo.PayrollLineItem, { foreignKey: 'payrollId' });
 dbInfo.PayrollLineItem.belongsTo(dbInfo.Payroll, { foreignKey: 'payrollId' });
+dbInfo.Employee.hasOne(dbInfo.Compensation, { foreignKey: 'employeeId' });
+dbInfo.Compensation.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
 
 
 

@@ -8,6 +8,9 @@ router.post('/generate', controller.generatePayrollForEmployee);
 router.post('/finalizepay', controller.finalizePayroll);
 router.post('/compensation', compctrl.createOrUpdateCompensation);
 router.get('/employee-list',auth.authenticate, auth.authorizeRoles("ADMIN"), compctrl.getEmployeeList);
+router.get('/not_generated',auth.authenticate, auth.authorizeRoles("ADMIN"),controller.getNotGenerated);
+router.get('/created',auth.authenticate, auth.authorizeRoles("ADMIN"),controller.getCreated);
+router.get('/filter',auth.authenticate,auth.authorizeRoles("ADMIN"), controller.getFilteredPayrolls);//make sure the month is being saved in the payroll table as 09,08 and so on because we are doing string matching in the code.
 //router.get('/:employeeId/:month', controller.getPayrollByEmployee);
 
 // Get all payroll records

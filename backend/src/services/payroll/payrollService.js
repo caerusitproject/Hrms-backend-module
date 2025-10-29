@@ -1,92 +1,146 @@
 const Compensation = require('../../models/payroll/compensation');
 const Payroll = require('../../models/payroll/payroll');
-const PayrollLineItem  = require('../../models/payroll/payrollLineItem');
+const { Op } = require('sequelize');
+const PayrollLineItem = require('../../models/payroll/payrollLineItem');
 const Employee = require('../../models/Employee');
 const generatePDF = require('../../util/payslipGenerator')
-const {sendPayslipEmail} = require('../../services/notification/notificationHandler');
+const { sendPayslipEmail } = require('../../services/notification/notificationHandler');
+const { where } = require('sequelize');
 
-exports.generatePayroll = async (month, year) => {//cerates the payroll and stores it into the payrolllineitem and pyroll table
-  const employees = await Employee.findAll({ include: [Compensation] });
 
-  if (employees.length === 0) throw new Error('No employees found');
-
-  const payrolls = [];
-
-  for (const emp of employees) {
-    const comp = emp.Compensation;
-    if (!comp) continue;
-
-    const totalEarnings = comp.baseSalary + comp.hra + comp.allowances;
-    const totalDeductions = comp.deductions;
-    const netPay = totalEarnings - totalDeductions;
-
-    const payroll = await Payroll.create({
-      employeeId: emp.id,
-      month,
-      year,
-      totalEarnings,
-      totalDeductions,
-      netPay,
-    });
-
-    await PayrollLineItem.bulkCreate([
-      { payrollId: payroll.id, description: 'Base Salary', type: 'EARNING', amount: comp.baseSalary },
-      { payrollId: payroll.id, description: 'HRA', type: 'EARNING', amount: comp.hra },
-      { payrollId: payroll.id, description: 'Allowances', type: 'EARNING', amount: comp.allowances },
-      { payrollId: payroll.id, description: 'Deductions', type: 'DEDUCTION', amount: comp.deductions },
-    ]);
-
-    payrolls.push(payroll);
+exports.processPayroll = async (payrollIds) => {
+  if (!Array.isArray(payrollIds) || payrollIds.length === 0) {
+    throw new Error('payrollIds must be a non-empty array');
   }
 
-  return payrolls;
+  const results = [];
+  const errors = [];
+
+  for (const payrollId of payrollIds) {
+    try {
+      
+      const payroll = await Payroll.findByPk(payrollId, {
+        include: [
+          {
+            model: Employee,
+            include: [Compensation],
+            required: true
+          }
+        ]
+      });
+
+      if (!payroll) {
+        errors.push({ payrollId, error: 'Payroll not found' });
+        continue;
+      }
+
+      const employee = payroll.employee;
+      if (!employee) {
+        errors.push({ payrollId, error: 'Employee not found' });
+        continue;
+      }
+
+      const month = payroll.month;
+      const year = payroll.year;
+
+      
+      const payLoad = await this.processSalary(employee, month, year);
+      if (!payLoad) {
+        errors.push({ payrollId, error: 'Salary processing failed' });
+        continue;
+      }
+
+      
+      await this.createOrUpdatePayroll(employee.id, month, year, payLoad);
+
+      
+      const pdfPath = await generatePDF.generatePayslip(employee, payLoad);
+
+      
+      await sendPayslipEmail(employee, pdfPath);
+
+      results.push({
+        payrollId,
+        employeeId: employee.id,
+        employeeName: employee.name || `${employee.firstName} ${employee.lastName}`,
+        status: 'success',
+        message: 'Payslip generated and emailed',
+        pdfPath,
+        netSalary: payLoad.netSalary
+      });
+
+    } catch (error) {
+      console.error(`[PayrollService] Error processing payroll ID ${payrollId}:`, error);
+      errors.push({
+        payrollId,
+        error: error.message
+      });
+    }
+  }
+
+  return {
+    message: `Processed ${results.length} payroll(s)`,
+    totalProcessed: payrollIds.length,
+    successful: results.length,
+    failed: errors.length,
+    results,
+    errors
+  };
 };
 
-exports.processPayroll = async (payrollId) => {
-  const payroll = await Payroll.findByPk(payrollId, { include: Employee });
-  if (!payroll) throw new Error('Payroll not found');
 
-  const employee = payroll.Employee;
 
-  // Generate PDF
-  const pdfPath = await generatePDF.generatePayslipPDF(employee , payroll)
 
-   // ---- SEND PAYSLIP EMAIL ----
-    await sendPayslipEmail(employee, pdfPath);
 
-  return { message: 'Payslip generated and emailed successfully', pdfPath };
-};
 
-exports.finalizePayrollForMonth = async (month , year) => {
-/**
- * Finalize payroll for all employees
- */
 
-  
-  const employees = await Employee.findAll({ include: Compensation });
+
+
+
+
+
+
+
+
+
+
+
+exports.finalizePayrollForMonth = async (month, year) => {
+  /**
+   * Finalize payroll for all employees
+   */
+
+  const employees = await Employee.findAll({
+    include: [
+      {
+        model: Compensation,
+        required: true
+      }
+    ]
+  });
   if (!employees || employees.length === 0) throw new Error('No employees found');
 
   const results = [];
 
   for (const emp of employees) {
     const payLoad = await this.processSalary(emp, month, year);
-    if(payLoad){
-      var payroll ={
+    if (payLoad) {
+      var payroll = {
         employeeId: payLoad.employeeId,
-        month : payLoad.month,
+        month: payLoad.month,
         year: payLoad.year,
-      basicSalary :payLoad.basicSalary,       
-      deductions: payLoad.totalDeductions,
-      grossSalary: payLoad.grossSalary,
-      netSalary : payLoad.netSalary,
-      status: 'GENERATED'
+        basicSalary: payLoad.basicSalary,
+        deductions: payLoad.totalDeductions,
+        grossSalary: payLoad.grossSalary,
+        netSalary: payLoad.netSalary,
+        status: 'NOT CREATED'
 
       }
-      await this.createOrUpdatePayroll(emp.id, month , year, payLoad);
+      await this.createOrUpdatePayroll(emp.id, month, year, payLoad);
     }
     //const payroll = await this.createOrUpdatePayroll(emp.id, month , year, payLoad);
     // ---- GENERATE PAYSLIP PDF ----
-    const pdfPath = await generatePDF.generatePayslip(emp , payLoad)
+    const pdfPath = await generatePDF.generatePayslip(emp, payLoad)
 
     // ---- SEND PAYSLIP EMAIL ----
     await sendPayslipEmail(emp, pdfPath);
@@ -94,7 +148,7 @@ exports.finalizePayrollForMonth = async (month , year) => {
     results.push({
       employee: emp.name,
       email: emp.email,
-      netSalary:payLoad.netSalary,
+      netSalary: payLoad.netSalary,
       pdfPath
     });
   }
@@ -104,7 +158,7 @@ exports.finalizePayrollForMonth = async (month , year) => {
     processed: results.length,
     employees: results
   };
-}; 
+};
 
 
 exports.createOrUpdatePayroll = async (employeeId, month, year, payrollData) => {
@@ -159,55 +213,120 @@ exports.createOrUpdatePayroll = async (employeeId, month, year, payrollData) => 
 };
 
 
-exports.processSalary = async (emp, month, year) =>{
-    var payload ={};
-  try{
+exports.processSalary = async (emp, month, year) => {
+  var payload = {};
+  try {
 
     const comp = emp.Compensation;
     if (comp) {
 
-    // ---- SALARY BREAKUP CALCULATION ----
-    const basicSalary = comp.baseSalary || 0;
-    const hra = comp.hra || (basicSalary * 0.4);
-    const da = comp.da || (basicSalary * 0.1);
-    const conveyance = comp.conveyance || 1600;
-    const bonus = comp.bonus || 0;
+      // ---- SALARY BREAKUP CALCULATION ----
+      const basicSalary = comp.baseSalary || 0;
+      const hra = comp.hra || (basicSalary * 0.4);
+      const da = comp.da || (basicSalary * 0.1);
+      const conveyance = comp.conveyance || 1600;
+      const bonus = comp.bonus || 0;
 
-    const grossSalary = basicSalary + hra + da + conveyance + bonus;
+      const grossSalary = basicSalary + hra + da + conveyance + bonus;
 
-    const pf = comp.pf || (basicSalary * 0.12);
-    const esi = comp.esi || (grossSalary * 0.0075);
-    const tax = comp.tax || (grossSalary * 0.1);
-    const otherDeductions = comp.otherDeductions || 0;
+      const pf = comp.pf || (basicSalary * 0.12);
+      const esi = comp.esi || (grossSalary * 0.0075);
+      const tax = comp.tax || (grossSalary * 0.1);
+      const otherDeductions = comp.otherDeductions || 0;
 
-    const totalDeductions = pf + esi + tax + otherDeductions;
-    const netSalary = grossSalary - totalDeductions;
+      const totalDeductions = pf + esi + tax + otherDeductions;
+      const netSalary = grossSalary - totalDeductions;
 
-    // ---- CREATE PAYROLL RECORD ----
-    payload = {
-      employeeId: emp.id,
-      month,
-      year,
-      basicSalary ,
-      hra ,
-      da,
-      conveyance,
-      bonus,
-      pf,
-      esi,
-      tax,      
-      deductions: totalDeductions,
-      grossSalary: grossSalary,
-      netSalary : netSalary,
-      status: 'Created'
+      // ---- CREATE PAYROLL RECORD ----
+      payload = {
+        employeeId: emp.id,
+        month,
+        year,
+        basicSalary,
+        hra,
+        da,
+        conveyance,
+        bonus,
+        pf,
+        esi,
+        tax,
+        deductions: totalDeductions,
+        grossSalary: grossSalary,
+        netSalary: netSalary,
+        status: 'Created'
+      }
     }
-  }
 
-  }catch(err){
+  } catch (err) {
     console.error('[PayrollService] Error:', err);
     throw err;
   }
 
   return payload;
 
+};
+
+exports.getNotGenerated = async () => {
+  const notGenerated = await Payroll.findAll({
+    where: { status: 'NOT CREATED' },
+    attributes: ['id', 'employeeId', 'month', 'year', 'deductions', 'netSalary', 'status', 'grossSalary']
+  });
+  if (!notGenerated) { throw new Error("Error while retrieving the Not generated list") };
+  return notGenerated;
+}
+
+exports.getCreated = async () => {
+  const created = await Payroll.findAll({
+    where: { status: 'Created' },
+    attributes: ['id', 'employeeId', 'month', 'year', 'deductions', 'netSalary', 'status', 'grossSalary']
+  });
+  if (!created) { throw new Error("Error while retrieving the created payslip list") };
+  return created;
+}
+
+exports.getFilteredPayrolls = async (monthType, status) => {
+  try {
+    // Get the current date
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+
+    // Determine which month/year to use
+    let filterMonth = currentMonth;
+    let filterYear = currentYear;
+
+    if (monthType.toLowerCase() === 'previous') {
+      filterMonth = currentMonth - 1;
+      if (filterMonth === 0) {
+        filterMonth = 12;
+        filterYear = currentYear - 1;
+      }
+    }
+    filterMonth = filterMonth < 10 ? '0' + filterMonth.toString() : filterMonth.toString();
+    filterYear = filterYear.toString();
+    const payrolls = await Payroll.findAll({
+      where: {
+        [Op.and]: [
+          { status },
+          { month: filterMonth },
+          { year: filterYear },
+        ],
+      },
+      attributes: [
+        'id',
+        'employeeId',
+        'month',
+        'year',
+        'deductions',
+        'netSalary',
+        'grossSalary',
+        'status',
+      ],
+    });
+
+    return payrolls;
+  } catch (error) {
+    console.error("Error while filtering payrolls:", error);
+    throw new Error("Failed to fetch filtered payrolls");
+  }
 };
