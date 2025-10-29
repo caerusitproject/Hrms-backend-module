@@ -6,28 +6,55 @@ const { Op } = require('sequelize');
 exports.createOrUpdateCompensation = async (employeeId, data) => {
   const emp = await Employee.findByPk(employeeId);
   if (!emp) throw new Error('Employee not found');
-
   const allowedFields = [
     'baseSalary', 'bonus', 'incentives', 'overtimePay', 'commission',
     'allowances', 'hra', 'da', 'lta', 'medicalAllowance', 'pf', 'esi',
     'gratuity', 'professionalTax', 'incomeTax', 'deductions', 'remarks'
   ];
-
   const filteredData = {};
   for (const key of allowedFields) {
     if (data[key] !== undefined) filteredData[key] = data[key];
   }
-
-  const existing = await Compensation.findOne({ where: { employeeId } });
-
-  if (existing) {
-    await existing.update(filteredData);
-    return { message: 'Compensation updated successfully', compensation: existing };
+  const isPartial = Object.keys(filteredData).length <= 2; 
+  if (isPartial) {
+    const baseSalary = data.baseSalary || 0;
+    const defaults = {
+      bonus: baseSalary * 0.05,
+      incentives: baseSalary * 0.02,
+      overtimePay: baseSalary * 0.01,
+      commission: baseSalary * 0.005,
+      allowances: baseSalary * 0.05,
+      hra: baseSalary * 0.20,
+      da: baseSalary * 0.10,
+      lta: baseSalary * 0.04,
+      medicalAllowance: baseSalary * 0.02,
+      pf: baseSalary * 0.12,
+      esi: baseSalary * 0.0175,
+      gratuity: baseSalary * 0.0481,
+      professionalTax: baseSalary * 0.01,
+      incomeTax: baseSalary * 0.06,
+      deductions: baseSalary * 0.02,
+      remarks: 'Auto-generated compensation structure'
+    };
+    for (const key of Object.keys(defaults)) {
+      if (filteredData[key] === undefined) {
+        filteredData[key] = key === 'remarks'
+          ? defaults[key]
+          : Math.round(defaults[key]);
+      }
+    }
   }
+  let compensation = await Compensation.findOne({ where: { employeeId } });
 
-  const comp = await Compensation.create({ employeeId, ...filteredData });
-  return { message: 'Compensation created successfully', compensation: comp };
+  if (compensation) {
+    await compensation.update(filteredData);
+    return { message: 'Compensation updated successfully', compensation };
+  } else {
+    compensation = await Compensation.create({ employeeId, ...filteredData });
+    return { message: 'Compensation created successfully', compensation };
+  }
 };
+
 
 exports.getCompensationByEmployee = async (employeeId) => {
   return Compensation.findOne({ where: { employeeId } });

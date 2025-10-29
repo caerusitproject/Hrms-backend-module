@@ -1,5 +1,5 @@
 const compensationService = require('../../services/payroll/compensationService');
-exports.createOrUpdateCompensation = async (req, res) => {
+exports.createOrUpdateCompensation = async (req, res) => {//will also be used as update the compensation which will indeed be needed for appraisals.
   try {
     const { employeeId, ...data } = req.body;
     if (!employeeId) return res.status(400).json({ message: 'Employee ID is required' });
