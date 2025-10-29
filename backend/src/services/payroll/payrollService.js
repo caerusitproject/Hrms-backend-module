@@ -5,7 +5,7 @@ const Employee = require('../../models/Employee');
 const generatePDF = require('../../util/payslipGenerator')
 const {sendPayslipEmail} = require('../../services/notification/notificationHandler');
 
-exports.generatePayroll = async (month, year) => {
+exports.generatePayroll = async (month, year) => {//cerates the payroll and stores it into the payrolllineitem and pyroll table
   const employees = await Employee.findAll({ include: [Compensation] });
 
   if (employees.length === 0) throw new Error('No employees found');
@@ -79,7 +79,7 @@ exports.finalizePayrollForMonth = async (month , year) => {
       deductions: payLoad.totalDeductions,
       grossSalary: payLoad.grossSalary,
       netSalary : payLoad.netSalary,
-      status: 'FINALIZED'
+      status: 'GENERATED'
 
       }
       await this.createOrUpdatePayroll(emp.id, month , year, payLoad);
@@ -199,7 +199,7 @@ exports.processSalary = async (emp, month, year) =>{
       deductions: totalDeductions,
       grossSalary: grossSalary,
       netSalary : netSalary,
-      status: 'FINALIZED'
+      status: 'Created'
     }
   }
 

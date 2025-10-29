@@ -36,7 +36,7 @@ exports.getCompensationByEmployee = async (employeeId) => {
 exports.getAllCompensations = async () => {
   return Compensation.findAll({ include: Employee });
 };
-exports.getEmployeeList = async () => {
+exports.getEmployeeList = async () => {//done by tks
   return Employee.findAll({
     where: {
       status: 'Active',
