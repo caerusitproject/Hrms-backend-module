@@ -6,14 +6,15 @@ const Department = db.Department;
 const Role = db.Role;
 //const { Sequelize } = require("sequelize");;
 const { sendEmailNotification } = require('../services/notification/notificationHandler');
+const { where } = require("sequelize");
 
 class EmployeeService {
 
-   /**
-     * Create a new employee
-     * @param {Object} payload - employee details
-     * @returns {Promise<Object>}
-     */
+  /**
+    * Create a new employee
+    * @param {Object} payload - employee details
+    * @returns {Promise<Object>}
+    */
   static async createEmployee(payload) {
 
     //await this.initKafka();
@@ -23,32 +24,43 @@ class EmployeeService {
     }
     // const hashedPassword = await bcrypt.hash(payload.password, 10);
     // payload.password = hashedPassword;
-    if (payload.password) {
-      const hashedPassword = await bcrypt.hash(payload.password, 10);
-      payload.password = hashedPassword;
+    try {
+      if (payload.password) {
+        const hashedPassword = await bcrypt.hash(payload.password, 10);
+        payload.password = hashedPassword;
+      }
+    } catch (err) {
+      throw new Error("Error hashing password: " + err.message);
     }
+
 
     const roleIds = payload.roleIds;
     const employee = await Employee.create(payload);
     if (roleIds) {
       await EmployeeRole.create({ employeeId: employee.id, roleId: roleIds });
     }
-    //// ✅ Send mail message for email notification
-    const message = {
-      type: 'EMPLOYEE_REGISTRATION',
-      email: employee.email,
-      subject: 'Welcome to HRMS!',
-      template: 'employee_welcome',
-      payload: {
-        name: employee.name,
-        department: employee.departmentId,
-        email: employee.email,
-        type: "employee_registration",
-        empCode: employee.empCode
-      },
-    };
 
-    await sendEmailNotification(message);
+
+    //// ✅ Send mail message for email notification
+    try {
+
+      const message = {
+        type: 'EMPLOYEE_REGISTRATION',
+        email: employee.email,
+        subject: 'Welcome to HRMS!',
+        template: 'employee_welcome',
+        payload: {
+          name: employee.name,
+          department: employee.departmentId,
+          email: employee.email,
+          type: "employee_registration",
+          empCode: employee.empCode
+        },
+      };
+      await sendEmailNotification(message);
+    } catch (error) {
+      console.error("Error sending email notification:", error);
+    }
 
     //await sendNotificationEvent(message);
     //console.log('✅ Kafka event published for employee registration');
@@ -63,7 +75,10 @@ class EmployeeService {
    * @returns {Promise<Array>}
    */
   static async getAllEmployees() {
-    const emp = await Employee.findAll();
+    const emp = await Employee.findAll({
+      where: { status: 'Active' },
+      attributes: ['id', 'name', 'email', 'designation', 'status']
+    });
     /*include: [
      {
          model: Department,
@@ -73,6 +88,9 @@ class EmployeeService {
    ],
    order: [["id", "ASC"]],
  });*/
+    if (!emp || emp.length === 0) {
+      return { message: "No active employees found", employees: [] };
+    }
     return emp;
   }
 
@@ -82,7 +100,29 @@ class EmployeeService {
    * @returns {Promise<Object|null>}
    */
   static async getEmployeeById(id) {
-    return await Employee.findByPk(id);
+    const empData = await Employee.findOne({
+      where: { id: id },
+      include: [
+        {
+          model: Department,
+          as: "department",
+          attributes: ["id", "departmentName"],
+        },
+        {
+          model: Employee,
+          as: "Manager",
+          attributes: ["id", "name"],
+        },
+        {
+        model: Role,
+        as: "roles", // 👈 use the belongsToMany alias
+        attributes: ["id", "name", "role"],
+        through: { attributes: [] }, // hide join table columns
+      },
+      ],
+    });
+    if (!empData) throw new Error("Employee not found");
+    return empData;
   }
 
   /**
@@ -95,15 +135,24 @@ class EmployeeService {
 
   static async updateEmployee(id, updates) {
     const employee = await Employee.findByPk(id);
-    if (!employee) return null;
-
+    if (!employee) throw new Error("Employee not found");
     await employee.update(updates);
     return employee;
   }
 
+  static async removeEmployee(id) {
+    const employee = await Employee.findByPk(id);
+    if (!employee) throw new Error("Employee not found");
+    employee.status = 'Inactive';
+    await employee.save();
+    return true;
+  }
+
+
 
   static async uploadEmployeeImage(id, imagePath) {
     try {
+
       const employee = await Employee.findByPk(id);
       if (!employee) throw new Error("Employee not found");
 
@@ -252,25 +301,24 @@ class EmployeeService {
 
 
   static async getEmployeeDetailsById(employeeId) {
+    if (!employeeId) {
+      throw new Error("No employee ID provided. Please provide a valid employee ID");
+    }
     try {
       const employee = await Employee.findOne({
         where: { id: employeeId },
-        attributes: ['id', 'email'],
+        attributes: ['id', 'empCode', 'email', 'name', 'designation', 'status', 'departmentId'],
         include: [
           {
-            model: Role,
-            as: 'roles',
-            through: { attributes: [] }, // hides join table
-            attributes: ['id', 'name', 'role']
+            model: Department,
+            as: 'department',
+            attributes: ['departmentName']
           }
         ]
       });
-      //const roles = await Role.findOne({where: {Id: employeeId}});
-      //employee.roles = roles;
       if (!employee) {
-        return null;
+        throw new Error("NO employee record found for the coreesponding Employee ID.");
       }
-
       return employee;
     } catch (error) {
       console.error('Error fetching employee details by ID:', error);

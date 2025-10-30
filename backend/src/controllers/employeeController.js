@@ -26,7 +26,7 @@ exports.createEmployee = async (req, res) => {
     const employee = await EmployeeService.createEmployee(req.body);
     res.status(201).json({ message: "Employee created successfully", employee });
   } catch (err) {
-    res.status(500).json({ message: "Error creating employee", error: err.message });
+    res.status(400).json({ message: "Error creating employee", error: 400 });
   }
 }
 
@@ -62,7 +62,7 @@ exports.findAllEmployee = async (req, res) => {
     res.status(200).json(employees);
   } catch (err) {
     console.error(err);
-    res.status(400).json({ error: err.message });
+    res.status(400).json({ error:400, message: err.message });
   }
 
 };
@@ -90,7 +90,7 @@ exports.updateEmployee = async (req, res) => {
     const updatedEmployee = await EmployeeService.updateEmployee(employeeId, req.body);
     res.status(200).json({ message: "Employee updated successfully", employee: updatedEmployee });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(404).json({ error:404, message: err.message });
   }
 };
 
@@ -108,12 +108,24 @@ exports.getAllEmployees = async (req, res) => {
 exports.getEmployee = async (req, res) => {
   try {
     const emp = await Employee.findById(req.params.id);
+    if (!emp) return res.status(404).json({ error:404, message: 'Employee not found' });
     res.json(emp);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 
 };
+
+exports.removeEmployee = async (req, res) => {
+  try {
+    const employeeId = req.params.id;
+    await EmployeeService.removeEmployee(employeeId);
+    res.status(200).json({ message: "Employee deleted successfully" });
+  } catch (err) {
+    res.status(404).json({ error:404, message: err.message });
+  } 
+};
+    
 
 // Get subordinates for a manager
 exports.getSubordinates = async (req, res) => {

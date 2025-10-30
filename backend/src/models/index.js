@@ -32,7 +32,7 @@ dbInfo.Payroll.hasMany(dbInfo.PayrollLineItem, { foreignKey: 'payrollId' });
 dbInfo.PayrollLineItem.belongsTo(dbInfo.Payroll, { foreignKey: 'payrollId' });
 
 // 🧩 Initialize associations AFTER loading all models
-dbInfo.Department.hasMany(dbInfo.Employee, { foreignKey: "departmentId", as: "employees" });
+//dbInfo.Department.hasMany(dbInfo.Employee, { foreignKey: "departmentId", as: "employees" });
 dbInfo.Employee.belongsTo(dbInfo.Department, { foreignKey: "departmentId", as: "department" });
 
 dbInfo.Employee.belongsTo(dbInfo.Upload, { foreignKey: "imageId", as: "image" });
@@ -58,6 +58,8 @@ dbInfo.Employee.hasMany(dbInfo.Payroll, { foreignKey: 'employeeId' });
 dbInfo.Payroll.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
 dbInfo.Payroll.hasMany(dbInfo.PayrollLineItem, { foreignKey: 'payrollId' });
 dbInfo.PayrollLineItem.belongsTo(dbInfo.Payroll, { foreignKey: 'payrollId' });
+dbInfo.Employee.hasOne(dbInfo.Compensation, { foreignKey: 'employeeId' });
+dbInfo.Compensation.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
 
 
 
