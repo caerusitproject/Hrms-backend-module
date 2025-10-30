@@ -4,9 +4,10 @@
   "description": "HRMS backend - Node.js + Postgres (Sequelize)",
   "main": "src/app.js",
   "scripts": {
-    "start": "node src/app.js",
-    "dev": "nodemon src/app.js",
-    "test": "jest --runInBand --detectOpenHandles"
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest --watch",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -20,13 +21,16 @@
     "handlebars": "^4.7.8",
     "handlers": "^1.0.3",
     "jsonwebtoken": "^9.0.2",
+    "kafkajs": "^2.2.4",
     "moment": "^2.30.1",
     "multer": "^2.0.2",
     "nodemailer": "^7.0.9",
     "papaparse": "^5.5.3",
+    "path": "^0.12.7",
     "pdfkit": "^0.17.2",
     "pg": "^8.11.0",
     "sequelize": "^6.37.7",
+    "sequelize-mock": "^0.10.2",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^9.0.0"
