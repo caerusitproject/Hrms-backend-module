@@ -86,6 +86,7 @@ class EmployeeService {
         pagination: null
       };
     }
+     
 
     const employees = await Employee.findAll({
       where: { status: 'Active' },

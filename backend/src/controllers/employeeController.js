@@ -67,6 +67,7 @@ exports.findAllEmployee = async (req, res) => {
 
 };
 
+
 exports.uploadEmployeeImage = async (req, res) => {
   try {
     const employeeId = req.params.id;
