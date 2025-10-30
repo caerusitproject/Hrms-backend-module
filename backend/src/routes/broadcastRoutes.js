@@ -27,7 +27,7 @@ const router = express.Router();
  *       200:
  *         description: Created broadcast
  */
-router.post('/create', authenticate, authorizeRoles('HR'), create);
+router.post('/create', authenticate, authorizeRoles('HR','ADMIN'), create);
 
 /**
  * @swagger
@@ -72,6 +72,6 @@ router.get('/all/:filter', authenticate, getAll);
  *       200:
  *         description: Updated broadcast
  */
-router.put('/update/:id', authenticate, authorizeRoles('HR'), validateId, update);
+router.put('/update/:id', authenticate, authorizeRoles('HR','ADMIN'), validateId, update);
 
 module.exports = router;

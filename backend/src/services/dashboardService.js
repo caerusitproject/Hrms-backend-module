@@ -2,8 +2,9 @@ const Employee = require('../models/Employee.js');
 const LeaveRequest = require('../models/LeaveRequest.js');
 const Attendance = require('../models/Attendance.js');
 const Broadcast = require('../models/Broadcast.js');
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 const managerService = require('./managerService.js');
+const { stat } = require('fs');
 
 
 /*const getHrDashboardData = async () => {
@@ -92,6 +93,7 @@ class DashboardService {
       const totalEmployees = await Employee.count();
 
       const allEmployeesDetails = await Employee.findAll({
+        where: {status: 'Active'},
         attributes: ['id', 'name', 'email', 'designation', 'status']
       });
 
@@ -106,7 +108,9 @@ class DashboardService {
         },
         order: [['createdAt', 'ASC']]
       });
-
+      if(!upcomingBroadcasts){
+        throw new Error('Error in retrieving broadcasts found');
+      }
       const upcomingBroadcastsCount = upcomingBroadcasts.length;
 
       return { totalEmployees, allEmployeesDetails, upcomingBroadcasts, upcomingBroadcastsCount };
@@ -147,11 +151,13 @@ class DashboardService {
         where: { employeeId: empId },
         attributes: ['id', 'startDate', 'endDate', 'reason', 'status', 'managerId']
       });
+      if(leaveRequests.length ===0){leaveRequests.message ='No leave requests found';}
 
       // Count of pending leaves
       const pendingLeaveCount = await LeaveRequest.count({
         where: { employeeId: empId, status: 'PENDING' }
       });
+      if(pendingLeaveCount ===0){pendingLeaveCount.message ='No pending leaves';}
 
       // Fetch today’s broadcasts
       const recentBroadcast = await managerService.getTodaysBroadcast();

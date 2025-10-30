@@ -3,22 +3,22 @@ const Leave = require('../models/LeaveRequest.js');
 const LeaveInfo = require('../models/LeaveInfo.js');
 const Attendance = require('../models/Attendance.js');
 const Broadcast = require('../models/Broadcast.js');
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 const { stat } = require('fs');
 
 class ManagerService {
 
   static async handleLeave(id, status) {
-
-    if (status.toUpperCase() === 'APPROVED') {
-      const leave = await this.approvalProcess(id);
+    try {
+      if (status.toUpperCase() === 'APPROVED') return await this.approvalProcess(id);
+      const leave = await Leave.findByPk(id);
+      if (!leave) throw new Error('Leave not found');
+      leave.status = status.toUpperCase();
+      await leave.save();
       return leave;
+    } catch (error) {
+      throw error;
     }
-    const leave = await Leave.findByPk(id);
-    if (!leave) throw new Error('Leave not found');
-    leave.status = status.toUpperCase();
-    await leave.save();
-    return leave;
   }
 
   static async approvalProcess(leaveId) {
@@ -26,7 +26,7 @@ class ManagerService {
     if (!leave) throw new Error('Leave not found');
     const employeeId = leave.employeeId;
     const leaveInfo = await LeaveInfo.findOne({ where: { employeeId } });
-    if (!leaveInfo) throw new Error('Leave record not found');
+    if (!leaveInfo) throw new Error('Leave records not found for the employee in the leave info table');
     const startDate = new Date(leave.startDate);
     const endDate = new Date(leave.endDate);
     const daysApplied = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
@@ -46,15 +46,52 @@ class ManagerService {
   }
 
   static async getTeam(managerId) {
-    return Employee.findAll({ where: { managerId } });
+    const team = await Employee.findAll({ where: { managerId, status: 'Active' }, attributes: ['id', 'name', 'email', 'designation', 'status'] });
+    if (!team) {
+      throw new Error('Error while retrieving team members');
+    }
+    if (team.length === 0) {
+      return { message: 'No team members assigned to the manager', team: [] };
+    }
+    return team;
   }
 
-  static async getEmployeeProfile(id) {
-    return Employee.findByPk(id);
-  }
 
-  static async getAttendance(empCode) {
-    return Attendance.findAll({ where: { empCode } });
+  static async getAttendance(empCode, page = 1, limit = 10) {
+    const offset = (page - 1) * limit;
+    const totalAttend = await Attendance.count({ where: { empCode } })
+    if (!totalAttend) {
+      return {
+        message: "NO attendance records present for the organization",
+        data: [],
+        pagination: null
+      };
+    }
+
+    const attend = await Attendance.findAll(
+      {
+        where: { empCode },
+        limit: limit,
+        offset: offset,
+        order: [['date', 'DESC']]
+      }
+    );
+    const totalPages = Math.ceil(totalAttend / limit);
+    const hasNext = page < totalPages;
+    const hasPrevious = page > 1;
+    return {
+      attend,
+      pagination: {
+        currentPage: page,
+        totalPages: totalPages,
+        totalRecords: totalAttend,
+        recordsPerPage: limit,
+        hasNext: hasNext,
+        hasPrevious: hasPrevious,
+        nextPage: hasNext ? page + 1 : null,
+        prevPage: hasPrevious ? page - 1 : null
+      }
+    }
   }
 
 
@@ -64,12 +101,16 @@ class ManagerService {
   }
 
   static async getPendingLeaves(managerId) {
-    return Leave.findAll({
+    const pendleave = await Leave.findAll({
       where: {
         status: 'PENDING',
         managerId
       }
     });
+    if (pendleave.length === 0) {
+      return { message: 'No Leaves Pending!', pendleave: [] };
+    }
+    return pendleave;
   }
 
   static async getTodaysBroadcast() {
@@ -79,7 +120,7 @@ class ManagerService {
     const endOfDay = new Date();
     endOfDay.setHours(23, 59, 59, 999);
 
-    return Broadcast.findAll({
+    const todaybroad = await Broadcast.findAll({
       where: {
         createdAt: {
           [Op.between]: [startOfDay, endOfDay],
@@ -87,6 +128,10 @@ class ManagerService {
       },
       order: [['createdAt', 'DESC']],
     });
+    if (todaybroad.length === 0) {
+      return { message: 'No Broadcasts for today!', todaybroad: [] };
+    }
+    return todaybroad;
   }
 
   static async getTeamCount(managerId) {

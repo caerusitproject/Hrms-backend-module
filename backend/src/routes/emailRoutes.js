@@ -4,7 +4,7 @@ const { authenticate, authorizeRoles } = require('../middleware/authMiddleWare')
 
 const router = express.Router();
 
-router.post('/',authenticate, authorizeRoles("HR"), emailController.sendMail);
+router.post('/',authenticate, authorizeRoles("HR",'ADMIN'), emailController.sendMail);
 
 
 module.exports = router;

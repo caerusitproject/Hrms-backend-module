@@ -99,25 +99,31 @@ class EmployeeService {
    * @param {Number} id
    * @returns {Promise<Object|null>}
    */
- static async getEmployeeById(id) {
-  const empData = await Employee.findOne({
-    where: { id :id},
-    include: [
-      {
-        model: Department,
-        as: "department",
-        attributes: ["id", "departmentName"],
+  static async getEmployeeById(id) {
+    const empData = await Employee.findOne({
+      where: { id: id },
+      include: [
+        {
+          model: Department,
+          as: "department",
+          attributes: ["id", "departmentName"],
+        },
+        {
+          model: Employee,
+          as: "Manager",
+          attributes: ["id", "name"],
+        },
+        {
+        model: Role,
+        as: "roles", // 👈 use the belongsToMany alias
+        attributes: ["id", "name", "role"],
+        through: { attributes: [] }, // hide join table columns
       },
-      {
-        model: Employee,
-        as: "Manager",
-        attributes: ["id", "name"],
-      },
-    ],
-  });
-  if (!empData) throw new Error("Employee not found");
-  return empData;
-}
+      ],
+    });
+    if (!empData) throw new Error("Employee not found");
+    return empData;
+  }
 
   /**
    * Update employee details
@@ -295,25 +301,24 @@ class EmployeeService {
 
 
   static async getEmployeeDetailsById(employeeId) {
+    if (!employeeId) {
+      throw new Error("No employee ID provided. Please provide a valid employee ID");
+    }
     try {
       const employee = await Employee.findOne({
         where: { id: employeeId },
-        attributes: ['id', 'email'],
+        attributes: ['id', 'empCode', 'email', 'name', 'designation', 'status', 'departmentId'],
         include: [
           {
-            model: Role,
-            as: 'roles',
-            through: { attributes: [] }, // hides join table
-            attributes: ['id', 'name', 'role']
+            model: Department,
+            as: 'department',
+            attributes: ['departmentName']
           }
         ]
       });
-      //const roles = await Role.findOne({where: {Id: employeeId}});
-      //employee.roles = roles;
       if (!employee) {
-        return null;
+        throw new Error("NO employee record found for the coreesponding Employee ID.");
       }
-
       return employee;
     } catch (error) {
       console.error('Error fetching employee details by ID:', error);
