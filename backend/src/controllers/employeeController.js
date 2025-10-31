@@ -23,10 +23,13 @@ exports.registerEmployee = async (req, res) => {
 exports.createEmployee = async (req, res) => {
   try {
 
+    if(req.body.name == null || req.body.email == null) return res.status(400).json({ message: "Missing required fields"});
+
     const employee = await EmployeeService.createEmployee(req.body);
+     
     return res.status(201).json({ message: "Employee created successfully", employee });
   } catch (err) {
-    return res.status(400).json({ message: "Error creating employee", error: 400 });
+    return res.status(500).json({ message: "Error "+err });
   }
 }
 
@@ -49,7 +52,7 @@ exports.getEmployeeById = async (req, res) => {
   try {
     const emp = await EmployeeService.getEmployeeById(req.params.id);
     if (!emp) return res.status(404).json({ error: 'Not found' });
-    return res.json(emp);
+    return res.status(200).json(emp);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: err.message });

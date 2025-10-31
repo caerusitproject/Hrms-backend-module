@@ -1,16 +1,27 @@
 const request = require('supertest');
 const app = require('../src/app'); // ✅ correct import - do NOT use index.js
-const leaveInfoController = require("../src/controllers/leaveInfoController");
-const leaveInfoService = require("../src/services/leaveInfoService");
+const leaveController = require("../src/controllers/leaveController");
+const leaveService = require("../src/services/leaveService");
+const managerService = require("../src/services/managerService");
 
-// 🧩 Mock the entire leaveInfoService module
-jest.mock("../src/services/leaveInfoService");
+// ✅ Mock dependencies
+jest.mock("../src/services/leaveService", () => ({
+  applyLeave: jest.fn(),
+  updateLeave: jest.fn(),
+  deleteLeave: jest.fn(),
+  getLeavesCount: jest.fn(),
+  getLeavesList: jest.fn(),
+}));
 
-describe("leaveInfoController", () => {
+jest.mock("../src/services/managerService", () => ({
+  handleLeave: jest.fn(),
+}));
+
+describe("Leave Controller", () => {
   let req, res;
 
   beforeEach(() => {
-    req = { body: {}, params: {} };
+    req = { body: {}, params: {}, user: { id: 1 } };
     res = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn().mockReturnThis(),
@@ -19,142 +30,247 @@ describe("leaveInfoController", () => {
   });
 
   // -----------------------------
-  // addOrUpdateLeave
+  // applyLeave
   // -----------------------------
-  describe("addOrUpdateLeave", () => {
-    it("should return 400 if employeeId is missing", async () => {
-      req.body = { reason: "Vacation" };
+  describe("applyLeave", () => {
+    it("should apply leave successfully", async () => {
+      const mockLeave = { id: 1, reason: "Vacation" };
+      leaveService.applyLeave.mockResolvedValue(mockLeave);
 
-      await leaveInfoController.addOrUpdateLeave(req, res);
+      req.body = { employeeId: 1, reason: "Vacation" };
+      await leaveController.applyLeave(req, res);
 
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({ message: "Employee ID is required" });
-    });
-
-    it("should call service and return 201 when successful", async () => {
-      req.body = { employeeId: 1, type: "Sick Leave" };
-      const mockResponse = { id: 1, employeeId: 1, type: "Sick Leave" };
-      leaveInfoService.addOrUpdateLeave.mockResolvedValue(mockResponse);
-
-      await leaveInfoController.addOrUpdateLeave(req, res);
-
-      expect(leaveInfoService.addOrUpdateLeave).toHaveBeenCalledWith(1, { type: "Sick Leave" });
+      expect(leaveService.applyLeave).toHaveBeenCalledWith(req.body);
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith({
-        message: "Leaves added successfully",
-        leaveInfo: mockResponse,
+        message: "Leave applied successfully",
+        leave: mockLeave,
       });
     });
 
-    it("should handle errors with 500", async () => {
-      req.body = { employeeId: 1 };
-      const error = new Error("Database error");
-      leaveInfoService.addOrUpdateLeave.mockRejectedValue(error);
+    it("should handle apply leave error", async () => {
+      const error = new Error("DB Error");
+      leaveService.applyLeave.mockRejectedValue(error);
 
-      await leaveInfoController.addOrUpdateLeave(req, res);
+      await leaveController.applyLeave(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: "Database error" });
+      expect(res.json).toHaveBeenCalledWith({
+        error: 500,
+        message: "DB Error",
+      });
     });
   });
 
   // -----------------------------
-  // getAllLeaveInfo
+  // updateLeave
   // -----------------------------
-  describe("getAllLeaveInfo", () => {
-    it("should return leave info list", async () => {
-      const mockList = [{ id: 1 }, { id: 2 }];
-      leaveInfoService.getAllLeaveInfo.mockResolvedValue(mockList);
+  describe("updateLeave", () => {
+    it("should update leave successfully", async () => {
+      const mockLeave = { id: 1, reason: "Updated reason" };
+      leaveService.updateLeave.mockResolvedValue(mockLeave);
 
-      await leaveInfoController.getAllLeaveInfo(req, res);
+      req.params.id = 1;
+      req.body = { reason: "Updated reason" };
 
-      expect(leaveInfoService.getAllLeaveInfo).toHaveBeenCalled();
+      await leaveController.updateLeave(req, res);
+
+      expect(leaveService.updateLeave).toHaveBeenCalledWith(1, req.body);
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith({
-        message: "Leaves data retrieved successfully",
-        leaveInfoList: mockList,
+        message: "Leave updated successfully",
+        leave: mockLeave,
       });
     });
 
-    it("should handle errors", async () => {
-      const error = new Error("Failed to load data");
-      leaveInfoService.getAllLeaveInfo.mockRejectedValue(error);
+    it("should handle update error", async () => {
+      const error = new Error("Leave not found");
+      leaveService.updateLeave.mockRejectedValue(error);
+      req.params.id = 99;
 
-      await leaveInfoController.getAllLeaveInfo(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: "Failed to load data" });
-    });
-  });
-
-  // -----------------------------
-  // getLeaveInfoByEmployee
-  // -----------------------------
-  describe("getLeaveInfoByEmployee", () => {
-    it("should return leave info for employee", async () => {
-      req.params.id = "1";
-      const mockLeave = { id: 1, employeeId: 1, type: "Casual" };
-      leaveInfoService.getLeaveInfoByEmployee.mockResolvedValue(mockLeave);
-
-      await leaveInfoController.getLeaveInfoByEmployee(req, res);
-
-      expect(leaveInfoService.getLeaveInfoByEmployee).toHaveBeenCalledWith("1");
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({
-        message: "Leave info retrieved successfully",
-        leaveInfo: mockLeave,
-      });
-    });
-
-    it("should return 404 if no leave found", async () => {
-      req.params.id = "2";
-      leaveInfoService.getLeaveInfoByEmployee.mockResolvedValue(null);
-
-      await leaveInfoController.getLeaveInfoByEmployee(req, res);
+      await leaveController.updateLeave(req, res);
 
       expect(res.status).toHaveBeenCalledWith(404);
       expect(res.json).toHaveBeenCalledWith({
-        message: "Leave info not found for the employee",
+        error: 404,
+        message: "Leave not found",
       });
-    });
-
-    it("should handle errors gracefully", async () => {
-      req.params.id = "3";
-      const error = new Error("DB failed");
-      leaveInfoService.getLeaveInfoByEmployee.mockRejectedValue(error);
-
-      await leaveInfoController.getLeaveInfoByEmployee(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: "DB failed" });
     });
   });
 
   // -----------------------------
-  // deleteLeaveInfo
+  // deleteLeave
   // -----------------------------
-  describe("deleteLeaveInfo", () => {
-    it("should delete and return success", async () => {
-      req.params.id = "5";
-      const mockResult = { message: "Deleted successfully" };
-      leaveInfoService.deleteLeaveInfo.mockResolvedValue(mockResult);
+  describe("deleteLeave", () => {
+    it("should delete leave successfully", async () => {
+      leaveService.deleteLeave.mockResolvedValue(true);
+      req.params.id = 1;
 
-      await leaveInfoController.deleteLeaveInfo(req, res);
+      await leaveController.deleteLeave(req, res);
 
-      expect(leaveInfoService.deleteLeaveInfo).toHaveBeenCalledWith("5");
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith(mockResult);
+      expect(leaveService.deleteLeave).toHaveBeenCalledWith(1);
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Leave deleted successfully",
+      });
     });
 
     it("should handle delete error", async () => {
-      req.params.id = "10";
-      const error = new Error("Delete failed");
-      leaveInfoService.deleteLeaveInfo.mockRejectedValue(error);
+      const error = new Error("Leave not found");
+      leaveService.deleteLeave.mockRejectedValue(error);
+      req.params.id = 99;
 
-      await leaveInfoController.deleteLeaveInfo(req, res);
+      await leaveController.deleteLeave(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({
+        error: 404,
+        message: "Leave not found",
+      });
+    });
+  });
+
+  // -----------------------------
+  // approveLeave
+  // -----------------------------
+  describe("approveLeave", () => {
+    it("should approve leave successfully", async () => {
+      const mockLeave = { id: 1, status: "APPROVED" };
+      managerService.handleLeave.mockResolvedValue(mockLeave);
+      req.params.id = 1;
+
+      await leaveController.approveLeave(req, res);
+
+      expect(managerService.handleLeave).toHaveBeenCalledWith(1, "APPROVED");
+      expect(res.json).toHaveBeenCalledWith(mockLeave);
+    });
+
+    it("should handle approve error", async () => {
+      const error = new Error("Manager not found");
+      managerService.handleLeave.mockRejectedValue(error);
+      req.params.id = 99;
+
+      await leaveController.approveLeave(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: "Delete failed" });
+      expect(res.json).toHaveBeenCalledWith({
+        error: 500,
+        message: "Manager not found",
+      });
+    });
+  });
+
+  // -----------------------------
+  // rejectLeave
+  // -----------------------------
+  describe("rejectLeave", () => {
+    it("should reject leave successfully", async () => {
+      const mockLeave = { id: 1, status: "REJECTED" };
+      managerService.handleLeave.mockResolvedValue(mockLeave);
+      req.params.id = 1;
+
+      await leaveController.rejectLeave(req, res);
+
+      expect(managerService.handleLeave).toHaveBeenCalledWith(1, "REJECTED");
+      expect(res.json).toHaveBeenCalledWith(mockLeave);
+    });
+
+    it("should handle reject error", async () => {
+      const error = new Error("Failed");
+      managerService.handleLeave.mockRejectedValue(error);
+      req.params.id = 1;
+
+      await leaveController.rejectLeave(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({
+        error: 500,
+        message: "Failed",
+      });
+    });
+  });
+
+  // -----------------------------
+  // getLeavesCount
+  // -----------------------------
+  describe("getLeavesCount", () => {
+    it("should return leave counts successfully", async () => {
+      const mockCount = { PENDING: 1, APPROVED: 2, REJECTED: 0 };
+      leaveService.getLeavesCount.mockResolvedValue(mockCount);
+
+      await leaveController.getLeavesCount(req, res);
+
+      expect(leaveService.getLeavesCount).toHaveBeenCalledWith(1, 0);
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({ employeeId: 1, count: mockCount });
+    });
+
+    it("should handle count error", async () => {
+      const error = new Error("Employee not found");
+      leaveService.getLeavesCount.mockRejectedValue(error);
+
+      await leaveController.getLeavesCount(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({
+        error: 404,
+        message: "Employee not found",
+      });
+    });
+  });
+
+  // -----------------------------
+  // getLeavesCountMonth
+  // -----------------------------
+  describe("getLeavesCountMonth", () => {
+    it("should return monthly leave counts", async () => {
+      const mockCount = { APPROVED: 1 };
+      leaveService.getLeavesCount.mockResolvedValue(mockCount);
+
+      await leaveController.getLeavesCountMonth(req, res);
+
+      expect(leaveService.getLeavesCount).toHaveBeenCalledWith(1, 1);
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({ employeeId: 1, count: mockCount });
+    });
+
+    it("should handle monthly count error", async () => {
+      const error = new Error("Failed to fetch");
+      leaveService.getLeavesCount.mockRejectedValue(error);
+
+      await leaveController.getLeavesCountMonth(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({
+        error: 404,
+        message: "Failed to fetch",
+      });
+    });
+  });
+
+  // -----------------------------
+  // getLeavesList
+  // -----------------------------
+  describe("getLeavesList", () => {
+    it("should return employee leaves list", async () => {
+      const mockLeaves = [{ id: 1, reason: "Vacation" }];
+      leaveService.getLeavesList.mockResolvedValue(mockLeaves);
+
+      await leaveController.getLeavesList(req, res);
+
+      expect(leaveService.getLeavesList).toHaveBeenCalledWith(1);
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({ employeeId: 1, leaves: mockLeaves });
+    });
+
+    it("should handle error in fetching leaves list", async () => {
+      const error = new Error("DB Error");
+      leaveService.getLeavesList.mockRejectedValue(error);
+
+      await leaveController.getLeavesList(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: "DB Error" });
     });
   });
 });
