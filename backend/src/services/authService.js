@@ -85,8 +85,6 @@ const generateRefreshToken = async (user) => {
 
   }
 
-
-
   return token;
 };
 

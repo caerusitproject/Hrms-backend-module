@@ -23,8 +23,15 @@ exports.registerEmployee = async (req, res) => {
 exports.createEmployee = async (req, res) => {
   try {
 
-    const employee = await EmployeeService.createEmployee(req.body);
-    res.status(201).json({ message: "Employee created successfully", employee });
+      if (!req.body.name || !req.body.email) {
+         res.status(400).json({ error: "Missing required fields" });
+      } else {
+
+        const employee = await EmployeeService.createEmployee(req.body);
+        res.status(201).json({ message: "Employee created successfully", employee });
+
+      }
+    
   } catch (err) {
     res.status(400).json({ message: "Error creating employee", error: 400 });
   }
@@ -49,7 +56,7 @@ exports.getEmployeeById = async (req, res) => {
   try {
     const emp = await EmployeeService.getEmployeeById(req.params.id);
     if (!emp) return res.status(404).json({ error: 'Not found' });
-    res.json(emp);
+    res.status(200).json(emp);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
@@ -87,8 +94,15 @@ exports.uploadEmployeeImage = async (req, res) => {
 exports.updateEmployee = async (req, res) => {
   try {
     const employeeId = req.params.id;
+
     const updatedEmployee = await EmployeeService.updateEmployee(employeeId, req.body);
-    res.status(200).json({ message: "Employee updated successfully", employee: updatedEmployee });
+     if (updatedEmployee) {
+      
+      return res.status(200).json({ message: "Employee updated successfully", employee: updatedEmployee });
+    } else {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+     
   } catch (err) {
     res.status(404).json({ error:404, message: err.message });
   }
@@ -108,10 +122,9 @@ exports.getAllEmployees = async (req, res) => {
 exports.getEmployee = async (req, res) => {
   try {
     const emp = await Employee.findById(req.params.id);
-    if (!emp) return res.status(404).json({ error:404, message: 'Employee not found' });
     res.json(emp);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 
 };

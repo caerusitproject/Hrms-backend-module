@@ -30,19 +30,6 @@ const deleteLeave = async (req, res) => {
   }
 };
 
-/*exports.manageLeave = async (req, res) => {
-  try {
-    const { leaveId, action } = req.body; // action = "approve" or "reject"
-    const managerId = req.user.id; // from token/middleware
-
-    const leave = await leaveService.approveLeave(leaveId, managerId, action);
-    res.status(200).json({ message: `Leave ${action}d successfully`, leave });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};*/ //Sir's manage leave module
-
-
 
 const approveLeave = async (req, res) => {
   try {

@@ -89,22 +89,6 @@ exports.processPayroll = async (payrollIds) => {
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 exports.finalizePayrollForMonth = async (month, year) => {
   /**
    * Finalize payroll for all employees
@@ -138,9 +122,10 @@ exports.finalizePayrollForMonth = async (month, year) => {
       }
       await this.createOrUpdatePayroll(emp.id, month, year, payLoad);
     }
-    //const payroll = await this.createOrUpdatePayroll(emp.id, month , year, payLoad);
+    
     // ---- GENERATE PAYSLIP PDF ----
-    const pdfPath = await generatePDF.generatePayslip(emp, payLoad)
+    const pdfPath = await generatePDF.generatePayslip(emp , payLoad)
+    
 
     // ---- SEND PAYSLIP EMAIL ----
     await sendPayslipEmail(emp, pdfPath);

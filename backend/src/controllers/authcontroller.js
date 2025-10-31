@@ -54,7 +54,7 @@ const refresh = async (req, res) => {
       }
       const { newAccessToken, newRefreshToken } = await authservice.generateNewrefreshtoken(userinfo, id);
 
-      res.json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
+      return res.json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
 
     }
 

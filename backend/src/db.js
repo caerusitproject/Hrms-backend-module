@@ -1,6 +1,6 @@
 
 
-const Sequelize = require("sequelize");
+const { Sequelize } = require("sequelize");
     const dbConfig = require("./db.config.js");
 
     const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
@@ -10,11 +10,11 @@ const Sequelize = require("sequelize");
         max: dbConfig.pool.max,
         min: dbConfig.pool.min,
         acquire: dbConfig.pool.acquire,
-        idle: dbConfig.pool.idle
+        idle: dbConfig.pool.idle,
+      logging: false  
       }
     });
 
-   
-    
+     
 
     module.exports = sequelize;

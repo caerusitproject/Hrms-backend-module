@@ -11,7 +11,7 @@ const PayrollLineItem = sequelize.define('PayrollLineItem', {
   amount: { type: DataTypes.FLOAT, allowNull: false },
 }, { tableName: 'payrollLineIitems', timestamps: true });
 
-Payroll.hasMany(PayrollLineItem, { foreignKey: 'payrollId' });
-PayrollLineItem.belongsTo(Payroll, { foreignKey: 'payrollId' });
+//Payroll.hasMany(PayrollLineItem, { foreignKey: 'payrollId' });
+//PayrollLineItem.belongsTo(Payroll, { foreignKey: 'payrollId' });
 
 module.exports = PayrollLineItem;
