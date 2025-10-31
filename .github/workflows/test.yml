@@ -13,5 +13,5 @@ jobs:
           node-version: 18
       #- name: Install deps
       #  run: npm ci
-      #- name: Run tests
-      #  run: npm test -- --coverage
+          name: Run tests
+          run: npm test -- --coverage
