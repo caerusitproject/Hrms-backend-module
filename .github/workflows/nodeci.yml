@@ -60,7 +60,7 @@ jobs:
           done
 
       - name: 🧪 Run Jest Tests
-        working-directory: ./backend/test/
+        working-directory: ./backend/tests/
         run: |
           npm test -- --runInBand --detectOpenHandles --forceExit
 
