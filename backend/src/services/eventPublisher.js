@@ -1,4 +1,4 @@
-const { producer } = require('../config/kafka/workflowKafka');
+/*const { producer } = require('../config/kafka/workflowKafka');
 const uuid = require('uuid');
 
 async function publish(topic, eventType, payload = {}) {
@@ -19,4 +19,4 @@ async function publish(topic, eventType, payload = {}) {
   return message;
 }
 
-module.exports = { publish };
+module.exports = { publish };*/

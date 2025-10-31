@@ -41,8 +41,8 @@ dbInfo.Upload.belongsTo(dbInfo.Employee, { foreignKey: "employee_id", as: "emplo
 dbInfo.Employee.hasMany(dbInfo.Employee, { as: 'Subordinates', foreignKey: 'managerId' });
 dbInfo.Employee.belongsTo(dbInfo.Employee, { as: 'Manager', foreignKey: 'managerId' });
 
-dbInfo.User.belongsTo(dbInfo.Role, { foreignKey: "roleId", as: "role" });
-dbInfo.Role.hasMany(dbInfo.User, { foreignKey: "roleId", as: "users" });
+//dbInfo.User.belongsTo(dbInfo.Role, { foreignKey: "roleId", as: "role" });
+//dbInfo.Role.belongsTo(dbInfo.User, { foreignKey: "roleId", as: "users" });
 
 dbInfo.User.hasMany(dbInfo.RefreshToken, { foreignKey: "userId", as: "tokens" });
 dbInfo.Employee.hasMany(dbInfo.RefreshToken, { foreignKey: "empId", as: "tokens" });
@@ -62,14 +62,17 @@ dbInfo.Employee.hasOne(dbInfo.Compensation, { foreignKey: 'employeeId' });
 dbInfo.Compensation.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
 
 
+dbInfo.Employee.hasOne(dbInfo.Compensation, { foreignKey: 'employeeId' });
+dbInfo.Compensation.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
+
 
 // Many-to-Many with Role
-    dbInfo.Employee.belongsToMany(dbInfo.Role, {
+ /*   dbInfo.Employee.belongsToMany(dbInfo.Role, {
       through: dbInfo.EmployeeRole,
       foreignKey: 'employeeId',
       otherKey: 'roleId',
       as: 'roles',
-    });
+    });*/
   
 
 
@@ -82,12 +85,14 @@ Object.values(dbInfo).forEach(model => {
 });
 
 // ✅ Sync models
-sequelize
-  .sync({ alter: false })
-  .then(() => console.log("✅ All models synced successfully"))
-  .catch((err) => console.error("❌ Model sync failed:", err));
-
+if (process.env.NODE_ENV !== "test") {
+  sequelize
+    .sync({ alter: false })
+    .then(() => console.log("✅ All models synced successfully"))
+    .catch((err) => console.error("❌ Model sync failed:", err));
+}
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
+dbInfo.sequelize = sequelize;
 module.exports = dbInfo;

@@ -116,6 +116,10 @@ process.on('SIGINT', async () => {
   process.exit(0);
 });
 
+if (process.env.NODE_ENV !== 'test') {
+  start().catch(err => { console.error(err); process.exit(1); });
+}
 
 
-start().catch(err => { console.error(err); process.exit(1); });
+module.exports = app;
+

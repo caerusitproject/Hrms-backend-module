@@ -127,7 +127,6 @@ const Compensation = sequelize.define('Compensation', {
     comp.netSalary = totalEarnings - totalDeductions;
   });
 
- Employee.hasOne(Compensation, { foreignKey: 'employeeId' });
- Compensation.belongsTo(Employee, { foreignKey: 'employeeId' });
+ 
 
 module.exports = Compensation;

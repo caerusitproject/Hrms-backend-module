@@ -1,4 +1,4 @@
-const { Role } = require("../models");
+const  Role  = require("../models/Role");
 
 const createRole = async (name, role) => {
   const roledata = await Role.create({ name , role});
@@ -25,4 +25,4 @@ const getRoleNameById = async (roleId) => {
   }
 };
 
-module.exports = { createRole, getRoles,getRoleNameById};
+module.exports = { createRole, getRoles, getRoleNameById};

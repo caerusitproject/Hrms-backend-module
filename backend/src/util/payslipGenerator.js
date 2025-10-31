@@ -3,7 +3,9 @@ const fs = require('fs');
 const path = require('path');
 const moment = require('moment');
 
-function formatAmount(value) {
+
+// Helper: safely format numbers
+function fmt(value) {
   return Number(value || 0).toFixed(2);
 }
 
@@ -205,3 +207,162 @@ exports.generatePayslip = async (employee, payroll) => {
     stream.on('error', reject);
   });
 };
+
+/**
+ * Generate professional payslip PDF
+ * @param {object} employee - Employee record
+ * @param {object} payroll - Payroll record (month/year/net)
+ * @param {object} compensation - Compensation record (salary fields)
+ * @returns {Promise<string>} file path of generated PDF
+ */
+exports.generatePayslip2 = async (employee, compensation) => {
+  try {
+    const monthYear = `${compensation.month}-${compensation.year}`;
+    const payslipDir = path.join(__dirname, "../../payslips");
+    if (!fs.existsSync(payslipDir)) fs.mkdirSync(payslipDir, { recursive: true });
+
+    const fileName = `Payslip_${employee.firstName}_${monthYear}.pdf`;
+    const pdfPath = path.join(payslipDir, fileName);
+    const doc = new PDFDocument({ margin: 40, size: "A4" });
+    const stream = fs.createWriteStream(pdfPath);
+    doc.pipe(stream);
+
+    /* ---------------------- HEADER ---------------------- */
+    doc.rect(0, 0, doc.page.width, 80).fill("#0A3981");
+    doc.fillColor("#fff").fontSize(20).font("Helvetica-Bold");
+    doc.text("Company Name Pvt. Ltd.", { align: "center" });
+    doc.moveDown(0.3);
+    doc.fontSize(12).font("Helvetica");
+    doc.text(`Payslip for ${moment().month(compensation.month - 1).format("MMMM")} ${compensation.year}`, {
+      align: "center",
+    });
+
+    doc.moveDown(2);
+    doc.fillColor("#000").fontSize(11);
+
+    /* ---------------------- EMPLOYEE DETAILS ---------------------- */
+    const empDetails = [
+      [`Employee Name`, `${employee.name}`],
+      [`Employee ID`, employee.id],
+      [`Department`, employee.department || "N/A"],
+      [`Designation`, employee.designation || "N/A"],
+      [`Date of Issue`, moment().format("DD-MM-YYYY")],
+    ];
+
+    let y = doc.y;
+    doc.font("Helvetica");
+    empDetails.forEach(([label, value]) => {
+      doc.text(label, 50, y);
+      doc.text(":", 160, y);
+      doc.text(String(value), 170, y);
+      y += 18;
+    });
+
+    doc.moveDown(2);
+
+    /* ---------------------- TABLE HEADERS ---------------------- */
+    const tableTop = doc.y + 10;
+    doc
+      .fontSize(13)
+      .fillColor("#0A3981")
+      .text("EARNINGS", 80, tableTop)
+      .text("DEDUCTIONS", 330, tableTop);
+    doc
+      .moveTo(60, tableTop + 15)
+      .lineTo(550, tableTop + 15)
+      .strokeColor("#0A3981")
+      .stroke();
+
+    doc.moveDown(0.8);
+
+    /* ---------------------- TABLE DATA ---------------------- */
+    const earnings = [
+      ["Basic Salary", fmt(compensation.baseSalary)],
+      ["HRA", fmt(compensation.hra)],
+      ["Bonus", fmt(compensation.bonus)],
+      ["Incentives", fmt(compensation.incentives)],
+      ["Allowances", fmt(compensation.allowances)],
+      ["LTA", fmt(compensation.lta)],
+      ["Medical Allowance", fmt(compensation.medicalAllowance)],
+      ["Overtime Pay", fmt(compensation.overtimePay)],
+      ["Commission", fmt(compensation.commission)],
+    ];
+
+    const deductions = [
+      ["PF", fmt(compensation.pf)],
+      ["ESI", fmt(compensation.esi)],
+      ["Gratuity", fmt(compensation.gratuity)],
+      ["Professional Tax", fmt(compensation.professionalTax)],
+      ["Income Tax", fmt(compensation.incomeTax)],
+      ["Other Deductions", fmt(compensation.deductions)],
+    ];
+
+    const maxRows = Math.max(earnings.length, deductions.length);
+    let tableY = tableTop + 25;
+    doc.fontSize(11).fillColor("#000");
+
+    for (let i = 0; i < maxRows; i++) {
+      const earn = earnings[i];
+      const ded = deductions[i];
+
+      if (earn) {
+        doc.text(earn[0], 80, tableY);
+        doc.text(earn[1], 240, tableY, { align: "right" });
+      }
+      if (ded) {
+        doc.text(ded[0], 330, tableY);
+        doc.text(ded[1], 520, tableY, { align: "right" });
+      }
+      tableY += 20;
+    }
+
+    /* ---------------------- TOTALS ---------------------- */
+    tableY += 10;
+    doc
+      .moveTo(60, tableY)
+      .lineTo(550, tableY)
+      .stroke("#0A3981");
+
+    tableY += 10;
+    doc.fontSize(12).fillColor("#0A3981").font("Helvetica-Bold");
+    doc.text("Total Earnings", 80, tableY);
+    doc.text(fmt(compensation.totalEarnings), 240, tableY, { align: "right" });
+    doc.text("Total Deductions", 330, tableY);
+    doc.text(fmt(compensation.totalDeductions), 520, tableY, { align: "right" });
+
+    /* ---------------------- NET PAY BOX ---------------------- */
+    tableY += 40;
+    doc
+      .rect(60, tableY, 480, 40)
+      .fill("#E3F2FD")
+      .stroke("#0A3981");
+    doc
+      .fillColor("#000")
+      .font("Helvetica-Bold")
+      .fontSize(14)
+      .text(`Net Pay (₹): ${fmt(compensation.netSalary)}`, 80, tableY + 12);
+
+    /* ---------------------- FOOTER ---------------------- */
+    doc
+      .fillColor("#666")
+      .font("Helvetica-Oblique")
+      .fontSize(10)
+      .text(
+        "This is a computer-generated payslip and does not require a signature.",
+        60,
+        780,
+        { align: "center" }
+      );
+
+    doc.end();
+
+    return new Promise((resolve, reject) => {
+      stream.on("finish", () => resolve(pdfPath));
+      stream.on("error", reject);
+    });
+  } catch (error) {
+    console.error("[PayslipGenerator] Error:", error);
+    throw error;
+  }
+};
+
