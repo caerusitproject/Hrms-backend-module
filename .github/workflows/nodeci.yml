@@ -49,7 +49,7 @@ jobs:
           node-version: 20
 
       - name: 📦 Install Dependencies
-        working-directory: ./backend/test/
+        working-directory: ./backend
         run: npm ci
 
       - name: ⚙️ Wait for PostgreSQL
@@ -60,7 +60,7 @@ jobs:
           done
 
       - name: 🧪 Run Jest Tests
-        working-directory: ./backend
+        working-directory: ./backend/test/
         run: |
           npm test -- --runInBand --detectOpenHandles --forceExit
 
