@@ -3,7 +3,7 @@ const router = express.Router();
 const { authenticate, authorizeRoles } = require("../middleware/authEmpMiddleware");
 const EmployeeService = require("../services/empAuthService");
 
-router.get("/", authenticate, authorizeRoles("HR", "MANAGER"), async (req, res) => {
+router.get("/", authenticate, authorizeRoles("HR"), async (req, res) => {
   try {
     const employees = await EmployeeService.getAllEmployees();
     res.json(employees);
@@ -21,7 +21,7 @@ router.get("/managers", authenticate, authorizeRoles("HR"), async (req, res) => 
   }
 });
 
-router.get("/:id", authenticate, authorizeRoles("HR", "MANAGER"), async (req, res) => {
+router.get("/:id", authenticate, authorizeRoles("HR", "MANAGER",'ADMIN'), async (req, res) => {
   try {
     const emp = await EmployeeService.getEmployeeById(req.params.id);
     if (!emp) return res.status(404).json({ message: "Employee not found" });

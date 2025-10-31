@@ -19,6 +19,7 @@ dbInfo.LeaveInfo = require("./LeaveInfo");
 dbInfo.Upload = require("./uploadModel");
 dbInfo.RefreshToken = require("./RefreshToken");
 dbInfo.EmployeeRole = require("./EmployeeRole");
+
 //payroll
 dbInfo.Compensation = require('./payroll/compensation');
 dbInfo.Payroll = require('./payroll/payroll');
@@ -41,8 +42,12 @@ dbInfo.Upload.belongsTo(dbInfo.Employee, { foreignKey: "employee_id", as: "emplo
 dbInfo.Employee.hasMany(dbInfo.Employee, { as: 'Subordinates', foreignKey: 'managerId' });
 dbInfo.Employee.belongsTo(dbInfo.Employee, { as: 'Manager', foreignKey: 'managerId' });
 
-//dbInfo.User.belongsTo(dbInfo.Role, { foreignKey: "roleId", as: "role" });
-//dbInfo.Role.belongsTo(dbInfo.User, { foreignKey: "roleId", as: "users" });
+// dbInfo.User.belongsTo(dbInfo.Role, { foreignKey: "roleId", as: "role" });
+// dbInfo.Role.belongsTo(dbInfo.User, { foreignKey: "roleId", as: "users" });
+
+dbInfo.User.belongsTo(dbInfo.Role, { foreignKey: "roleId", as: "role" });
+dbInfo.Role.hasMany(dbInfo.User, { foreignKey: "roleId", as: "users" });
+
 
 dbInfo.User.hasMany(dbInfo.RefreshToken, { foreignKey: "userId", as: "tokens" });
 dbInfo.Employee.hasMany(dbInfo.RefreshToken, { foreignKey: "empId", as: "tokens" });
@@ -67,12 +72,12 @@ dbInfo.Compensation.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
 
 
 // Many-to-Many with Role
- /*   dbInfo.Employee.belongsToMany(dbInfo.Role, {
+    dbInfo.Employee.belongsToMany(dbInfo.Role, {
       through: dbInfo.EmployeeRole,
       foreignKey: 'employeeId',
       otherKey: 'roleId',
       as: 'roles',
-    });*/
+    });
   
 
 

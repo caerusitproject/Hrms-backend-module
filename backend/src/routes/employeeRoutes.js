@@ -17,7 +17,7 @@ router.get("/managers/subordinate/:managerId", authenticate, authorizeRoles("HR"
 router.patch("/assign/manager", authenticate, authorizeRoles("ADMIN","HR"), ctrl.assignManager);//will go into hr routes
 
 router.get("/:id", authenticate, authorizeRoles("HR","USER","ADMIN","MANAGER"), ctrl.getEmployeeById);
-router.put("/edit/:id", authenticate, authorizeRoles("HR","USER"), ctrl.updateEmployee);//will go into hr routes
+router.put("/edit/:id", authenticate, authorizeRoles("HR","USER","ADMIN","MANAGER"), ctrl.updateEmployee);
 
 router.get('/managers/subordinate',authenticate, authorizeRoles("HR","ADMIN"),ctrl.getAllManagersWithEmployees);//will go into hr routes
 

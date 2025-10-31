@@ -6,15 +6,15 @@ const uploadEmployeeMiddleware = require("../middleware/UploadEmployeeProfileIma
 const ctrl = require("../controllers/uploadController");
 
 // Upload profile image
-router.post("/:id/profile", upload.single("profile"), ctrl.uploadFile);
+router.post("/:id/profile", uploadEmployeeMiddleware, ctrl.uploadFile);
 
 // Upload document
-router.post("/:id/document", upload.single("document"), ctrl.uploadFile);
+router.post("/:id/document",auth.authenticate,auth.authorizeRoles("ADMIN","MANAGER","HR","USER"), upload, ctrl.uploadDocument);
 
 // Get all uploads for employee
-router.get("/:id/files", ctrl.getFiles);
+router.get("/:id/files", auth.authenticate,auth.authorizeRoles("ADMIN","HR","USER","MANAGER"),ctrl.getFiles);
 
 // Delete a file
-router.delete("/:fileId", ctrl.deleteFile);
+router.delete("/:fileId",auth.authenticate,auth.authorizeRoles("HR","USER","ADMIN"), ctrl.deleteFile);
 
 module.exports = router;
