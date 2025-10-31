@@ -49,7 +49,7 @@ jobs:
           node-version: 20
 
       - name: 📦 Install Dependencies
-        working-directory: ./backend
+        working-directory: ./backend/test/
         run: npm ci
 
       - name: ⚙️ Wait for PostgreSQL
