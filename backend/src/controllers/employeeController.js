@@ -12,9 +12,9 @@ exports.registerEmployee = async (req, res) => {
       await employee.setRoles(roleIds);
     }
 
-    res.status(201).json({ message: "Employee created successfully", employee });
+    return res.status(201).json({ message: "Employee created successfully", employee });
   } catch (err) {
-    res.status(500).json({ message: "Error creating employee", error: err.message });
+    return res.status(500).json({ message: "Error creating employee", error: err.message });
   }
 };
 
@@ -23,17 +23,10 @@ exports.registerEmployee = async (req, res) => {
 exports.createEmployee = async (req, res) => {
   try {
 
-      if (!req.body.name || !req.body.email) {
-         res.status(400).json({ error: "Missing required fields" });
-      } else {
-
-        const employee = await EmployeeService.createEmployee(req.body);
-        res.status(201).json({ message: "Employee created successfully", employee });
-
-      }
-    
+    const employee = await EmployeeService.createEmployee(req.body);
+    return res.status(201).json({ message: "Employee created successfully", employee });
   } catch (err) {
-    res.status(400).json({ message: "Error creating employee", error: 400 });
+    return res.status(400).json({ message: "Error creating employee", error: 400 });
   }
 }
 
@@ -41,9 +34,9 @@ exports.loginEmployee = async (req, res) => {
   try {
     const { email, password } = req.body;
     const { accessToken, refreshToken, userData } = await authService.loginEmployee(email, password);
-    res.json({ accessToken, refreshToken, userData });
+    return res.json({ accessToken, refreshToken, userData });
   } catch (err) {
-    res.status(401).json({ error: err.message });
+    return res.status(401).json({ error: err.message });
   }
 
 
@@ -56,23 +49,24 @@ exports.getEmployeeById = async (req, res) => {
   try {
     const emp = await EmployeeService.getEmployeeById(req.params.id);
     if (!emp) return res.status(404).json({ error: 'Not found' });
-    res.status(200).json(emp);
+    return res.json(emp);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 }
 // Get all employees with department info
 exports.findAllEmployee = async (req, res) => {
   try {
     const employees = await EmployeeService.getAllEmployees();
-    res.status(200).json(employees);
+    return res.status(200).json(employees);
   } catch (err) {
     console.error(err);
-    res.status(400).json({ error:400, message: err.message });
+    return res.status(400).json({ error:400, message: err.message });
   }
 
 };
+
 
 exports.uploadEmployeeImage = async (req, res) => {
   try {
@@ -108,12 +102,20 @@ exports.updateEmployee = async (req, res) => {
   }
 };
 
+
 exports.getAllEmployees = async (req, res) => {
+  let { page = 1, limit = 10 } = req.query;
+  page = Number(page);
+  limit = Number(limit);
+
+  if (limit < 1 || limit > 100) return res.status(400).json({ error: 400, message: "Limit should be 1-100" });
+  if (page < 1) return res.status(400).json({ error: 400, message: "Page must be > 0" });
+
   try {
-    const employees = await EmployeeService.getAllEmployees();
-    res.status(200).json(employees);
+    const result = await EmployeeService.getAllEmployees(page, limit);
+    res.status(200).json(result);
   } catch (err) {
-    console.error("Error fetching employees:", err);
+    console.error(err);
     res.status(500).json({ error: "Failed to fetch employees" });
   }
 };
