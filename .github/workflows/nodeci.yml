@@ -67,7 +67,7 @@ jobs:
       - name: 🧪 Run Jest Tests
         working-directory: ./backend/tests
         run: |
-          npm test -- --runInBand --detectOpenHandles --forceExit
+            npx jest --ci --runInBand --detectOpenHandles --forceExit --coverage
 
       - name: 📊 Upload Coverage Report
         if: success()
