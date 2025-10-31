@@ -74,24 +74,45 @@ class EmployeeService {
    * Get all employees
    * @returns {Promise<Array>}
    */
-  static async getAllEmployees() {
-    const emp = await Employee.findAll({
-      where: { status: 'Active' },
-      attributes: ['id', 'name', 'email', 'designation', 'status']
-    });
-    /*include: [
-     {
-         model: Department,
-         as: "department",
-         attributes: ["id", "name"],
-       },
-   ],
-   order: [["id", "ASC"]],
- });*/
-    if (!emp || emp.length === 0) {
-      return { message: "No active employees found", employees: [] };
+  
+  static async getAllEmployees(page = 1, limit = 10) {
+    const offset = (page - 1) * limit;
+    const total = await Employee.count({ where: { status: 'Active' } });
+
+    if (total === 0) {
+      return {
+        message: "No active employees found",
+        employees: [],
+        pagination: null
+      };
     }
-    return emp;
+     
+
+    const employees = await Employee.findAll({
+      where: { status: 'Active' },
+      attributes: ['id', 'name', 'email', 'designation', 'status'],
+      order: [['id', 'ASC']],
+      limit,
+      offset
+    });
+
+    const totalPages = Math.ceil(total / limit);
+    const hasNext = page < totalPages;
+    const hasPrev = page > 1;
+
+    return {
+      employees,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalRecords: total,
+        recordsPerPage: limit,
+        hasNextPage: hasNext,
+        hasPrevPage: hasPrev,
+        nextPage: hasNext ? page + 1 : null,
+        prevPage: hasPrev ? page - 1 : null
+      }
+    };
   }
 
   /**
@@ -114,11 +135,11 @@ class EmployeeService {
           attributes: ["id", "name"],
         },
         {
-        model: Role,
-        as: "roles", // 👈 use the belongsToMany alias
-        attributes: ["id", "name", "role"],
-        through: { attributes: [] }, // hide join table columns
-      },
+          model: Role,
+          as: "roles", // 👈 use the belongsToMany alias
+          attributes: ["id", "name", "role"],
+          through: { attributes: [] }, // hide join table columns
+        },
       ],
     });
     if (!empData) throw new Error("Employee not found");
