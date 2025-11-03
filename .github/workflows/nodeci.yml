@@ -60,7 +60,7 @@ jobs:
           done
 
       - name: 🧪 Run Jest Tests
-        working-directory: ./backend
+        working-directory: ./backend/teste
         run: |
            npx jest --watchAll=false --coverage
 
