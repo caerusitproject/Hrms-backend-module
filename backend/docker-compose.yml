@@ -1,37 +1,69 @@
+services: 
 
-services:
-  postgres:
-    image: postgres:15
-    container_name: hrms-postgres
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Welcome@1234
-      POSTGRES_DB: hrms
-    ports:
-      - "5435:5435"
-    volumes:
-      - hrms_pgdata:/var/lib/postgresql/data
-    networks:
-      - hrms-network
-
-  hrms-service:
-    image: cearususer123/hrms-service:latest
-    container_name: hrms-service
-    ports:
-      - "8080:3000"
-    environment:
-      DB_HOST: postgres
-      DB_PORT: 5435
-      DB_USERNAME: postgres
-      DB_PASSWORD: Welcome@1234
-      DB_NAME: hrms
+  back-end:
+    build: 
+      context: node
+    container_name: back-end
+    working_dir: /usr/src/app
+    networks: 
+      - node-network
+    volumes: 
+      - ./node:/usr/src/app
+      - /usr/src/app/node_modules
+    tty: true
+    ports: 
+      - "3000:3000"
+    command: npm run start
     depends_on:
-      - postgres
-    networks:
-      - hrms-network
+       - db
 
-volumes:
-  hrms_pgdata:
+  front-end:
+    build: 
+      context: react
+    container_name: front-end
+    working_dir: /usr/src/app
+    networks: 
+      - node-network
+    volumes: 
+      - ./react:/usr/src/app
+      - /usr/src/app/node_modules
+    tty: true
+    ports: 
+      - "5173:5173"
+    command: npm run dev
 
-networks:
-  hrms-network:
+  db:
+    image: postgres
+    container_name: db
+    restart: always
+    tty: true
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    environment: 
+      - DB_HOST: postgres
+      - DB_PORT: 5435
+      - DB_USERNAME: postgres
+      - DB_PASSWORD: Welcome@1234
+      - DB_NAME: hrms
+    ports: 
+      - "5432:5432"
+    networks: 
+      - node-network
+
+  nginx:
+    build: 
+      context: nginx
+    container_name: nginx
+    restart: always
+    tty: true
+    ports: 
+      - "8000:80"
+    networks: 
+      - node-network
+    depends_on:
+       - back-end
+       - front-end
+  
+networks: 
+  node-network:
+    driver: bridge
