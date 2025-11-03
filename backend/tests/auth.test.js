@@ -1,8 +1,8 @@
-const authController = require("../src/controllers/authController");
-const authservice = require("../src/services/authService");
+const authController = require('../src/controllers/authcontroller')
+const authService = require("../src/services/authService");
 const empService = require("../src/services/employeeService");
 
-// ✅ Mock all service methods used in authController
+// ✅ Mock dependencies
 jest.mock("../src/services/authService", () => ({
   registerUser: jest.fn(),
   loginUser: jest.fn(),
@@ -16,11 +16,11 @@ jest.mock("../src/services/employeeService", () => ({
   getEmployeeDetailsById: jest.fn(),
 }));
 
-describe("AuthController", () => {
+describe("Auth Controller", () => {
   let req, res;
 
   beforeEach(() => {
-    req = { body: {} };
+    req = { body: {}, params: {}, query: {} };
     res = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn().mockReturnThis(),
@@ -28,26 +28,26 @@ describe("AuthController", () => {
     jest.clearAllMocks();
   });
 
-  // ------------------------------
-  // REGISTER
-  // ------------------------------
+  // ---------------------------------------
+  // 🔹 register()
+  // ---------------------------------------
   describe("register", () => {
-    it("should register a new user successfully", async () => {
+    it("should register user successfully", async () => {
       req.body = {
         fullname: "John Doe",
-        username: "johndoe",
+        username: "john",
         email: "john@example.com",
         password: "secret",
         roleId: 2,
       };
-      const mockUser = { id: 1, email: "john@example.com" };
-      authservice.registerUser.mockResolvedValue(mockUser);
+      const mockUser = { id: 1, ...req.body };
+      authService.registerUser.mockResolvedValue(mockUser);
 
       await authController.register(req, res);
 
-      expect(authservice.registerUser).toHaveBeenCalledWith(
+      expect(authService.registerUser).toHaveBeenCalledWith(
         "John Doe",
-        "johndoe",
+        "john",
         "john@example.com",
         "secret",
         2
@@ -60,7 +60,7 @@ describe("AuthController", () => {
 
     it("should handle registration errors", async () => {
       const error = new Error("Email already exists");
-      authservice.registerUser.mockRejectedValue(error);
+      authService.registerUser.mockRejectedValue(error);
 
       await authController.register(req, res);
 
@@ -69,87 +69,90 @@ describe("AuthController", () => {
     });
   });
 
-  // ------------------------------
-  // LOGIN
-  // ------------------------------
+  // ---------------------------------------
+  // 🔹 login()
+  // ---------------------------------------
   describe("login", () => {
-    it("should login user and return tokens", async () => {
+    it("should login successfully and return tokens", async () => {
       req.body = { email: "john@example.com", password: "secret" };
       const mockResponse = {
         accessToken: "access123",
-        refreshToken: "refresh456",
+        refreshToken: "refresh123",
         userData: { id: 1, email: "john@example.com" },
       };
-      authservice.loginUser.mockResolvedValue(mockResponse);
+      authService.loginUser.mockResolvedValue(mockResponse);
 
       await authController.login(req, res);
 
-      expect(authservice.loginUser).toHaveBeenCalledWith(
+      expect(authService.loginUser).toHaveBeenCalledWith(
         "john@example.com",
         "secret"
       );
       expect(res.json).toHaveBeenCalledWith(mockResponse);
     });
 
-    it("should handle login errors", async () => {
-      const error = new Error("Invalid credentials");
-      authservice.loginUser.mockRejectedValue(error);
-      req.body = { email: "john@example.com", password: "wrong" };
+    it("should return 401 on invalid credentials", async () => {
+      const error = new Error("Invalid email or password");
+      authService.loginUser.mockRejectedValue(error);
 
+      req.body = { email: "wrong@example.com", password: "badpass" };
       await authController.login(req, res);
 
       expect(res.status).toHaveBeenCalledWith(401);
-      expect(res.json).toHaveBeenCalledWith({ error: "Invalid credentials" });
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Invalid email or password",
+      });
     });
   });
 
-  // ------------------------------
-  // REFRESH
-  // ------------------------------
+  // ---------------------------------------
+  // 🔹 refresh()
+  // ---------------------------------------
   describe("refresh", () => {
     it("should return 400 if refresh token is missing", async () => {
       req.body = {};
-
       await authController.refresh(req, res);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({ message: "Refresh token required" });
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Refresh token required",
+      });
     });
 
     it("should return 403 if refresh token expired", async () => {
       req.body = { refreshToken: "expired-token" };
-      authservice.verifyRefreshToken.mockResolvedValue(false);
+      authService.verifyRefreshToken.mockResolvedValue(false);
 
       await authController.refresh(req, res);
 
-      expect(authservice.verifyRefreshToken).toHaveBeenCalledWith("expired-token");
       expect(res.status).toHaveBeenCalledWith(403);
       expect(res.json).toHaveBeenCalledWith({
-        message: "Refresh token was expired. Please make a new signin request",
+        message:
+          "Refresh token was expired. Please make a new signin request",
       });
     });
 
     it("should refresh tokens successfully for employee", async () => {
       req.body = { refreshToken: "valid-token" };
-      authservice.verifyRefreshToken.mockResolvedValue(true);
-      authservice.findRefreshToken.mockResolvedValue({ id: 10, empId: 5 });
 
+      authService.verifyRefreshToken.mockResolvedValue(true);
+      authService.findRefreshToken.mockResolvedValue({ id: 10, empId: 5 });
       empService.getEmployeeDetailsById.mockResolvedValue({
         id: 5,
         email: "emp@example.com",
         roles: [{ role: "EMPLOYEE" }],
       });
-
-      authservice.generateNewrefreshtoken.mockResolvedValue({
+      authService.generateNewrefreshtoken.mockResolvedValue({
         newAccessToken: "new-access",
         newRefreshToken: "new-refresh",
       });
 
       await authController.refresh(req, res);
 
-      expect(authservice.findRefreshToken).toHaveBeenCalledWith("valid-token");
+      expect(authService.verifyRefreshToken).toHaveBeenCalledWith("valid-token");
+      expect(authService.findRefreshToken).toHaveBeenCalledWith("valid-token");
       expect(empService.getEmployeeDetailsById).toHaveBeenCalledWith(5);
-      expect(authservice.generateNewrefreshtoken).toHaveBeenCalled();
+      expect(authService.generateNewrefreshtoken).toHaveBeenCalled();
       expect(res.json).toHaveBeenCalledWith({
         accessToken: "new-access",
         refreshToken: "new-refresh",
@@ -158,39 +161,37 @@ describe("AuthController", () => {
 
     it("should refresh tokens successfully for normal user", async () => {
       req.body = { refreshToken: "valid-user-token" };
-      authservice.verifyRefreshToken.mockResolvedValue(true);
-      authservice.findRefreshToken.mockResolvedValue({ id: 22, userId: 9 });
 
-      authservice.findUserById.mockResolvedValue({
-        id: 9,
+      authService.verifyRefreshToken.mockResolvedValue(true);
+      authService.findRefreshToken.mockResolvedValue({ id: 7, userId: 2 });
+      authService.findUserById.mockResolvedValue({
+        id: 2,
         email: "user@example.com",
-        role: "USER",
+        roles: [{ role: "USER" }],
       });
-
-      authservice.generateNewrefreshtoken.mockResolvedValue({
-        newAccessToken: "tokenA",
-        newRefreshToken: "tokenB",
+      authService.generateNewrefreshtoken.mockResolvedValue({
+        newAccessToken: "new-access",
+        newRefreshToken: "new-refresh",
       });
 
       await authController.refresh(req, res);
 
-      expect(authservice.findUserById).toHaveBeenCalledWith(9);
-      expect(authservice.generateNewrefreshtoken).toHaveBeenCalled();
+      expect(authService.findUserById).toHaveBeenCalledWith(2);
       expect(res.json).toHaveBeenCalledWith({
-        accessToken: "tokenA",
-        refreshToken: "tokenB",
+        accessToken: "new-access",
+        refreshToken: "new-refresh",
       });
     });
 
-    it("should handle refresh token errors", async () => {
-      req.body = { refreshToken: "invalid" };
-      const error = new Error("Invalid token");
-      authservice.verifyRefreshToken.mockRejectedValue(error);
+    it("should handle unexpected errors gracefully", async () => {
+      req.body = { refreshToken: "token" };
+      const error = new Error("Unexpected DB error");
+      authService.verifyRefreshToken.mockRejectedValue(error);
 
       await authController.refresh(req, res);
 
       expect(res.status).toHaveBeenCalledWith(401);
-      expect(res.json).toHaveBeenCalledWith({ message: "Invalid token" });
+      expect(res.json).toHaveBeenCalledWith({ message: "Unexpected DB error" });
     });
   });
 });
