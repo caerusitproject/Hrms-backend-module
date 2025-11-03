@@ -26,34 +26,9 @@ exports.uploadFile = async (req, res) => {
 };
 
 
-// exports.uploadDocument = async (req, res) => {
-//   try {
-//     const { id } = req.params; 
-//     const file = req.file;
-
-//     if (!file) {
-//       return res.status(400).json({ error:400, message: "No file uploaded" });
-//     }
-//     if(!id){return res.status(400).json({error:400, message:"no id provided"});}
-
-//     const fileRecord = await upload.saveDocFile({
-//       employee_id: id,
-//       file_path: file.path,
-//       file_type: file.mimetype,
-//     });
-
-//     return res.status(201).json({
-//       message: "File uploaded successfully",
-//       file: fileRecord,
-//     });
-//   } catch (err) {
-//     return res.status(500).json({ error:500, message: err.message });
-//   }
-// };
 
 
-
-ADMINexports.uploadDocument = async (req, res) => {
+exports.uploadDocument = async (req, res) => {
   try {
     const { id } = req.params; 
     const file = req.file;     
@@ -119,6 +94,31 @@ exports.getFiles = async (req, res) => {
     return res.status(200).json(files);
   } catch (err) {
     return res.status(500).json({ error:500, message: err.message });
+  }
+};
+
+exports.getDoc = async (req,res) =>{
+  try{
+    const {id} = req.params;
+    const files = await upload.getDocByEmployee(id);
+    return res.status(200).json(files);
+  }catch(err){
+    return res.status(500).json({error:500, message:err.message});
+  }
+};
+
+exports.deleteImage = async (req, res) => {
+  try {
+    const { fileId } = req.params;
+    const deleted = await upload.deleteImage(fileId);
+
+    if (!deleted) {
+      return res.status(404).json({ error:404, message: "Profile Image not found" });
+    }
+
+    return res.status(200).json({ message: "Image deleted successfully" });
+  } catch (err) {
+    return res.status(500).json({ error:500,message: err.message });
   }
 };
 

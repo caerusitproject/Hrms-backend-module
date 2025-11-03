@@ -1,40 +1,51 @@
+
 const { DataTypes } = require('sequelize');
 const sequelize = require('../db.js');
-const User = require('./User.js');
-const Employee=require('./Employee.js')
+const Employee = require('./Employee.js');
+
 const Document = sequelize.define('Document', {
-  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  title: DataTypes.STRING,
-  content: DataTypes.TEXT,
-  type: DataTypes.ENUM('HANDBOOK', 'POLICY','CONTRACT'),
-  uploadedBy: { type: DataTypes.INTEGER, references: { model: Employee, key: 'id' }, defaultValue: 4 }//now references to employee instead of usernow diocument belongs to employee nistaed of user table
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  employee_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  title: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  content: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  file_path: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  file_type: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  type: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  uploaded_at: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+  }
+}, {
+  timestamps: true, // adds createdAt and updatedAt automatically
+  tableName: 'Documents', // ensures table name consistency
 });
 
-Document.belongsTo(Employee, { foreignKey: 'uploadedBy' });
+// Uncomment and adjust association if needed
+// Document.belongsTo(Employee, {
+//   foreignKey: 'uploadedBy',
+//   as: 'employee', // alias for cleaner includes
+// });
 
 module.exports = Document;
-
-/*const Document = sequelize.define("Document", {
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true,
-            allowNull: false
-        },
-        
-        title: {
-            type: DataTypes.STRING,
-            allowNull: false
-        },
-        content: { type: DataTypes.STRING,
-          allowNull:false
-         },
-         type: DataTypes.ENUM('HANDBOOK', 'POLICY','CONTRACT'),
-         uploadedBy: { type: DataTypes.INTEGER, references: { model: Employee, key: 'id' } }
-    }, {
-        tableName: "document",
-        timestamps: false,
-       
-    });
-
-    module.exports = Document;*/

@@ -12,9 +12,11 @@ router.post("/:id/profile", uploadEmployeeMiddleware, ctrl.uploadFile);
 router.post("/:id/document",auth.authenticate,auth.authorizeRoles("ADMIN","MANAGER","HR","USER"), upload, ctrl.uploadDocument);
 
 // Get all uploads for employee
-router.get("/:id/files", auth.authenticate,auth.authorizeRoles("ADMIN","HR","USER","MANAGER"),ctrl.getFiles);
+router.get("/:id/image", auth.authenticate,auth.authorizeRoles("ADMIN","HR","USER","MANAGER"),ctrl.getFiles);
+router.get("/:id/files", auth.authenticate,auth.authorizeRoles("ADMIN","HR","USER","MANAGER"),ctrl.getDoc);
 
 // Delete a file
+router.delete("/image/:fileId",auth.authenticate,auth.authorizeRoles("HR","USER","ADMIN"), ctrl.deleteImage);
 router.delete("/:fileId",auth.authenticate,auth.authorizeRoles("HR","USER","ADMIN"), ctrl.deleteFile);
 
 module.exports = router;
