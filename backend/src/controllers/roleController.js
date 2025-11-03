@@ -1,3 +1,4 @@
+const { Exception } = require("handlebars");
 const roleServ = require("../services/roleService");
 
 exports.addRole = async (req, res) => {
@@ -17,8 +18,9 @@ exports.addRole = async (req, res) => {
 exports.listRoles = async (req, res) => {
   try {
     const roles = await roleServ.getRoles();
-    res.json(roles);
+    if(!roles) return res.status(400).json({ error: "Role not found" });
+    return res.status(200).json(roles);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 };

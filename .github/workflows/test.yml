@@ -10,8 +10,14 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
       #- name: Install deps
       #  run: npm ci
-      #    name: Run tests
+      #- name: Run tests
           run: npx jest --ci --runInBand --detectOpenHandles --forceExit --coverage
+      # ✅ Upload test coverage
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: hrms-coverage
+          path: backend/coverage    
