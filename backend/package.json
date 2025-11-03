@@ -8,7 +8,8 @@
     "dev": "nodemon src/server.js",
     "test": "jest --detectOpenHandles --coverage",
     "test:watch": "jest --watchAll --coverage"
-    
+   
+
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
