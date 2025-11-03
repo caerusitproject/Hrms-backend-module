@@ -1,6 +1,5 @@
 const Leave = require("../models/LeaveRequest");
 const Employee = require("../models/Employee");
-const producer = require("../config/kafka/emailProducer");
 const { Op } = require("sequelize");
 
 exports.applyLeave = async (data) => {
