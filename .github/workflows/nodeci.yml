@@ -62,7 +62,7 @@ jobs:
       - name: 🧪 Run Jest Tests
         working-directory: ./backend
         run: |
-          npm test -- --coverage
+          jest --watchAll --coverage
 
       - name: 📊 Upload Coverage Report
         if: success()
