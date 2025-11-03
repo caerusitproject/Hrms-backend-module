@@ -1,4 +1,4 @@
-name: CI - Node.js HRMS Tests
+name: HRMS CI - Build & Test
 
 on:
   push:
@@ -11,35 +11,84 @@ on:
       - dev
 
 jobs:
-  build-and-test:
+  test:
     runs-on: ubuntu-latest
+
+    # Define Postgres as a service container
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: Welcome@1234
+          POSTGRES_DB: hrms_test
+        ports:
+          - 5432:5432
+        # Wait for DB to be ready
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
     defaults:
       run:
         working-directory: ./backend
 
     steps:
-      # ✅ Checkout code
+      # ✅ Step 1: Checkout code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ✅ Set up Node.js
+      # ✅ Step 2: Set up Node.js environment
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # or 18, depending on your backend
+          node-version: '20' # Adjust if you use Node 18 or 21
 
-      # ✅ Install dependencies
+      # ✅ Step 3: Install dependencies
       - name: Install dependencies
         run: npm ci
 
-      # ✅ Run Jest tests in CI mode
-      - name: Run Jest tests
-        run: npx jest --ci --runInBand --detectOpenHandles --forceExit --coverage
+      # ✅ Step 4: Wait for PostgreSQL to be ready
+      - name: Wait for PostgreSQL
+        run: |
+          echo "⏳ Waiting for PostgreSQL to start..."
+          until pg_isready -h localhost -p 5432 -U postgres; do sleep 2; done
+          echo "✅ PostgreSQL is ready."
 
-      # ✅ Upload coverage report (optional)
-      - name: Upload coverage report
+      # ✅ Step 5: Configure environment variables for tests
+      - name: Setup environment variables
+        run: |
+          echo "DB_HOST=localhost" >> .env
+          echo "DB_USER=postgres" >> .env
+          echo "DB_PASS=Welcome@1234" >> .env
+          echo "DB_NAME=hrms_test" >> .env
+          echo "DB_PORT=5432" >> .env
+          echo "JWT_SECRET=supersecret" >> .env
+          echo "KAFKA_BROKER=localhost:9092" >> .env
+
+      # ✅ Step 6: Run Sequelize migrations (if applicable)
+      - name: Run database migrations
+        run: |
+          npx sequelize-cli db:migrate || echo "⚠️ No migrations found"
+
+      # ✅ Step 7: Run Jest Tests (with full coverage)
+      - name: Run Jest tests
+        run: |
+          npx jest --ci --runInBand --detectOpenHandles --forceExit --coverage
+
+      # ✅ Step 8: Upload test coverage report
+      - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
           name: jest-coverage
           path: backend/coverage
 
+      # ✅ Step 9: Upload logs if tests fail
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs
+          path: backend/jest.log
