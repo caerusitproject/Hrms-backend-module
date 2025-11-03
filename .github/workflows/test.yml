@@ -14,4 +14,4 @@ jobs:
       #- name: Install deps
       #  run: npm ci
       #- name: Run tests
-          run: npm test -- --coverage
+          run: npx jest --ci --runInBand --detectOpenHandles --forceExit --coverage
