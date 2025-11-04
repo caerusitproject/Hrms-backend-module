@@ -1,5 +1,4 @@
 const leaveInfoService = require("../services/leaveInfoService");
-const { get } = require("./workflowController");
 const addOrUpdateLeave = async (req, res) => {
   try {
     const {employeeId, ...data} = req.body;
@@ -42,17 +41,6 @@ const deleteLeaveInfo = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
-
-
-
-
-
-
-
-
-
-
 
 
 module.exports = { addOrUpdateLeave, getAllLeaveInfo, getLeaveInfoByEmployee, deleteLeaveInfo };
