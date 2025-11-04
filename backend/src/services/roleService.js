@@ -6,7 +6,9 @@ const createRole = async (name, role) => {
 };
 
 const getRoles = async () => {
-  return await Role.findAll();
+  const roles= await Role.findAll();
+  if(!roles || roles.length===0){return {message: "No roles EXIST. ", roles:[]};}
+  return roles;
 };
 
 const getRoleNameById = async (roleId) => {

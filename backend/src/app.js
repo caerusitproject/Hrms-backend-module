@@ -96,7 +96,7 @@ async function start() {
     console.log('Postgres connected');
 
     // Sync DB models (dev only). In production use migrations.
-    /*await sequelize.sync({ alter: true });*/
+    //await sequelize.sync({ alter: true });
     console.log('Database synchronized');
 
     app.listen(PORT, () => {

@@ -1,4 +1,4 @@
-const emailTemplateService = require('../services/emailTemplateService');
+const emailTemplateService = require('../services/notification/emailTemplateService');
 
 const createTemplate = async (req, res) => {
   try {

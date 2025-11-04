@@ -14,6 +14,8 @@ const registerUser = async (fullname, username, email, password, roleId) => {
     password: hashedPassword,
     roleId: roleId, // foreign key
   });
+  if(!user){    throw new Error("User registration failed");
+  }
   return (user);
 };
 

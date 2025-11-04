@@ -95,11 +95,6 @@ class ManagerService {
   }
 
 
-
-  static async getBroadcasts() {
-    return Broadcast.findAll();
-  }
-
   static async getPendingLeaves(managerId) {
     const pendleave = await Leave.findAll({
       where: {
@@ -128,6 +123,7 @@ class ManagerService {
       },
       order: [['createdAt', 'DESC']],
     });
+    if(!todaybroad){throw new Error("Error while retrieving the broadcast");}
     if (todaybroad.length === 0) {
       return { message: 'No Broadcasts for today!', todaybroad: [] };
     }
@@ -139,11 +135,15 @@ class ManagerService {
   }
 
   static async getDashboardData(managerId) {
-    const totalTeamMembers = await this.getTeamCount(managerId);
-    const teamMembers = await this.getTeam(managerId);
-    const pendingLeaves = await this.getPendingLeaves(managerId);
-    const recentBroadcast = await this.getTodaysBroadcast();
-    return { totalTeamMembers, teamMembers, pendingLeaves, recentBroadcast };
+    try {
+      const totalTeamMembers = await this.getTeamCount(managerId);
+      const teamMembers = await this.getTeam(managerId);
+      const pendingLeaves = await this.getPendingLeaves(managerId);
+      const recentBroadcast = await this.getTodaysBroadcast();
+      return { totalTeamMembers, teamMembers, pendingLeaves, recentBroadcast };
+    }catch(error){
+      throw error;
+    }
   }
 
 

@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const adminController = require("../../controllers/admin/adminController");
 const emailTemplateController = require('../../controllers/emailTemplateController');
+const holidayController= require('../../controllers/holidayController.js')
 const { authenticate, authorizeRoles } = require("../../middleware/authMiddleWare");
 
 // All routes restricted to Admins
@@ -21,6 +22,11 @@ router.post("/department", adminController.createDepartment);
 //payroll- compensation
 
 
+//Holiday Routes
+router.post("/holiday", holidayController.createHoliday);
+router.get("/holiday", holidayController.getHoliday);
+router.patch("/holiday", holidayController.updateHoliday);
+router.delete("/holiday/:id", holidayController.deleteHoliday);
 
 
 // 🔹 Employee management

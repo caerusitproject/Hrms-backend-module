@@ -5,7 +5,7 @@ const { getAllBroadcastsOnly } = require('../services/broadcastService.js');
 const getTeamList = async (req, res) => {
   try {
     const team = await managerService.getTeam(req.user.id);//-->changed to req.user.id
-    res.json(team);
+    res.status(200).json(team);
   } catch (error) {
     res.status(401).json({ error: 401, message: error.message });
   }
@@ -50,16 +50,23 @@ const getDashboardBroadcasts = async (req, res) => {
   if (limit < 1 || limit > 100) { return res.json(400).status({ error: 400, message: "Limit should always be 1 and 100" }) }
   if (page < 1) { return res.status(400).json({ error: 400, message: "Page should always be greater than 0" }) }
   try {
-    const broadcasts = await getAllBroadcastsOnly(page,limit);
-    res.json(broadcasts);
-  }catch(error){
+    const broadcasts = await getAllBroadcastsOnly(page, limit);
+    res.status(200).json(broadcasts);
+  } catch (error) {
+    res.status(500).json()
 
   }
 };
 
 const getDashboard = async (req, res) => {
-  const data = await managerService.getDashboardData(req.params.id);//changed from req.user.id
-  res.json(data);
+  try {
+    const data = await managerService.getDashboardData(req.user.id);
+    res.status(200).json(data);
+  }catch(error){
+    res.status(500).json({error:500, message: error.message });
+  }
+
+  
 };
 
 module.exports = { getTeamList, getEmployeeDetails, getEmployeeAttendance, getDashboardBroadcasts, getDashboard };
