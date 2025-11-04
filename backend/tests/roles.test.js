@@ -1,56 +1,100 @@
-const request = require("supertest");
-const app = require("../src/app");
+const roleController = require("../src/controllers/roleController");
+const roleServ = require("../src/services/roleService");
+const Role = require("../src/models/Role");
 
-// 🧪 Mock the Role model
-
+// ✅ Mock service layer
 jest.mock("../src/services/roleService", () => ({
   createRole: jest.fn(),
   getRoles: jest.fn(),
-  getRoleNameById: jest.fn(),
 }));
 
-const mockRoleService = require("../src/services/roleService");
-const roleController = require("../src/controllers/roleController");
+describe("Role Controller", () => {
+  let req, res;
 
-describe("Roles Module", () => {
   beforeEach(() => {
+    req = { body: {}, params: {}, query: {} };
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
+    };
     jest.clearAllMocks();
   });
 
-  // ✅ Create Role - Success
-  test("Role - Create - success", async () => {
-    const mockRole = { id: 1, name: "Supervisor", role : "Tempale" };
-    mockRoleService.createRole.mockResolvedValue(mockRole);
+  // ------------------------------
+  // addRole()
+  // ------------------------------
+  describe("addRole", () => {
+    it("should create a role successfully", async () => {
+      req.body = { name: "ADMIN_ROLE", role: "ADMIN" };
+      const mockRole = { id: 1, name: "ADMIN_ROLE", role: "ADMIN" };
+      roleServ.createRole.mockResolvedValue(mockRole);
 
-    const res = await request(app)
-      .post("/api/roles")
-      .send({name: "Supervisor", role : "Tempale"});
+      await roleController.addRole(req, res);
 
-    // mock resolves correctly
-    //expect(Role.create).toHaveBeenCalledWith({ name: "Supervisor" });
-    expect(res.statusCode).toBe(201);
-    expect(res.body).toHaveProperty("message", "Role created successfully");
-    expect(res.body.roledata).toHaveProperty("name", "Supervisor");
+      expect(roleServ.createRole).toHaveBeenCalledWith("ADMIN_ROLE", "ADMIN");
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Role created successfully",
+        roledata: mockRole,
+      });
+    });
+
+    it("should return 400 if name is missing", async () => {
+      req.body = { role: "ADMIN" };
+
+      await roleController.addRole(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ error: "Role name is required" });
+    });
+
+    it("should handle service error gracefully", async () => {
+      req.body = { name: "TEST_ROLE", role: "TEST" };
+      const error = new Error("Database error");
+      roleServ.createRole.mockRejectedValue(error);
+
+      await roleController.addRole(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ error: "Database error" });
+    });
   });
 
-  // 🚫 Missing name
-  test("Role - Create - missing name", async () => {
-    const res = await request(app).post("/api/roles").send({});
-    expect(res.statusCode).toBe(400);
-    expect(res.body).toHaveProperty("error", "Role name is required");
-  });
+  // ------------------------------
+  // listRoles()
+  // ------------------------------
+  describe("listRoles", () => {
+    it("should return all roles successfully", async () => {
+      const mockRoles = [
+        { id: 1, name: "ADMIN_ROLE", role: "ADMIN" },
+        { id: 2, name: "USER_ROLE", role: "USER" },
+      ];
+      roleServ.getRoles.mockResolvedValue(mockRoles);
 
-  // ✅ List Roles
-  test("Role - List - success", async () => {
-    const mockRoles = [
-      { id: 1, name: "HR" },
-      { id: 2, name: "Manager" },
-    ];
-    mockRoleService.getRoles.mockResolvedValue(mockRoles);
+      await roleController.listRoles(req, res);
 
-    const res = await request(app).get("/api/roles");
+      expect(roleServ.getRoles).toHaveBeenCalledTimes(1);
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(mockRoles);
+    });
 
-    expect(res.statusCode).toBe(200);
-    expect(res.body).toEqual(mockRoles);
+    it("should return 400 if no roles are found", async () => {
+      roleServ.getRoles.mockResolvedValue(null);
+
+      await roleController.listRoles(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ error: "Role not found" });
+    });
+
+    it("should handle service error gracefully", async () => {
+      const error = new Error("Internal Server Error");
+      roleServ.getRoles.mockRejectedValue(error);
+
+      await roleController.listRoles(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: "Internal Server Error" });
+    });
   });
 });

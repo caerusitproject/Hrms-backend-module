@@ -6,8 +6,10 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "test": "jest --watch",
-    "test:watch": "jest --watch"
+    "test": "jest --detectOpenHandles --coverage",
+    "test:watch": "jest --watchAll --coverage"
+   
+
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -21,7 +23,6 @@
     "handlebars": "^4.7.8",
     "handlers": "^1.0.3",
     "jsonwebtoken": "^9.0.2",
-    "kafkajs": "^2.2.4",
     "moment": "^2.30.1",
     "multer": "^2.0.2",
     "nodemailer": "^7.0.9",

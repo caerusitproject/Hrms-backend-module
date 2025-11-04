@@ -1,8 +1,8 @@
 // ✅ Ensure test environment for Jest
-process.env.NODE_ENV = 'test';
+/*process.env.NODE_ENV = 'test';
 
 // ✅ ABSOLUTE PATH STRINGS — No variables in jest.mock()
-jest.mock('../src/middleware/authMiddleware.js', () => {
+jest.mock(path.resolve(__dirname, '../src/middleware/authMiddleware.js'), () => {
   return (req, res, next) => {
     const auth = req.headers['authorization'] || '';
     if (auth !== 'Bearer test-token') {
@@ -13,7 +13,7 @@ jest.mock('../src/middleware/authMiddleware.js', () => {
   };
 });
 
-jest.mock('../src/services/authService.js', () => ({
+jest.mock(path.resolve(__dirname, '../src/middleware/authMiddleware.js'), () => ({
   login: jest.fn(({ email, password }) =>
     email === 'test@test.com' && password === '123456'
       ? { token: 'test-token' }
@@ -67,11 +67,11 @@ jest.mock('../src/services/payrollService.js', () => ({
 }));
 */
 // ✅ Avoid real DB, Kafka, SMTP, Cache
-jest.mock('pg');
+/*jest.mock('pg');
 jest.mock('kafkajs');
 jest.mock('nodemailer');
 
 // ✅ Reset mocks before each test
 beforeEach(() => {
   jest.clearAllMocks();
-});
+});*/
