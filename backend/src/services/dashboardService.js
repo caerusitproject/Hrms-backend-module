@@ -6,87 +6,6 @@ const { Op, where } = require('sequelize');
 const managerService = require('./managerService.js');
 const { stat } = require('fs');
 
-
-/*const getHrDashboardData = async () => {
-  try {
-    const totalEmployees = await Employee.count();
-    const allEmployeesDetails = await Employee.findAll({
-      attributes: ['id', 'name','email', 'designation', 'status']
-    });
-    const upcomingBroadcasts = await Broadcast.findAll({
-      where: {
-        createdAt: {
-          [Op.gte]: new Date(2025, 10, 15) // October 14, 2025
-        }
-      },
-      order: [['createdAt', 'ASC']]
-    });
-    const upcomingBroadcastsCount = upcomingBroadcasts.length;
-    return { totalEmployees, allEmployeesDetails, upcomingBroadcasts, upcomingBroadcastsCount };
-  } catch (error) {
-    throw new Error('Failed to fetch HR dashboard data');
-  }
-};
-
-const getManagerDashboardData = async (managerId) => {
-  try {
-    const teamMembers = await managerService.getTeam(managerId);
-    const totalTeamMembers = await managerService.getTeamCount(managerId);
-    const pendingLeaves = await managerService.getPendingLeaves(managerId);
-    const recentBroadcast = await managerService.getTodaysBroadcast();
-    return { totalTeamMembers, teamMembers, pendingLeaves, recentBroadcast };
-  } catch (error) {
-    throw new Error('Failed to fetch manager dashboard data');
-  }
-};
-
-const getEmployeeDashboardData = async(empId) =>{
-    try {
-      // Fetch employee profile
-      const employeeProfile = await Employee.findByPk(empId, {
-        attributes: ['id','managerId', 'name', 'email', 'designation', 'status'],
-        include: [
-          /*{
-            model: Department,
-            as: 'department',
-            attributes: ['id', 'name']
-          },*/
-          /*{
-            model: Employee,
-            as: 'manager',
-            attributes: ['id', 'name', 'email']
-          }
-        ]
-      });
-
-      // Fetch all leave requests for the employee
-      const leaveRequests = await LeaveRequest.findAll({
-        where: { employeeId: empId },
-        attributes: ['id', 'startDate', 'endDate', 'reason', 'status', 'managerId']
-      });
-
-      //count of pending Leaves
-      const pendingLeaveCount = await LeaveRequest.count({
-        where: { employeeId: empId, status: 'PENDING'}
-      });
-
-      // Fetch recent broadcasts (from today onwards)
-      const recentBroadcast = await managerService.getTodaysBroadcast();
-      return {
-        employeeProfile,
-        pendingLeaveCount,
-        leaveRequests,
-        recentBroadcast
-      };
-    } catch (error) {
-      throw new Error('Failed to fetch employee dashboard data');
-    }
-  }
-
-
-module.exports = { getHrDashboardData, getManagerDashboardData, getEmployeeDashboardData };*/
-
-
 class DashboardService {
   static async getHrDashboardData() {
     try {
@@ -151,13 +70,13 @@ class DashboardService {
         where: { employeeId: empId },
         attributes: ['id', 'startDate', 'endDate', 'reason', 'status', 'managerId']
       });
-      if(leaveRequests.length ===0){leaveRequests.message ='No leave requests found';}
+      //if(leaveRequests.length ===0){ leaveRequests.message ='No leave requests found'; }
 
       // Count of pending leaves
       const pendingLeaveCount = await LeaveRequest.count({
         where: { employeeId: empId, status: 'PENDING' }
       });
-      if(pendingLeaveCount ===0){pendingLeaveCount.message ='No pending leaves';}
+      
 
       // Fetch today’s broadcasts
       const recentBroadcast = await managerService.getTodaysBroadcast();
@@ -171,6 +90,7 @@ class DashboardService {
       };
     } catch (error) {
       throw new Error('Failed to fetch employee dashboard data');
+      
     }
   }
 }

@@ -1,9 +1,9 @@
-const { createBroadcast, getAllBroadcastsOnly, getAllBroadcasts, updateBroadcast } = require('../services/broadcastService.js');
+const broadcastService = require('../services/broadcastService.js');
 
 const create = async (req, res) => {
   try {
     const { title, content } = req.body;
-    const broadcast = await createBroadcast(title, content);
+    const broadcast = await broadcastService.createBroadcast(title, content);
     res.json(broadcast);
   }catch (error) {
     if(error.message === 'Title and content are required to create a broadcast'){
@@ -16,7 +16,7 @@ const create = async (req, res) => {
 
 const getAllOnly = async (req, res) => {
   try {
-    const broadcasts = await getAllBroadcastsOnly();
+    const broadcasts = await broadcastService.getAllBroadcastsOnly();
     res.json(broadcasts);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -26,7 +26,7 @@ const getAllOnly = async (req, res) => {
 const getAll = async (req, res) => {
   try {
     const { filter } = req.params;
-    const broadcasts = await getAllBroadcasts(filter);
+    const broadcasts = await broadcastService.getAllBroadcasts(filter);
     res.json(broadcasts);
   } catch (error) {
     res.status(400).json({ error: 400, error: error.message });
@@ -36,7 +36,7 @@ const getAll = async (req, res) => {
 const update = async (req, res) => {
   try {
     const { title, content } = req.body;
-    const broadcast = await updateBroadcast(req.params.id, title, content);
+    const broadcast = await broadcastService.updateBroadcast(req.params.id, title, content);
     res.json(broadcast);
   } catch (error) {
     res.status(404).json({ error: 404, message: error.message });
