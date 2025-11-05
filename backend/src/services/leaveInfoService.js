@@ -6,9 +6,14 @@ const { Op } = require("sequelize");
 exports.addOrUpdateLeave = async (employeeId, data) => {
   const emp = await Employee.findByPk(employeeId);
   if (!emp) throw new Error('Employee not found');
-  const allowedFields = ['earnedLeave', 'casualLeave', 'sickLeave','endDate'];
+  const currentYear = new Date().getFullYear();
+  const endDate = new Date(Date.UTC(currentYear, 11, 31, 23, 59, 59)); // Dec 31, 23:59:59 UTC
+  const allowedFields = ['earnedLeave', 'casualLeave', 'sickLeave'];
   const filteredData = {};
-  for (const key of allowedFields) {if (data[key] !== undefined) filteredData[key] = data[key];}
+  for (const key of allowedFields) {
+    if (data[key] !== undefined) filteredData[key] = data[key];
+  }
+  filteredData.endDate = endDate;
   const existing = await LeaveInfo.findOne({ where: { employeeId } });
   if (existing) {
     await existing.update(filteredData);
@@ -17,6 +22,7 @@ exports.addOrUpdateLeave = async (employeeId, data) => {
   const leave = await LeaveInfo.create({ employeeId, ...filteredData });
   return { message: 'Leaves created successfully', leave };
 };
+
 
 exports.getAllLeaveInfo = async () => {
   const leaveInfo= await LeaveInfo.findAll({ include:[{model : Employee , as :'employee',attributes: ['id', 'name', 'empCode', 'email'],},]  });

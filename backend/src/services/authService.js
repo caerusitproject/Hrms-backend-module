@@ -6,7 +6,7 @@ const { User, Role, RefreshToken, Employee, EmployeeRole, Department } = require
 
 const registerUser = async (fullname, username, email, password, roleId) => {
   const hashedPassword = await bcrypt.hash(password, 10);
-
+  if (!hashedPassword) { throw new Error("Failed to create hashed password!"); }
   const user = await User.create({
     fullname,
     username,
@@ -14,7 +14,8 @@ const registerUser = async (fullname, username, email, password, roleId) => {
     password: hashedPassword,
     roleId: roleId, // foreign key
   });
-  if(!user){    throw new Error("User registration failed");
+  if (!user) {
+    throw new Error("User registration failed");
   }
   return (user);
 };
@@ -42,6 +43,7 @@ const loginUser = async (email, password) => {
 
   const accessToken = await generateAccessToken(user);
   const refreshToken = await generateRefreshToken(user);
+  if (!accessToken || !refreshToken) throw new Error("Failed to generate the access token or refresh token");
   const userData = { id: user.id, email: user.email, username: user.username, authorities }
   return { accessToken, refreshToken, userData }
 
@@ -114,22 +116,32 @@ const generateNewrefreshtoken = async (user, rtid) => {
 
 const findUserById = async (userId) => {
   const userData = await User.findOne({ where: { id: userId } });
+  if (!userData) throw new Error("User does not exist!");
   return userData;
 }
 
 const storerefreshToken = async (token, expiryDate, userId, empId) => {
   const refreshData = await RefreshToken.create({ token, expiryDate, userId, empId });
+  if (!refreshData) throw new Error("Error generating refresh token!");
   return refreshData;
 }
 
 
 const findRefreshToken = async (token) => {
   const tokendata = await RefreshToken.findOne({ where: { token } });
+  if (!tokendata) return { message: "Couldnot find refresh token" }
   return tokendata;
 }
 
 
 const loginEmployee = async (email, password) => {
+  const counte = await Employee.count({
+    where: {
+      email
+    }
+  });
+  if(counte<1) throw new Error ("NO Employee found with the email ID please check the email and try again");
+  if(counte>1) throw new Error ("Unexpected Error occured. More than one employees exist in the database for the email");
   const emp = await Employee.findOne({ where: { email: email } });
   try {
     const { id } = emp.id;
@@ -176,10 +188,13 @@ const loginEmployee = async (email, password) => {
     user.empId = employee.id;
     user.email = employee.email;
     user.role = role.role;
+    user.departmentName=employee.department.departmentName;
+
 
     const accessToken = await generateAccessToken(user);
     const refreshToken = await generateRefreshToken(user);
-    const userData = { id: employee.id, email: employee.email, username: employee.username, authorities }
+    if (!accessToken || !refreshToken) throw new Error("Failed to generate the access token or refresh token");
+    const userData = { id: employee.id, email: employee.email, username: employee.username, authorities , department: user.departmentName}
     return { accessToken, refreshToken: refreshToken, userData }
   } catch (err) {
     console.error("Error fetching employee:", err);

@@ -28,14 +28,13 @@ describe("Role Controller", () => {
       req.body = { name: "ADMIN_ROLE", role: "ADMIN" };
       const mockRole = { id: 1, name: "ADMIN_ROLE", role: "ADMIN" };
       roleServ.createRole.mockResolvedValue(mockRole);
-
       await roleController.addRole(req, res);
 
       expect(roleServ.createRole).toHaveBeenCalledWith("ADMIN_ROLE", "ADMIN");
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith({
         message: "Role created successfully",
-        roledata: mockRole,
+        roledata: mockRole
       });
     });
 
@@ -45,7 +44,7 @@ describe("Role Controller", () => {
       await roleController.addRole(req, res);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({ error: "Role name is required" });
+      expect(res.json).toHaveBeenCalledWith({ error:400, message: "Role name is required" });
     });
 
     it("should handle service error gracefully", async () => {

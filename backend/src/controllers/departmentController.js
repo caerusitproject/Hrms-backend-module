@@ -46,7 +46,7 @@ class DepartmentController {
     }
 
     // Success case
-    return res.status(200).json({ message: "Department deleted successfully" });
+    return res.status(204).send();
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 500, message: "An error occurred while deleting the department" });
