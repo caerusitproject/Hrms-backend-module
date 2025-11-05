@@ -19,7 +19,7 @@ dbInfo.LeaveInfo = require("./LeaveInfo");
 dbInfo.Upload = require("./uploadModel");
 dbInfo.RefreshToken = require("./RefreshToken");
 dbInfo.EmployeeRole = require("./EmployeeRole");
-
+dbInfo.Document=require("./Document")
 //payroll
 dbInfo.Compensation = require('./payroll/compensation');
 dbInfo.Payroll = require('./payroll/payroll');
@@ -70,6 +70,13 @@ dbInfo.Compensation.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
 dbInfo.Employee.hasOne(dbInfo.Compensation, { foreignKey: 'employeeId' });
 dbInfo.Compensation.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
 
+//Document
+dbInfo.Document.belongsTo(dbInfo.Employee, { foreignKey: "uploadedBy", as: "uploader" });
+dbInfo.Employee.hasMany(dbInfo.Document, { foreignKey: "uploadedBy", as: "uploadedDocuments" });
+
+
+
+
 
 // Many-to-Many with Role
     dbInfo.Employee.belongsToMany(dbInfo.Role, {
@@ -92,7 +99,7 @@ Object.values(dbInfo).forEach(model => {
 // ✅ Sync models
 if (process.env.NODE_ENV !== "test") {
   sequelize
-    .sync({ alter: false })
+    .sync({ alter: true })
     .then(() => console.log("✅ All models synced successfully"))
     .catch((err) => console.error("❌ Model sync failed:", err));
 }
