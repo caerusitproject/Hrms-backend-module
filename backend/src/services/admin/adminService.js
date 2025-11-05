@@ -4,7 +4,7 @@ class AdminService {
   // 🔹 Create a new role
   static async createRole(name, role) {
     const existing = await Role.findOne({ where: { name } });
-    if (existing) throw new Error("Role already exists");
+    if (existing) return "Role already exists";
     const roledata = await Role.create({ name, role });
     return roledata;
   }

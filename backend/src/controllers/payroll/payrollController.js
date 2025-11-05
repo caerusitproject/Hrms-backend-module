@@ -9,26 +9,23 @@ exports.finalizePayroll = async (req, res) => {
   try {
     //const { month } = req.body;
     var monthyear = req.body.monthyear;
-    const [month, year] = monthyear.split('-');
-    if (!month) {
+    if (!monthyear) {
       return res.status(400).json({ message: 'Month (MM-YYYY) is required' });
     }
-
-    console.log(`[PayrollController] Finalizing payroll for ${month}`);
+    const [month, year] = monthyear?.split('-');
 
     const result = await payrollService.finalizePayrollForMonth(month, year);
 
     res.status(200).json({
       status: 'success',
-      message: `Payroll finalized for ${month}`,
+      message: `Payroll finalized for ${month}-${year}`,
       summary: {
         processedEmployees: result.processed,
       },
       details: result.employees
     });
   } catch (error) {
-    console.error('[PayrollController] Error:', error);
-    res.status(500).json({ status: 'error', message: error.message });
+     res.status(500).json({ status: 'error', message: error.message });
   }
 };
 
@@ -72,7 +69,6 @@ exports.generatePayrollForEmployee = async (req, res) => {
       data: payroll
     });
   } catch (error) {
-    console.error('[PayrollController] Error:', error);
     res.status(500).json({ status: 'error', message: error.message });
   }
 };
@@ -91,8 +87,7 @@ exports.getAllPayrolls = async (req, res) => {
       data: payrolls
     });
   } catch (error) {
-    console.error('[PayrollController] Error:', error);
-    res.status(500).json({ status: 'error', message: error.message });
+       res.status(500).json({ status: 'error', message: error.message });
   }
 };
 
@@ -115,8 +110,7 @@ exports.getPayrollByEmployee = async (req, res) => {
       data: payroll
     });
   } catch (error) {
-    console.error('[PayrollController] Error:', error);
-    res.status(500).json({ status: 'error', message: error.message });
+     res.status(500).json({ status: 'error', message: error.message });
   }
 };
 exports.getNotGenerated = async (req,res)=> {
@@ -168,7 +162,7 @@ exports.getFilteredPayrolls = async (req, res) => {
       data: filteredPayrolls,
     });
   } catch (error) {
-    console.error(error);
+    
     res.status(500).json({ error: 500, message: error.message });
   }
 };
