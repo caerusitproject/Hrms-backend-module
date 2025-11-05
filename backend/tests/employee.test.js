@@ -41,11 +41,11 @@ describe("Employee Controller", () => {
       await employeeController.createEmployee(req, res);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({ message: "Missing required fields" });
+      expect(res.json).toHaveBeenCalledWith({ error:400, message: "Missing required fields." });
     });
 
     it("should create employee successfully", async () => {
-      req.body = { name: "John", email: "john@example.com" };
+      req.body = { name: "John", email: "john@example.com" , };
       const mockEmployee = { id: 1, name: "John" };
       EmployeeService.createEmployee.mockResolvedValue(mockEmployee);
 
@@ -101,7 +101,7 @@ describe("Employee Controller", () => {
       await employeeController.loginEmployee(req, res);
 
       expect(res.status).toHaveBeenCalledWith(401);
-      expect(res.json).toHaveBeenCalledWith({ error: "Invalid credentials" });
+      expect(res.json).toHaveBeenCalledWith({ error:401, message: "Invalid credentials" });
     });
   });
 
@@ -128,7 +128,7 @@ describe("Employee Controller", () => {
       await employeeController.getEmployeeById(req, res);
 
       expect(res.status).toHaveBeenCalledWith(404);
-      expect(res.json).toHaveBeenCalledWith({ error: "Not found" });
+      expect(res.json).toHaveBeenCalledWith({ error:404, message: "Not found" });
     });
   });
 
@@ -161,7 +161,7 @@ describe("Employee Controller", () => {
       await employeeController.createEmployee(req, res);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({ message: "Missing required fields" });
+      expect(res.json).toHaveBeenCalledWith({ error:400, message: "Missing required fields." });
     });
 
     /*it("should handle errors gracefully", async () => {

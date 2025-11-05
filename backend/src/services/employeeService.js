@@ -4,7 +4,7 @@ const bcrypt = require("bcryptjs");
 const EmployeeRole = db.EmployeeRole;
 const Department = db.Department;
 const Role = db.Role;
-//const { Sequelize } = require("sequelize");;
+const { Sequelize } = require("sequelize");;
 const { sendEmailNotification } = require('../services/notification/notificationHandler');
 const { where } = require("sequelize");
 
@@ -74,7 +74,7 @@ class EmployeeService {
    * Get all employees
    * @returns {Promise<Array>}
    */
-  
+
   static async getAllEmployees(page = 1, limit = 10) {
     const offset = (page - 1) * limit;
     const total = await Employee.count({ where: { status: 'Active' } });
@@ -86,14 +86,27 @@ class EmployeeService {
         pagination: null
       };
     }
-     
+
 
     const employees = await Employee.findAll({
       where: { status: 'Active' },
       attributes: ['id', 'name', 'email', 'designation', 'status'],
+      include: [
+        {
+          model: Department,
+          as: 'department',
+          attributes: ['id', 'departmentName'],
+        },
+        {
+          model: Role,
+          as: 'roles',
+          attributes: ['id', 'role'],
+          through: { attributes: [] },
+        },
+      ],
       order: [['id', 'ASC']],
       limit,
-      offset
+      offset,
     });
 
     const totalPages = Math.ceil(total / limit);
@@ -243,18 +256,12 @@ class EmployeeService {
   static async assignManager(employeeId, managerId) {
     const employee = await Employee.findByPk(employeeId);
     if (!employee) throw new Error("Employee not found");
-
     const manager = await Employee.findByPk(managerId);
     if (!manager) throw new Error("Manager not found");
-
     employee.managerId = managerId;
     await employee.save();
-
     console.log("Kafka Event Published: MANAGER_ASSIGNED");
-
     return employee;
-
-
   }
 
   // 🔍 Get all employees who are Managers
@@ -350,7 +357,6 @@ class EmployeeService {
 
   static async getAllManagersWithEmployees() {
     try {
-      // Fetch all employees who have at least one subordinate
       console.log("employee-manager-list");
       const managers = await Employee.findAll({
         include: [
@@ -359,20 +365,23 @@ class EmployeeService {
             as: "subordinates",
             attributes: ["id", "name", "email"],
             where: {
-              managerId: { [Sequelize.Op.ne]: null } // Exclude those with no managerId
+              managerId: { [Sequelize.Op.ne]: null } 
             },
-            required: true // Only include employees who are managers
+            required: true 
           }
         ],
         attributes: ["id", "name", "email"]
       });
-
+      if (!managers || managers.length === 0) {
+        return { message: "Employee list is empty" };
+      }
       return managers;
     } catch (error) {
       console.error("❌ Error fetching managers with employees:", error);
       throw error;
     }
-  };
+  }
+
   static async getAllRoleWiseEmployees(employeeId, roles) {
     try {
       let employeeList = [];

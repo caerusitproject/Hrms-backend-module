@@ -10,7 +10,8 @@ const createBroadcast = async (title, content) => {
 
 const getAllBroadcastsOnly = async (page = 1, limit = 10) => {
   const offset = (page - 1) * limit;
-  const totalBroadcast = await Broadcast.count();
+  const broadcastList = await Broadcast.findAll();
+  const totalBroadcast = await getBroadcastCount(broadcastList);
   if (totalBroadcast === 0) {
     return {
       message: "No broadcast present ",
@@ -21,8 +22,9 @@ const getAllBroadcastsOnly = async (page = 1, limit = 10) => {
 
   try {
     const broad = await Broadcast.findAll({
-      order: [['id', 'ASC']],
+      
       attributes: ['id', 'title', 'content', 'createdAt', 'updatedAt'],
+      order: [['id', 'ASC']],
       limit: limit,
       offset: offset
     });
@@ -79,14 +81,16 @@ const getAllBroadcastsOnly = async (page = 1, limit = 10) => {
           where.createdAt = { [Op.between]: [prevMonthStart, prevMonthEnd] };
           break;
         default:
-          throw new Error('Invalid filter parameter. Use yesterday, today, thismonth, or prevmonth');
+          throw new Error('Invalid filter parameter. Use yesterday, today, this-month, or last-month');
       }
 
-      return await Broadcast.findAll({
+      const broad= await Broadcast.findAll({
         where,
         order: [['id', 'ASC']],
         attributes: ['id', 'title', 'content', 'createdAt', 'updatedAt']
       });
+      if( broad.length ===0)return {message:"NO BROADCASTS FOR THE SPECIFIED PERIOD!!!!"};
+      return broad;
     } catch (error) {
       throw new Error(error.message || 'Failed to fetch broadcasts');
     }
@@ -94,11 +98,21 @@ const getAllBroadcastsOnly = async (page = 1, limit = 10) => {
 
   const updateBroadcast = async (id, title, content) => {
     const broadcast = await Broadcast.findByPk(id);
-    if (!broadcast) throw new Error('No broadcast found');
+    if (!broadcast) throw new Error('Broadcast not found');
     if (title) broadcast.title = title;
     if (content) broadcast.content = content;
     await broadcast.save();
     return broadcast;
   };
 
-  module.exports = { createBroadcast, getAllBroadcastsOnly, getAllBroadcasts, updateBroadcast };
+   const deleteBroadcast = async (id) => {
+  const broadcast = await Broadcast.findByPk(id);
+  if (!broadcast) throw new Error('No broadcast found');
+
+  const deleteCount = await Broadcast.destroy({ where: { id } }); 
+  return deleteCount; };
+
+  const getBroadcastCount = (dataList) => {
+  return dataList.length;
+};
+  module.exports = { createBroadcast, getAllBroadcastsOnly, getAllBroadcasts, updateBroadcast, deleteBroadcast };

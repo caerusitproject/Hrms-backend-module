@@ -33,15 +33,17 @@ describe('Broadcast Controller & Service', () => {
 
   describe('getAllBroadcastsOnly()', () => {
     it('should return all broadcasts ordered by id', async () => {
-      const mockData = [{ id: 1, title: 'A' }];
+      const mockData = [{"id": 1, "title": "A"}];
       Broadcast.findAll.mockResolvedValue(mockData);
 
       const result = await broadcastService.getAllBroadcastsOnly();
       expect(Broadcast.findAll).toHaveBeenCalledWith({
         order: [['id', 'ASC']],
-        attributes: ['id', 'title', 'content', 'createdAt', 'updatedAt']
+        attributes: ['id', 'title', 'content', 'createdAt', 'updatedAt'],
+        limit:10,
+        offset:0
       });
-      expect(result).toEqual(mockData);
+      expect(result.data).toEqual(mockData);
     });
 
     it('should throw error on failure', async () => {
@@ -77,7 +79,7 @@ describe('Broadcast Controller & Service', () => {
 
     it('should throw error on invalid filter', async () => {
       await expect(broadcastService.getAllBroadcasts('invalid'))
-        .rejects.toThrow('Invalid filter parameter. Use yesterday, today, thismonth, or prevmonth');
+        .rejects.toThrow('Invalid filter parameter. Use yesterday, today, this-month, or last-month');
     });
 
     it('should throw error if DB fails', async () => {
@@ -164,7 +166,7 @@ describe('Broadcast Controller & Service', () => {
       jest.spyOn(broadcastService, 'getAllBroadcastsOnly').mockRejectedValue(new Error('Failed'));
       await broadcastController.getAllOnly(mockReq, mockRes);
       expect(mockRes.status).toHaveBeenCalledWith(400);
-      expect(mockRes.json).toHaveBeenCalledWith({ error: 'Failed' });
+      expect(mockRes.json).toHaveBeenCalledWith({ error:400, message: 'Failed' });
     });
   });
 
@@ -186,7 +188,7 @@ describe('Broadcast Controller & Service', () => {
 
       await broadcastController.getAll(mockReq, mockRes);
       expect(mockRes.status).toHaveBeenCalledWith(400);
-      expect(mockRes.json).toHaveBeenCalledWith({ error: 400, error: 'Invalid' });
+      expect(mockRes.json).toHaveBeenCalledWith({ error: 400, message: 'Invalid' });
     });
   });
 
