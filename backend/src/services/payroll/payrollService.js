@@ -315,3 +315,93 @@ exports.getFilteredPayrolls = async (monthType, status) => {
     throw new Error("Failed to fetch filtered payrolls");
   }
 };
+
+exports.getAllPayrolls = async () => {
+  try {
+    const payrolls = await Payroll.findAll({
+      attributes: [
+        "id",
+        "employeeId",
+        "basicSalary",
+        "bonus",
+        "deductions",
+        "netSalary",
+        "month",
+        "year",
+        "createdAt"
+      ],
+      include: [
+        {
+          model: Employee,
+          as: "employee",
+          attributes: ["id", "name", "email", "designation"],
+          include: [
+            {
+              model: Department,
+              as: "department",
+              attributes: ["id", "name"]
+            }
+          ]
+        }
+      ],
+      order: [["createdAt", "DESC"]]
+    });
+
+    return payrolls;
+  } catch (error) {
+    console.error("Error fetching payrolls:", error);
+    throw new Error("Unable to fetch payroll records");
+  }
+};
+
+exports.getPayrollByEmployee = async (employeeId, month = null) => {
+  try {
+    if (!employeeId) {
+      throw new Error("Employee ID is required.");
+    }
+
+    // ✅ Base query filter
+    const whereClause = { employeeId };
+    if (month) whereClause.month = month;
+
+    // ✅ Query with associations
+    const payrolls = await Payroll.findAll({
+      where: whereClause,
+      include: [
+        {
+          model: Employee,
+          as: "employee",
+          attributes: ["id", "name", "email", "designation"],
+          include: [
+            {
+              model: Department,
+              as: "department",
+              attributes: ["id", "name"]
+            }
+          ]
+        }
+      ],
+      attributes: [
+        "id",
+        "employeeId",
+        "month",
+        "year",
+        "basicSalary",
+        "bonus",
+        "deductions",
+        "netSalary",
+        "createdAt"
+      ],
+      order: [["year", "DESC"], ["month", "DESC"]]
+    });
+
+    if (!payrolls || payrolls.length === 0) {
+      return { message: "No payroll records found for this employee." };
+    }
+
+    return payrolls;
+  } catch (error) {
+    console.error("❌ Error in getPayrollByEmployee:", error.message);
+    throw error;
+  }
+};
