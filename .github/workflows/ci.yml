@@ -34,4 +34,3 @@ run-name:
     with:
       name: coverage-report
       path: coverage
-
