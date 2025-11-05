@@ -12,11 +12,13 @@ exports.getAllEmployees = async (req, res) => {
 };
 
 exports.createRole = async (req, res) => {
+    const {name, role} = req.body;
+    if(!name || !role) {return res.status(400).json({error:400, message:"name or role missing" });}
   try {
-    const role = await adminService.createRole(req.body);
-    res.status(201).json(role);
+    const Role = await adminService.createRole(name,role);
+    return res.status(201).json(Role);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 };
 
@@ -60,23 +62,4 @@ exports.createDepartment = async (req, res) => {
 
 
 
-exports.approveLeave = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const leave = await adminService.approveLeave(id, req.user.id);
-    res.json({ message: "Leave approved", leave });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-exports.rejectLeave = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { reason } = req.body;
-    const leave = await adminService.rejectLeave(id, req.user.id, reason);
-    res.json({ message: "Leave rejected", leave });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
+// config Mail, config template , create Payroll information details, 

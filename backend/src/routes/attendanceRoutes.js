@@ -5,14 +5,11 @@ const upload = require('../middleware/uploadMiddleware');
 const { authenticate, authorizeRoles } = require("../middleware/authMiddleWare");
 
 // Upload CSV and import to database
-router.post('/upload/csv', authenticate, authorizeRoles('HR', 'ADMIN'), upload.single('csvfile'), AttendanceController.uploadCsv);
+router.post('/upload/csv', authenticate, authorizeRoles('HR', 'ADMIN'), AttendanceController.uploadCsv);
 
 // Get all attendance records
-router.get('/records', authenticate, authorizeRoles('HR', 'ADMIN'), AttendanceController.getAllAttendance);
+router.get('/records', authenticate, authorizeRoles('HR', 'ADMIN'), AttendanceController.getAttendance);
 
-// Get attendance records by employee ID
-router.get('/record/:empCode',authenticate, authorizeRoles('HR', 'ADMIN'), AttendanceController.getAttendanceByEmployee);
-//month year wise of an employee code
 router.get('/record/:empCode/:month/:year', AttendanceController.getAttendanceByEmployee);
 
 module.exports = router;

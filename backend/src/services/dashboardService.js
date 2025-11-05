@@ -12,8 +12,8 @@ class DashboardService {
       const totalEmployees = await Employee.count();
 
       const allEmployeesDetails = await Employee.findAll({
-        where: {status: 'Active'},
-        attributes: ['id', 'name', 'email', 'designation', 'status']
+        where: { status: 'Active' },
+        attributes: ['id', 'name',  'email', 'designation','status']
       });
 
       const today = new Date();
@@ -27,12 +27,12 @@ class DashboardService {
         },
         order: [['createdAt', 'ASC']]
       });
-      if(!upcomingBroadcasts){
+      if (!upcomingBroadcasts) {
         throw new Error('Error in retrieving broadcasts found');
       }
       const upcomingBroadcastsCount = upcomingBroadcasts.length;
 
-      return { totalEmployees, allEmployeesDetails, upcomingBroadcasts, upcomingBroadcastsCount };
+      return { totalEmployees, upcomingBroadcasts,allEmployeesDetails, upcomingBroadcastsCount };
     } catch (error) {
       throw new Error('Failed to fetch HR dashboard data');
     }
@@ -70,27 +70,31 @@ class DashboardService {
         where: { employeeId: empId },
         attributes: ['id', 'startDate', 'endDate', 'reason', 'status', 'managerId']
       });
-      //if(leaveRequests.length ===0){ leaveRequests.message ='No leave requests found'; }
-
-      // Count of pending leaves
+      const leaveRequestInfo = {
+        list: leaveRequests,
+        message: leaveRequests.length === 0 ? 'No leave requests found' : undefined
+      };
       const pendingLeaveCount = await LeaveRequest.count({
         where: { employeeId: empId, status: 'PENDING' }
       });
-      
 
+      let pendingLeavesCount = { count: pendingLeaveCount };
+
+      if (pendingLeaveCount === 0) {
+        pendingLeavesCount.message = 'No pending leaves';
+      }
       // Fetch today’s broadcasts
       const recentBroadcast = await managerService.getTodaysBroadcast();
 
       return {
         employeeProfile,
-        pendingLeaveCount,
-        leaveRequests,
+        pendingLeavesCount,
+        leaveRequestInfo,
         recentBroadcast,
         recentBroadcastCount: recentBroadcast.length
       };
     } catch (error) {
-      throw new Error('Failed to fetch employee dashboard data');
-      
+       throw new Error('Failed to fetch employee dashboard data');
     }
   }
 }

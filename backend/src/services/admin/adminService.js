@@ -2,12 +2,13 @@ const { Employee, Role, Department, EmployeeRole } = require("../../models");
 const bcrypt = require("bcrypt");
 class AdminService {
   // 🔹 Create a new role
-  static async createRole(roleName, description) {
-    const existing = await Role.findOne({ where: { roleName } });
+  static async createRole(name, role) {
+    const existing = await Role.findOne({ where: { name } });
     if (existing) throw new Error("Role already exists");
-
-    return Role.create({ roleName, description });
+    const roledata = await Role.create({ name, role });
+    return roledata;
   }
+
 
   // 🔹 Get all roles
   static async getAllRoles() {

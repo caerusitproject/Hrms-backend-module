@@ -1,5 +1,7 @@
 const db = require("../models");
 const Upload = db.Upload;
+const Employee = db.Employee;
+const Document = require("../models/Document");
 
 class UploadService {
   /**
@@ -8,12 +10,76 @@ class UploadService {
    * @returns {Promise<Object>}
    */
   static async saveFile(payload) {
-    return await Upload.create({
-      employee_id: payload.employee_id,
-      file_path: payload.file_path,
-      file_type: payload.file_type,
-    });
+    const transaction = await Upload.sequelize.transaction();
+    try {
+      const employee = await Employee.findByPk(payload.employee_id, { transaction });
+      if (!employee) throw new Error("Employee not found");
+
+      const fileName = payload.file_path.split('\\').pop().split('/').pop();
+
+      let upload;
+      if (employee.imageId) {
+        upload = await Upload.findByPk(employee.imageId, { transaction });
+        if (upload) {
+          await upload.update(
+            { file_path: fileName, file_type: payload.file_type },
+            { transaction }
+          );
+        } else {
+          upload = await Upload.create(
+            { employee_id: payload.employee_id, file_path: fileName, file_type: payload.file_type },
+            { transaction }
+          );
+          await employee.update({ imageId: upload.id }, { transaction });
+        }
+      } else {
+        upload = await Upload.create(
+          { employee_id: payload.employee_id, file_path: fileName, file_type: payload.file_type },
+          { transaction }
+        );
+        await employee.update({ imageId: upload.id }, { transaction });
+      }
+
+      await transaction.commit();
+      return upload;
+    } catch (err) {
+      await transaction.rollback();
+      throw err;
+    }
   }
+
+  static async saveDocFile(payload) {
+    try {
+      if (!payload.employee_id) throw new Error("Employee ID is required");
+      if (!payload.file_path) throw new Error("File path is required");
+      if (!payload.file_type) throw new Error("File type is required");
+      if (!payload.type) throw new Error("Document type is required");
+      if (!payload.title) throw new Error("Document title is required");
+      if (!payload.uploadedBy) throw new Error("UploadedBy is required");
+
+      const employee = await Employee.findByPk(payload.employee_id);
+      if (!employee) throw new Error("Employee not found");
+
+      const fileName = payload.file_path.split('\\').pop().split('/').pop();
+
+      const document = await Document.create({
+        employee_id: payload.employee_id,
+        title: payload.title,
+        content: payload.content || null,
+        type: payload.type,
+        file_path: fileName,
+        file_type: payload.file_type,
+        uploadedBy: payload.uploadedBy,
+      });
+
+      return document;
+    } catch (err) {
+      console.error("Error saving document:", err);
+      throw err;
+    }
+  }
+
+
 
   /**
    * Get all files for an employee
@@ -21,11 +87,32 @@ class UploadService {
    * @returns {Promise<Array>}
    */
   static async getFilesByEmployee(employee_id) {
-    return await Upload.findAll({
+    const emp = await Employee.findByPk(employee_id);
+    if (!emp) throw new Error("Employee Does Not Exist!");
+
+    const upload = await Upload.findAll({
       where: { employee_id },
       order: [["uploaded_at", "DESC"]],
     });
+    if (!upload || upload.length === 0) return { message: "NO RECORD FOUND AGAINST THE EMPLOYEE!", upload: [] };
+    return upload;
   }
+
+  static async getDocByEmployee(employee_id) {
+    const emp = await Employee.findByPk(employee_id);
+    if (!emp) throw new Error("Employee Does Not Exist!");
+
+    const upload = await Document.findAll({
+      where: { employee_id },
+      attributes: ['id', 'title', 'content', 'file_type', 'type', 'file_path','uploadedBy'],
+      order: [["uploaded_at", "DESC"]],
+    });
+    if (!upload || upload.length === 0) return { message: "NO RECORD FOUND AGAINST THE EMPLOYEE!", upload: [] };
+    return upload;
+  }
+
+
+
 
   /**
    * Delete a file by ID
@@ -33,9 +120,36 @@ class UploadService {
    * @returns {Promise<Boolean>}
    */
   static async deleteFile(id) {
-    const deleted = await Upload.destroy({ where: { id } });
-    return deleted > 0;
+    try {
+      const deleted = await Document.destroy({ where: { id } });
+      return deleted ;
+    } catch (error) {
+      throw error;
+    }
   }
-}
 
+  static async deleteImage(fileId) {
+    const transaction = await Upload.sequelize.transaction();
+    try {
+      const upload = await Upload.findByPk(fileId, { transaction });
+      if (!upload) throw new Error("File not found");
+
+      const employee = await Employee.findByPk(upload.employee_id, { transaction });
+      if (employee && employee.imageId === upload.id) {
+        await employee.update({ imageId: null }, { transaction });
+      }
+
+      await upload.destroy({ transaction });
+      await transaction.commit();
+      return true;
+    } catch (err) {
+      await transaction.rollback();
+      throw err;
+    }
+  }
+
+
+
+
+}
 module.exports = UploadService;

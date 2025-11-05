@@ -6,9 +6,9 @@ const register = async (req, res) => {
   try {
     const { fullname, username, email, password, roleId } = req.body;
     const user = await authservice.registerUser(fullname, username, email, password, roleId);
-    res.json({ message: "User registered successfully", user });
+    return res.json({ message: "User registered successfully", user });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    return res.status(400).json({ error:400, message: err.message });
   }
 };
 
@@ -16,9 +16,9 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const { accessToken, refreshToken, userData } = await authservice.loginUser(email, password);
-    res.json({ accessToken, refreshToken, userData });
+    return res.status(201).json({ accessToken, refreshToken, userData });
   } catch (err) {
-    res.status(401).json({ error: err.message });
+    return res.status(401).json({ error: err.message });
   }
 };
 
@@ -26,9 +26,7 @@ const refresh = async (req, res) => {
   try {
     const { refreshToken } = req.body;
     if (!refreshToken)
-      return res.status(400).json({ message: "Refresh token required" });
-
-
+      return res.status(400).json({message: "Refresh token required" });
 
     const status = await authservice.verifyRefreshToken(refreshToken);
     if (!status) {
@@ -54,7 +52,7 @@ const refresh = async (req, res) => {
       }
       const { newAccessToken, newRefreshToken } = await authservice.generateNewrefreshtoken(userinfo, id);
 
-      return res.json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
+      return res.status(201).json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
 
     }
 

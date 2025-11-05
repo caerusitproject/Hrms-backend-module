@@ -3,7 +3,6 @@ const Department = require("../models/department");
 class DepartmentService {
   async getAll() {
     const depAll = await Department.findAll();
-    if (!depAll) { throw new Error('Error while retrieving the departments'); }
     if (depAll.length === 0) { return { message: 'No departments exists', data: [] }; }
     return depAll;
   }

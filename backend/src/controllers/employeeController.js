@@ -23,26 +23,24 @@ exports.registerEmployee = async (req, res) => {
 exports.createEmployee = async (req, res) => {
   try {
 
-    if(req.body.name == null || req.body.email == null) return res.status(400).json({ message: "Missing required fields"});
-
-    const employee = await EmployeeService.createEmployee(req.body);
-     
+    if(req.body.name == null || req.body.email == null ) return res.status(400).json({ error:400, message: "Missing required fields."});
+    const employee = await EmployeeService.createEmployee(req.body);  
     return res.status(201).json({ message: "Employee created successfully", employee });
   } catch (err) {
-    return res.status(500).json({ message: "Error "+err });
+    return res.status(500).json({ error:500, message: "Error "+" "+err });
   }
 }
 
 exports.loginEmployee = async (req, res) => {
   try {
     const { email, password } = req.body;
+    if(!email)throw new Error("Email ID required for login please enter email");
+    if(!password)throw new Error("Password required for login please enter password");
     const { accessToken, refreshToken, userData } = await authService.loginEmployee(email, password);
-    return res.json({ accessToken, refreshToken, userData });
+    return res.status(200).json({ accessToken, refreshToken, userData });
   } catch (err) {
-    return res.status(401).json({ error: err.message });
+    return res.status(401).json({ error:401,message: err.message });
   }
-
-
 
 }
 
@@ -51,11 +49,11 @@ exports.loginEmployee = async (req, res) => {
 exports.getEmployeeById = async (req, res) => {
   try {
     const emp = await EmployeeService.getEmployeeById(req.params.id);
-    if (!emp) return res.status(404).json({ error: 'Not found' });
+    if (!emp) return res.status(404).json({ error:404, message: 'Not found' });
     return res.status(200).json(emp);
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error:500, message: err.message });
   }
 }
 // Get all employees with department info
@@ -71,7 +69,7 @@ exports.findAllEmployee = async (req, res) => {
 };
 
 
-exports.uploadEmployeeImage = async (req, res) => {
+exports.uploadEmployeeImage = async (req, res) => {//not required functionality already present in upload service
   try {
     const employeeId = req.params.id;
     if (!req.file) {
@@ -97,11 +95,11 @@ exports.updateEmployee = async (req, res) => {
       
       return res.status(200).json({ message: "Employee updated successfully", employee: updatedEmployee });
     } else {
-      return res.status(404).json({ message: "Employee not found" });
+      return res.status(404).json({ error:404, message: "Employee not found" });
     }
      
   } catch (err) {
-    res.status(404).json({ error:404, message: err.message });
+    return res.status(404).json({ error:404, message: err.message });
   }
 };
 
@@ -116,31 +114,21 @@ exports.getAllEmployees = async (req, res) => {
 
   try {
     const result = await EmployeeService.getAllEmployees(page, limit);
-    res.status(200).json(result);
+    return res.status(200).json(result);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to fetch employees" });
+    return res.status(500).json({ error:500, message: "Failed to fetch employees" });
   }
 };
 
-
-exports.getEmployee = async (req, res) => {
-  try {
-    const emp = await Employee.findById(req.params.id);
-    res.json(emp);
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
-  }
-
-};
 
 exports.removeEmployee = async (req, res) => {
   try {
     const employeeId = req.params.id;
     await EmployeeService.removeEmployee(employeeId);
-    res.status(200).json({ message: "Employee deleted successfully" });
+    return res.status(200).json({ message: "Employee deleted successfully" });
   } catch (err) {
-    res.status(404).json({ error:404, message: err.message });
+    return res.status(404).json({ error:404, message: err.message });
   } 
 };
     
@@ -151,9 +139,9 @@ exports.getSubordinates = async (req, res) => {
   try {
     const  managerId = req.params.managerId;
     const employees = await EmployeeService.getSubordinates(managerId);
-    res.status(200).json(employees);
+    return res.status(200).json(employees);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error:500, message: err.message });
   }
 };
 
@@ -162,32 +150,32 @@ exports.assignManager = async (req, res) => {
   try {
     const { employeeId, managerId } = req.body;
     const updated = await EmployeeService.assignManager(employeeId, managerId);
-    res.status(200).json({ message: "Manager assigned successfully", updated });
+    return res.status(200).json({ message: "Manager assigned successfully", updated });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    return res.status(400).json({ error:400,message: err.message });
   }
 }
 //get manager
 exports.getManagersById = async (req, res) => {
   try {
     const managers = await EmployeeService.getManagerById(req.params.id);
-    res.json(managers);
+    return res.json(managers);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error:500, message: err.message });
   }
 };
 exports.getAllManagers = async (req, res) => {
   try {
     const managers = await EmployeeService.getAllManagers();
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count: managers.length,
       data: managers,
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
+    return res.status(500).json({
+      error: 500,
+      message: error.message
     });
   }
 };
@@ -196,12 +184,12 @@ exports.getManagerById = async (req, res) => {
   try {
     const { id } = req.params;
     const manager = await EmployeeService.getManagerById(id);
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: manager,
     });
   } catch (error) {
-    res.status(404).json({
+    return res.status(404).json({
       success: false,
       message: error.message,
     });
@@ -213,12 +201,12 @@ exports.getAllRoleWiseEmployees = async (req, res) => {
    
      const { id, roles: role } = req.user;
     const employees = await EmployeeService.getAllRoleWiseEmployees(id, role);  
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: employees
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false, 
       message: "Error fetching role-wise employees",
       error: error.message
@@ -249,15 +237,15 @@ exports.getAllRoleWiseEmployees = async (req, res) => {
 exports.getAllManagersWithEmployees = async (req, res) => {
   try {
     const managers = await EmployeeService.getAllManagersWithEmployees();
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: managers
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
+    return res.status(500).json({
+      error: error.message,
       message: "Error fetching managers with employees",
-      error: error.message
+      
     });
   }
 };

@@ -1,5 +1,5 @@
 const express = require('express');
-const { create, getAllOnly, getAll, update } = require('../controllers/broadcastController.js');
+const { create, getAllOnly, getAll, update, deleteId } = require('../controllers/broadcastController.js');
 const { authenticate, authorizeRoles } = require('../middleware/authMiddleWare.js');
 const { validateId } = require('../middleware/validation.js');
 
@@ -72,6 +72,7 @@ router.get('/all/:filter', authenticate, getAll);
  *       200:
  *         description: Updated broadcast
  */
-router.put('/update/:id', authenticate, authorizeRoles('HR','ADMIN'), validateId, update);
+router.patch('/update/:id', authenticate, authorizeRoles('HR','ADMIN'), validateId, update);
+router.delete('/delete/:id', authenticate, authorizeRoles('HR','ADMIN'), validateId, deleteId);
 
 module.exports = router;

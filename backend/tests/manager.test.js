@@ -78,63 +78,31 @@ describe('Manager Controller', () => {
   });
 
   // ✅ Test getEmployeeAttendance
-  describe('getEmployeeAttendance', () => {
-    it('should return attendance successfully', async () => {
-      req.params.id = 'E1001';
-      req.query.page = '1';
-      req.query.limit = '10';
-      const mockAttendance = { attend: [], pagination: {} };
-      managerService.getAttendance.mockResolvedValue(mockAttendance);
+describe('getEmployeeAttendance', () => {
+  it('should return attendance successfully', async () => {
+    req.params.id = 'EMP2316';
+    const mockAttendance = { attend: []};
+    managerService.getAttendance.mockResolvedValue(mockAttendance);
 
-      await managerController.getEmployeeAttendance(req, res);
+    await managerController.getEmployeeAttendance(req, res);
 
-      expect(managerService.getAttendance).toHaveBeenCalledWith('E1001', 1, 10);
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({
-        message: "Attendance record retrieved successfully",
-        attendance: mockAttendance,
-      });
-    });
-
-    it('should return 400 if limit is invalid', async () => {
-      req.query.limit = '200';
-      req.query.page = '1';
-
-      await managerController.getEmployeeAttendance(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({
-        error: 400,
-        message: "Limit must be between 1 and 100",
-      });
-    });
-
-    it('should return 400 if page < 1', async () => {
-      req.query.limit = '10';
-      req.query.page = '0';
-
-      await managerController.getEmployeeAttendance(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({
-        error: 400,
-        message: "Page number must be greater than 0",
-      });
-    });
-
-    it('should handle service error', async () => {
-      req.params.id = 'E1001';
-      req.query.limit = '10';
-      req.query.page = '1';
-      const error = new Error('DB error');
-      managerService.getAttendance.mockRejectedValue(error);
-
-      await managerController.getEmployeeAttendance(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: 500, message: error.message });
-    });
+    expect(managerService.getAttendance).toHaveBeenCalledWith('EMP2316');
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(mockAttendance);
   });
+
+  it('should handle service error', async () => {
+    req.params.id = 'EMP2396';
+    const error = new Error('DB error');
+    managerService.getAttendance.mockRejectedValue(error);
+
+    await managerController.getEmployeeAttendance(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: 500, message: error.message });
+  });
+});
+
 
   // ✅ Test getDashboardBroadcasts
   describe('getDashboardBroadcasts', () => {
@@ -172,7 +140,7 @@ describe('Manager Controller', () => {
   // ✅ Test getDashboard
   describe('getDashboard', () => {
     it('should return dashboard data successfully', async () => {
-      req.params.id = 7;
+      req.user.id = 7;
       const mockData = {
         totalTeamMembers: 2,
         teamMembers: [],
