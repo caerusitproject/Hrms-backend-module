@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const Attendance = require('../models/Attendance');
 const Employee = require('../models/Employee');
-const { Op, where, literal } = require('sequelize');
+const { Op, where, literal, Sequelize } = require('sequelize');
 
 class CsvService {
   /**
@@ -138,18 +138,37 @@ class CsvService {
       status,
     };
   }
-
-  static async getAllAttendanceRecords() {
-    return Attendance.findAll({
-      order: [['date', 'DESC'], ['empCode', 'ASC']],
+  static async getAttendanceRecords(month, year) {
+    const attendORG= Attendance.findAll({
+      where: {
+        [Op.and]: [
+          Sequelize.where(
+            Sequelize.fn('EXTRACT', Sequelize.literal('MONTH FROM date')),
+            month
+          ),
+          Sequelize.where(
+            Sequelize.fn('EXTRACT', Sequelize.literal('YEAR FROM date')),
+            year
+          )
+        ]
+      },
+      attributes: ['empCode', 'date', 'checkIn', 'checkOut', 'timeSpent'],
+      order: [['date', 'DESC'], ['empCode', 'ASC']]
     });
+    return attendORG;
   }
 
   static async getAttendanceByEmployeeId(empCode, month, year) {
     try {
       // Default to current year if not provided
       const selectedYear = year || new Date().getFullYear();
- 
+      const emp = await Employee.findOne({
+        where: {
+          empCode: empCode
+        }
+      });
+
+      if (!emp) throw new Error("Employee does not exist with this employee Code");
       const records = await Attendance.findAll({
         where: {
           empCode,
@@ -167,7 +186,7 @@ class CsvService {
         },
         order: [["date", "DESC"]],
       });
- 
+
       return records;
     } catch (error) {
       console.error("Error fetching attendance:", error);

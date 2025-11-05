@@ -6,12 +6,13 @@ exports.addRole = async (req, res) => {
     
     const { name , role} = req.body;
     console.log("role name", req.body);
-    if (!name) return res.status(400).json({ error: "Role name is required" });
+    if (!name) return res.status(400).json({ error:400, message: "Role name is required" });
+    if (!role) return res.status(400).json({ error:400, message: "ROLE is required" });
 
-    const roledata = await createRole(name, role);
+    const roledata = await roleServ.createRole(name, role);
     return res.status(201).json({ message: "Role created successfully", roledata });
   } catch (err) {
-    return res.status(400).json({ error:400, message: err.message });
+    return res.status(400).json({ error: err.message });
   }
 };
 

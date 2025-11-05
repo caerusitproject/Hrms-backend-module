@@ -13,7 +13,7 @@ class DashboardService {
 
       const allEmployeesDetails = await Employee.findAll({
         where: { status: 'Active' },
-        attributes: ['id', 'name', 'email', 'designation', 'status']
+        attributes: ['id', 'name',  'email', 'designation','status']
       });
 
       const today = new Date();
@@ -32,7 +32,7 @@ class DashboardService {
       }
       const upcomingBroadcastsCount = upcomingBroadcasts.length;
 
-      return { totalEmployees, upcomingBroadcasts, upcomingBroadcastsCount };
+      return { totalEmployees, upcomingBroadcasts,allEmployeesDetails, upcomingBroadcastsCount };
     } catch (error) {
       throw new Error('Failed to fetch HR dashboard data');
     }
@@ -94,7 +94,7 @@ class DashboardService {
         recentBroadcastCount: recentBroadcast.length
       };
     } catch (error) {
-      throw error;
+       throw new Error('Failed to fetch employee dashboard data');
     }
   }
 }

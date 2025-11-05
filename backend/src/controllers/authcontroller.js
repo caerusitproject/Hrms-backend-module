@@ -18,7 +18,7 @@ const login = async (req, res) => {
     const { accessToken, refreshToken, userData } = await authservice.loginUser(email, password);
     return res.status(201).json({ accessToken, refreshToken, userData });
   } catch (err) {
-    return res.status(401).json({ error:401, message: err.message });
+    return res.status(401).json({ error: err.message });
   }
 };
 
@@ -26,12 +26,11 @@ const refresh = async (req, res) => {
   try {
     const { refreshToken } = req.body;
     if (!refreshToken)
-      return res.status(400).json({error:400, message: "Refresh token required" });
+      return res.status(400).json({message: "Refresh token required" });
 
     const status = await authservice.verifyRefreshToken(refreshToken);
     if (!status) {
       res.status(403).json({
-        error:403,
         message: "Refresh token was expired. Please make a new signin request",
       });
       return;
@@ -58,7 +57,7 @@ const refresh = async (req, res) => {
     }
 
   } catch (error) {
-    res.status(401).json({ error:401, message: error.message });
+    res.status(401).json({ message: error.message });
   }
 };
 

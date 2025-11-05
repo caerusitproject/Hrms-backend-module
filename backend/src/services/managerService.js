@@ -57,42 +57,24 @@ class ManagerService {
   }
 
 
-  static async getAttendance(empCode, page = 1, limit = 10) {
-    const offset = (page - 1) * limit;
-    const totalAttend = await Attendance.count({ where: { empCode } })
-    if (!totalAttend) {
-      return {
-        message: "NO attendance records present for the organization",
-        data: [],
-        pagination: null
-      };
-    }
-
-    const attend = await Attendance.findAll(
-      {
-        where: { empCode },
-        limit: limit,
-        offset: offset,
-        order: [['date', 'DESC']]
-      }
-    );
-    const totalPages = Math.ceil(totalAttend / limit);
-    const hasNext = page < totalPages;
-    const hasPrevious = page > 1;
+static async getAttendance(empCode) {
+  const emp= await Employee.findOne({where:{empCode}});
+  if(!emp)throw new Error("NO EMPLOYEE EXISTS FOR THIS ID!!!");
+  const attend = await Attendance.findAll({
+    where: { empCode },
+    order: [['date', 'DESC']]
+  });
+  if (!attend || attend.length === 0) {
     return {
-      attend,
-      pagination: {
-        currentPage: page,
-        totalPages: totalPages,
-        totalRecords: totalAttend,
-        recordsPerPage: limit,
-        hasNext: hasNext,
-        hasPrevious: hasPrevious,
-        nextPage: hasNext ? page + 1 : null,
-        prevPage: hasPrevious ? page - 1 : null
-      }
-    }
+      message: "No attendance records present for this employee",
+      data: []
+    };
   }
+  return {
+    message: "Attendance records retrieved successfully",
+    data: attend
+  };
+}
 
 
   static async getPendingLeaves(managerId) {
