@@ -15,8 +15,14 @@ exports.createRole = async (req, res) => {
     const {name, role} = req.body;
     if(!name || !role) {return res.status(400).json({error:400, message:"name or role missing" });}
   try {
-    const Role = await adminService.createRole(name,role);
-    return res.status(201).json(Role);
+    if(name && role) {
+      const Role = await adminService.createRole(name,role);
+      return res.status(201).json(Role);
+
+    }else{
+      return res.status(400).json({error:400, message:"name or role missing" });
+    }
+    
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
@@ -25,7 +31,7 @@ exports.createRole = async (req, res) => {
 exports.getRoles = async (req, res) => {
   try {
     const roles = await adminService.getAllRoles();
-    res.json(roles);
+   return res.status(200).json(roles);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

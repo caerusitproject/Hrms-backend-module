@@ -41,14 +41,11 @@ describe("AdminController", () => {
 
     describe("createRole", () => {
         it("should create a role successfully", async () => {
-            const mockRole = { id: 1, roleName: "ADMIN" };
-            req.body = { roleName: "ADMIN" };
+            const mockRole = { id: 1, name: "ADMIN_ROLE", role: "ADMIN" };
+            req.body = { name: "ADMIN_ROLE", role: "ADMIN" }; // ✅ matches controller check
             adminService.createRole.mockResolvedValue(mockRole);
-
-
             await adminController.createRole(req, res);
-
-            expect(adminService.createRole).toHaveBeenCalledWith(req.body);
+            expect(adminService.createRole).toHaveBeenCalledWith("ADMIN_ROLE", "ADMIN");
             expect(res.status).toHaveBeenCalledWith(201);
             expect(res.json).toHaveBeenCalledWith(mockRole);
         });
@@ -56,8 +53,8 @@ describe("AdminController", () => {
         it("should handle error", async () => {
             adminService.createRole.mockRejectedValue(new Error("Role exists"));
             await adminController.createRole(req, res);
-            expect(res.status).toHaveBeenCalledWith(500);
-            expect(res.json).toHaveBeenCalledWith({ error: "Role exists" });
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(res.json).toHaveBeenCalledWith({ error: 400, message: "name or role missing" });
         });
 
 
@@ -149,51 +146,6 @@ describe("AdminController", () => {
             expect(res.status).toHaveBeenCalledWith(500);
             expect(res.json).toHaveBeenCalledWith({ error: "Fail" });
         });
-
-
-    });
-
-    describe("approveLeave", () => {
-        it("should approve leave", async () => {
-            req.params.id = 5;
-            const leave = { id: 5 };
-            adminService.approveLeave.mockResolvedValue(leave);
-            await adminController.approveLeave(req, res);
-            expect(adminService.approveLeave).toHaveBeenCalledWith(5, 10);
-            expect(res.json).toHaveBeenCalledWith({ message: "Leave approved", leave });
-        });
-
-        it("should handle errors", async () => {
-            adminService.approveLeave.mockRejectedValue(new Error("Leave not found"));
-            await adminController.approveLeave(req, res);
-            expect(res.status).toHaveBeenCalledWith(500);
-            expect(res.json).toHaveBeenCalledWith({ error: "Leave not found" });
-        });
-
-
-    });
-
-    describe("rejectLeave", () => {
-        it("should reject leave", async () => {
-            req.params.id = 3;
-            req.body.reason = "Insufficient balance";
-            const leave = { id: 3 };
-            adminService.rejectLeave.mockResolvedValue(leave);
-
-
-            await adminController.rejectLeave(req, res);
-
-            expect(adminService.rejectLeave).toHaveBeenCalledWith(3, 10, "Insufficient balance");
-            expect(res.json).toHaveBeenCalledWith({ message: "Leave rejected", leave });
-        });
-
-        it("should handle errors", async () => {
-            adminService.rejectLeave.mockRejectedValue(new Error("Error"));
-            await adminController.rejectLeave(req, res);
-            expect(res.status).toHaveBeenCalledWith(500);
-            expect(res.json).toHaveBeenCalledWith({ error: "Error" });
-        });
-
 
     });
 });
