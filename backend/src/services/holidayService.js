@@ -14,8 +14,7 @@ class HolidayService {
 
       return holiday;
     } catch (err) {
-      console.error("Error creating holiday:", err);
-      throw err;
+        throw err;
     }
   }
 
@@ -41,8 +40,8 @@ class HolidayService {
 
     return holidays;
   } catch (err) {
-    console.error("Error fetching holidays by year:", err);
-    throw err;
+    
+      throw err;
   }
 }
   static async updateHoliday(payload) {
@@ -59,7 +58,7 @@ class HolidayService {
 
       return holiday;
     } catch (err) {
-      console.error("Error updating holiday:", err);
+      
       throw err;
     }
   }
@@ -71,7 +70,7 @@ class HolidayService {
       const deleted = await Holiday.destroy({ where: { id } });
       return deleted;
     } catch (err) {
-      console.error("Error deleting holiday:", err);
+      
       throw err;
     }
   }
