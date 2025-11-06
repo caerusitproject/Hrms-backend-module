@@ -10,8 +10,7 @@ branchProtectionRules:
      requiresCodeOwnerReviews: true
      requiresStrictStatusChecks: true
      requiredStatusCheckContexts:
-       - "cla/google"
-       - "cymbal-air-pr (retrieval-app-testing)"
+       - "Hrms-backend-pr (retrieval-app-testing)"
 # Set team access
 permissionRules:
   - team: senseai-eco
