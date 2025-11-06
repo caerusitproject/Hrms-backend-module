@@ -1,0 +1,18 @@
+# Disable merge commits
+rebaseMergeAllowed: true
+squashMergeAllowed: true
+mergeCommitAllowed: false
+# Enable branch protection
+branchProtectionRules:
+ - pattern: main
+     isAdminEnforced: true
+     requiredApprovingReviewCount: 1
+     requiresCodeOwnerReviews: true
+     requiresStrictStatusChecks: true
+     requiredStatusCheckContexts:
+       - "cla/google"
+       - "cymbal-air-pr (retrieval-app-testing)"
+# Set team access
+permissionRules:
+  - team: senseai-eco
+    permission: admin
