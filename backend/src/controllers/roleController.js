@@ -5,7 +5,6 @@ exports.addRole = async (req, res) => {
   try {
     
     const { name , role} = req.body;
-    console.log("role name", req.body);
     if (!name) return res.status(400).json({ error:400, message: "Role name is required" });
     if (!role) return res.status(400).json({ error:400, message: "ROLE is required" });
 
