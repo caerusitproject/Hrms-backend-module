@@ -74,7 +74,7 @@ class UploadService {
 
       return document;
     } catch (err) {
-      console.error("Error saving document:", err);
+      //console.error("Error saving document:", err);
       throw err;
     }
   }

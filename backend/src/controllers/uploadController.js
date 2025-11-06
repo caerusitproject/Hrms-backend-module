@@ -26,8 +26,6 @@ exports.uploadFile = async (req, res) => {
 };
 
 
-
-
 exports.uploadDocument = async (req, res) => {
   try {
     const { id } = req.params; 

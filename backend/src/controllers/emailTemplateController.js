@@ -12,7 +12,7 @@ const createTemplate = async (req, res) => {
     });
     res.status(201).json({ message: 'Template created successfully', template });
   } catch (error) {
-    console.error('Error creating template:', error);
+    //console.log('DB error:', error);
     res.status(500).json({ error: error.message });
   }
 };
