@@ -6,10 +6,10 @@ const sendMail = async (req, res) => {
     if (!body || body.trim() === '') {return res.status(400).json({ message: 'Email body is required' });}
     try {
         await emailService.sendEmail(req.body);
-        res.status(201).json({ message: ' Email sent successfully' });
+        return res.status(200).json({ message: ' Email sent successfully' });
     } catch (error) {
         console.error('Error Sending mail', error);
-        res.status(500).json({ error: 500, message: error.message });
+        return res.status(500).json({ error: 500, message: error.message });
     }
 };
 

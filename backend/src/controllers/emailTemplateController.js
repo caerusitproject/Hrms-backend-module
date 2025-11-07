@@ -10,10 +10,10 @@ const createTemplate = async (req, res) => {
       allowedVariables,
       isHtml
     });
-    res.status(201).json({ message: 'Template created successfully', template });
+    return res.status(201).json({ message: 'Template created successfully', template });
   } catch (error) {
     //console.log('DB error:', error);
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
@@ -21,9 +21,9 @@ const updateTemplate = async (req, res) => {
   try {
     const { id } = req.query;
     const updated = await emailTemplateService.updateTemplate(id, req.body);
-    res.json({ message: 'Template updated', updated });
+    return res.status(200).json({ message: 'Template updated', updated });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
@@ -34,9 +34,9 @@ const getTemplateByType = async (req, res) => {
     if (!template) {
       return res.status(404).json({ error: 'Template not found' });
     }
-    res.json({ message: 'Template retrieved', template });
+    return res.status(200).json({ message: 'Template retrieved', template });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
@@ -44,9 +44,12 @@ const getAllTemplateTypes = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
     const templates = await emailTemplateService.getAllTemplateTypes({ page, limit });
-    res.json({ message: 'Templates retrieved', templates });
+    if (!templates || templates.length === 0) {
+      return res.status(404).json({ message: 'No template types exist. Please create a new one.' });
+    }
+    return res.json({ message: 'Templates retrieved', templates });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
@@ -54,18 +57,18 @@ const getAllTemplate = async (req, res) => {
   try {
     
     const templates = await emailTemplateService.getAllTemplate();
-    res.json({ message: 'Templates retrieved', templates });
+    return res.status(200).json({ message: 'Templates retrieved', templates });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 const deleteTemplate = async (req, res) => {
   try {
     const { id } = req.query;
     await emailTemplateService.deleteTemplate(id);
-    res.json({ message: 'Template deleted' });
+    return res.status(200).json({ message: 'Template deleted' });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
