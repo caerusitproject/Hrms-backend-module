@@ -28,6 +28,8 @@ dbInfo.Payslip = require('./payroll/payslip');
 dbInfo.AiConversion = require('./AiConversation');
 dbInfo.Broadcast = require('./Broadcast')
 
+dbInfo.AiConversation = require('./AiConversation')
+
 dbInfo.Employee.hasMany(dbInfo.Payroll, { foreignKey: 'employeeId' });
 dbInfo.Payroll.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
 
@@ -60,6 +62,7 @@ dbInfo.Leave.belongsTo(dbInfo.Employee, { as: "manager", foreignKey: "managerId"
 dbInfo.LeaveInfo.belongsTo(dbInfo.Employee, { as: "employee", foreignKey: "employeeId" });
 
 // Associations
+
 
 dbInfo.Employee.hasMany(dbInfo.Payroll, { foreignKey: 'employeeId' });
 dbInfo.Payroll.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
