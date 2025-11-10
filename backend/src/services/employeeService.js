@@ -1,6 +1,7 @@
 const db = require("../models");
 const Employee = db.Employee;
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const EmployeeRole = db.EmployeeRole;
 const Department = db.Department;
 const Role = db.Role;
@@ -260,7 +261,7 @@ class EmployeeService {
     if (!manager) throw new Error("Manager not found");
     employee.managerId = managerId;
     await employee.save();
-    console.log("Kafka Event Published: MANAGER_ASSIGNED");
+    
     return employee;
   }
 
@@ -365,9 +366,9 @@ class EmployeeService {
             as: "subordinates",
             attributes: ["id", "name", "email"],
             where: {
-              managerId: { [Sequelize.Op.ne]: null } 
+              managerId: { [Sequelize.Op.ne]: null }
             },
-            required: true 
+            required: true
           }
         ],
         attributes: ["id", "name", "email"]
@@ -458,6 +459,44 @@ class EmployeeService {
       throw error;
     }
   }
+
+  static async getEmployeeFromToken(token) {
+    try {
+      if (!token) throw new Error("Missing access token");
+
+      // Remove "Bearer " prefix if exists
+      token = token.replace(/^Bearer\s+/i, "");
+
+      // 🔍 Decode and verify token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      // Extract user ID (set during login)
+      const userId = decoded.id;
+
+      // ✅ Fetch employee and associated role
+      const employee = await Employee.findOne({
+        where: { id: userId },
+        include: [
+          {
+             model: Role,
+             as: 'roles',
+             through: { attributes: [] },
+           },
+          
+        ],
+      });
+
+      if (!employee) throw new Error("User not found");
+
+      return {
+        employee: employee,
+        role: employee.roles ? employee.roles[0].role : "Unknown",
+      };
+    } catch (error) {
+      console.error("❌ Token decode error:", error.message);
+      throw new Error("Invalid or expired token");
+    }
+  };
 
 }
 
