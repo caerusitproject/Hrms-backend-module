@@ -63,6 +63,7 @@ dbInfo.LeaveInfo.belongsTo(dbInfo.Employee, { as: "employee", foreignKey: "emplo
 
 // Associations
 
+
 dbInfo.Employee.hasMany(dbInfo.Payroll, { foreignKey: 'employeeId' });
 dbInfo.Payroll.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
 dbInfo.Payroll.hasMany(dbInfo.PayrollLineItem, { foreignKey: 'payrollId' });
