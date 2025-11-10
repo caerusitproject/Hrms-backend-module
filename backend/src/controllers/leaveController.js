@@ -1,6 +1,6 @@
 const leaveService = require("../services/leaveService");
 const managerService = require('../services/managerService.js');
-const { get } = require("./workflowController.js");
+const { get } = require("./workflow/workflowController.js");
 const applyLeave = async (req, res) => {
   try {
     const leave = await leaveService.applyLeave(req.body);

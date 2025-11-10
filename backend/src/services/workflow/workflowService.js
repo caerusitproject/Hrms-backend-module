@@ -1,6 +1,6 @@
-const Employee = require('../models/Employee');
-const WorkflowLog = require('../models/WorkflowLog');
-const eventPublisher = require('./eventPublisher');
+const Employee = require('../../models/Employee');
+const WorkflowLog = require('../../models/WorkflowLog');
+//const eventPublisher = require('../eventPublisher');
 /**
  * Simple synchronous workflow orchestration methods.
  * Extend to publish events (Kafka) or run async tasks as needed.

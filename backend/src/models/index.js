@@ -25,6 +25,8 @@ dbInfo.Compensation = require('./payroll/compensation');
 dbInfo.Payroll = require('./payroll/payroll');
 dbInfo.PayrollLineItem = require('./payroll/payrollLineItem');
 dbInfo.Payslip = require('./payroll/payslip');
+dbInfo.AiConversion = require('./AiConversation');
+dbInfo.Broadcast = require('./Broadcast')
 
 dbInfo.Employee.hasMany(dbInfo.Payroll, { foreignKey: 'employeeId' });
 dbInfo.Payroll.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
@@ -74,6 +76,9 @@ dbInfo.Compensation.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
 dbInfo.Document.belongsTo(dbInfo.Employee, { foreignKey: "uploadedBy", as: "uploader" });
 dbInfo.Employee.hasMany(dbInfo.Document, { foreignKey: "uploadedBy", as: "uploadedDocuments" });
 
+dbInfo.AiConversion.belongsTo(dbInfo.Employee, { foreignKey: "empId", as: "employee" });
+
+
 
 
 
@@ -99,7 +104,7 @@ Object.values(dbInfo).forEach(model => {
 // ✅ Sync models
 if (process.env.NODE_ENV !== "test") {
   sequelize
-    .sync({ alter: true })
+    .sync({ alter: false })
     .then(() => console.log("✅ All models synced successfully"))
     .catch((err) => console.error("❌ Model sync failed:", err));
 }
