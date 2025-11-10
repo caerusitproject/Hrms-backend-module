@@ -3,7 +3,7 @@ const router = express.Router();
 const aiController = require("../../controllers/ai/aiAssistantController");
 
 // POST /api/ai/chat
-router.post("/chat", aiController.chatWithAI);
+router.post("/chat", aiController.chatWithAI);    
 
 /*router.get("/history/:userId", async (req, res) => {
   try {
