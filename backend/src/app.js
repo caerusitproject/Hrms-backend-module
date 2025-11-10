@@ -21,6 +21,8 @@ const emailTemplateRoutes = require('./routes/emailTemplateRoutes');
 const emailRoutes = require('./routes/emailRoutes');
 const compensationRoutes = require('./routes/payroll/compensationRoutes')
 const payrollRoutes = require('./routes/payroll/payrollRoutes');
+
+const aiRoutes = require("./routes/ai/aiRoutes");
 const app = express();
 const cors = require('cors');
 const path = require('path')
@@ -85,40 +87,14 @@ app.use('/api/email', emailTemplateRoutes);
 // Sending Email Routes
 app.use('/api/email/send', emailRoutes);
 
+//AI chat 
+
+app.use("/api/ai", aiRoutes);
 
 
 
 
 
-async function start() {
-  try {
-    await sequelize.authenticate();
-    console.log('Postgres connected');
-
-    // Sync DB models (dev only). In production use migrations.
-    //await sequelize.sync({ alter: true });
-    console.log('Database synchronized');
-
-    app.listen(PORT, () => {
-      console.log(`Server listening on port ${PORT}`);
-    });
-  } catch (err) {
-    console.error('Failed to start app', err);
-    process.exit(1);
-  }
-}
-
-// 🧹 Graceful shutdown handler
-process.on('SIGINT', async () => {
-  console.log('\n🛑 Caught SIGINT, closing database connection...');
-  await db.sequelize.close();
-  console.log('✅ Database connection closed. Exiting...');
-  process.exit(0);
-});
-
-if (process.env.NODE_ENV !== 'test') {
-  start().catch(err => { console.error(err); process.exit(1); });
-}
 
 
 module.exports = app;
