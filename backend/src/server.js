@@ -21,11 +21,15 @@ async function start() {
   }
 }
 
-start();
-
-// Graceful Shutdown
-process.on("SIGINT", async () => {
-  console.log("🛑 Closing DB connection...");
+// 🧹 Graceful shutdown handler
+process.on('SIGINT', async () => {
+  console.log('\n🛑 Caught SIGINT, closing database connection...');
   await sequelize.close();
+  console.log('✅ Database connection closed. Exiting...');
   process.exit(0);
 });
+
+if (process.env.NODE_ENV !== 'test') {
+  start().catch(err => { console.error(err); process.exit(1); });
+}
+//start();
