@@ -5,6 +5,7 @@ const Attendance = require('../models/Attendance.js');
 const Broadcast = require('../models/Broadcast.js');
 const { Op, where } = require('sequelize');
 const { stat } = require('fs');
+const { approveLeave } = require('./leaveService.js');
 
 class ManagerService {
 
@@ -14,6 +15,9 @@ class ManagerService {
       const leave = await Leave.findByPk(id);
       if (!leave) throw new Error('Leave not found');
       leave.status = status.toUpperCase();
+      //calling leave service reject leave method to update workflow status
+      await approveLeave(id, leave.managerId, 'REJECTED');
+
       await leave.save();
       return leave;
     } catch (error) {
@@ -37,6 +41,11 @@ class ManagerService {
       message = 'Leave approved, but your casual leaves are not enough. It will be deducted from attendance.';
       newCasualLeaves = 0;
     }
+
+    //calling leave service approve leave method to update workflow status
+
+    await approveLeave(leaveId, leave.managerId, 'APPROVED');
+
     await leave.update({ status: 'APPROVED' });
     await leaveInfo.update({ casualLeave: newCasualLeaves });
     return {

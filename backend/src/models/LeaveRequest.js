@@ -36,6 +36,10 @@ const Leave = sequelize.define("Leave", {
     type: DataTypes.STRING,
     defaultValue: "PENDING",
   },
+  workflowId:{type: DataTypes.INTEGER},
+},{
+  tableName: "leave_requests",
+  timestamps: true,
 });
 
 

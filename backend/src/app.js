@@ -63,7 +63,7 @@ app.use("/upload", uploadRoutes);
 app.use("/api/leave", leaveRoute);
 
 //workflow
-//app.use('/api/workflow', workflowRoute);
+app.use('/api/workflow', workflowRoute);
 
 //attendance
 app.use('/api/attendance', attendanceRoutes);

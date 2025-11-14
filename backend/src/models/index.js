@@ -27,8 +27,13 @@ dbInfo.PayrollLineItem = require('./payroll/payrollLineItem');
 dbInfo.Payslip = require('./payroll/payslip');
 dbInfo.AiConversion = require('./AiConversation');
 dbInfo.Broadcast = require('./Broadcast')
+dbInfo.AiConversation = require('./AiConversation');
+//workflow models
+dbInfo.workflowHistory = require('./WorkflowHistory');
+dbInfo.workflowLog = require('./WorkflowLog');
 
-dbInfo.AiConversation = require('./AiConversation')
+
+
 
 dbInfo.Employee.hasMany(dbInfo.Payroll, { foreignKey: 'employeeId' });
 dbInfo.Payroll.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
@@ -60,6 +65,8 @@ dbInfo.RefreshToken.belongsTo(dbInfo.User, { foreignKey: "userId", as: "user" })
 dbInfo.Leave.belongsTo(dbInfo.Employee, { as: "employee", foreignKey: "employeeId" });
 dbInfo.Leave.belongsTo(dbInfo.Employee, { as: "manager", foreignKey: "managerId" });
 dbInfo.LeaveInfo.belongsTo(dbInfo.Employee, { as: "employee", foreignKey: "employeeId" });
+
+dbInfo.Leave.belongsTo(dbInfo.workflowLog, { as: "workflow", foreignKey: "workflowId" });
 
 // Associations
 

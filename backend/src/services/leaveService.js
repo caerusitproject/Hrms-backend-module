@@ -1,6 +1,7 @@
 const Leave = require("../models/LeaveRequest");
 const Employee = require("../models/Employee");
 const { Op } = require("sequelize");
+const leaveWorkflow = require("./workflow/leaveWorkflow");
 
 exports.applyLeave = async (data) => {
   try {
@@ -34,15 +35,15 @@ Reason: ${data.reason}`,
     // === Create Leave Record ===
     const leave = await Leave.create(data);
 
-    // === Publish Event / Notify Manager (Optional) ===
-    // if (manager) {
-    //   const sendEmailEvent = {
-    //     to: manager.email,
-    //     subject: "Leave Application Received",
-    //     text: `Employee ${employee.name} applied for leave from ${startDate} to ${endDate}.\nReason: ${reason}`,
-    //   };
-    //   producer.sendEvent(sendEmailEvent);
-    // }
+    // === Start Leave Workflow ===
+    await leaveWorkflow.startLeave({
+      id: leave.id,
+      employeeId: employee.id,
+      managerId: manager.id,
+      startDate: leave.startDate,
+      endDate: leave.endDate,
+      reason: leave.reason,
+    });
 
     return leave;
   } catch (err) {
@@ -50,6 +51,7 @@ Reason: ${data.reason}`,
     throw err;
   }
 };
+
 
 
 exports.approveLeave = async (leaveId, managerId, action) => {
@@ -62,34 +64,15 @@ exports.approveLeave = async (leaveId, managerId, action) => {
 
   if (!leave) throw new Error("Leave not found");
   leave.status = action;
-  await leave.save();
+  
 
-  // Publish approval/rejection event
-  /* await producer.connect();
-   await producer.send({
-     topic: "leave-events",
-     messages: [
-       {
-         value: JSON.stringify({
-           eventType: `LEAVE_${status}`,
-           leaveId: leave.id,
-           employee: {
-             name: `${leave.employee.firstName} ${leave.employee.lastName}`,
-             email: leave.employee.email,
-           },
-           manager: {
-             name: `${leave.manager.firstName} ${leave.manager.lastName}`,
-             email: leave.manager.email,
-           },
-           startDate: leave.startDate,
-           endDate: leave.endDate,
-         }),
-       },
-     ],
-   });*/
-
-  return leave;
-};
+  // Update workflow status
+  if (action === "APPROVED") {
+    await leaveWorkflow.approveLeave(leaveId, managerId, leave.status, "Leave approved");
+  } else if (action === "REJECTED") {
+    await leaveWorkflow.rejectLeave(leaveId, managerId, leave.status, "Leave rejected");
+  }
+}
 
 exports.getLeavesCount = async (employeeId, flag) => {
   const emp = Employee.findByPk(employeeId);
