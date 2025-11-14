@@ -7,8 +7,11 @@ const WorkflowLog = sequelize.define('WorkflowLog', {
     primaryKey: true,
     autoIncrement: true
   },
-  employeeId: { type: DataTypes.BIGINT, allowNull: false },
-  event: { type: DataTypes.STRING, allowNull: false },
+  processType: { type: DataTypes.STRING, allowNull: true },
+  employeeId: { type: DataTypes.BIGINT, allowNull: true },
+  status: { type: DataTypes.STRING, allowNull: true },
+  initiatedBy: { type: DataTypes.INTEGER, allowNull: true },
+  event: { type: DataTypes.STRING, allowNull: true },
   payload: { type: DataTypes.JSONB }
 }, {
   tableName: 'workflow_logs',
