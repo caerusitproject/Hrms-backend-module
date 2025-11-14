@@ -34,7 +34,7 @@ class EmployeeService {
       throw new Error("Error hashing password: " + err.message);
     }
 
-
+    if(!payload.managerId)payload.managerId=1;
     const roleIds = payload.roleIds;
     const employee = await Employee.create(payload);
     if (roleIds) {

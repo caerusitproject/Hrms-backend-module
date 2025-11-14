@@ -6,10 +6,10 @@ const uploadEmployeeMiddleware = require("../middleware/UploadEmployeeProfileIma
 const ctrl = require("../controllers/uploadController");
 
 // Upload profile image
-router.post("/:id/profile", uploadEmployeeMiddleware, ctrl.uploadFile);
+router.post("/:id/profile",auth.authenticate,auth.authorizeRoles("ADMIN","HR"), uploadEmployeeMiddleware, ctrl.uploadFile);
 
 // Upload document
-router.post("/:id/document",auth.authenticate,auth.authorizeRoles("ADMIN","MANAGER","HR","USER"), upload, ctrl.uploadDocument);
+router.post("/:id/document",auth.authenticate,auth.authorizeRoles("ADMIN","MANAGER","HR"), upload, ctrl.uploadDocument);
 
 // Get all uploads for employee
 router.get("/:id/image", auth.authenticate,auth.authorizeRoles("ADMIN","HR","USER","MANAGER"),ctrl.getFiles);

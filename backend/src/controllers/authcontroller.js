@@ -40,7 +40,7 @@ const refresh = async (req, res) => {
       let id = tokendata.id;
       var userinfo = {};
       if (tokendata.empId) {
-        userdata = await empService.getEmployeeDetailsById(tokendata.empId);
+        userdata = await empService.getEmployeeById(tokendata.empId);
         userinfo = {
           id: userdata.id,
           empId: userdata.id,
@@ -61,4 +61,30 @@ const refresh = async (req, res) => {
   }
 };
 
-module.exports = { register, login, refresh }
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    await authservice.sendPasswordResetEmail(email);
+    return res.status(200).json({ message: "Password reset email sent successfully!" });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password, confirmPassword } = req.body;
+
+    if (password !== confirmPassword)
+      return res.status(400).json({ message: "Passwords do not match" });
+
+    await authservice.resetUserPassword(token, password);
+    return res.status(200).json({ message: "Password has been reset successfully!" });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+};
+
+
+module.exports = { register, login, refresh, forgotPassword , resetPassword }

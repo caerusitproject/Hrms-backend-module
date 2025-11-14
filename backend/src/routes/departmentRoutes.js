@@ -5,7 +5,7 @@ const { authenticate, authorizeRoles } = require("../middleware/authMiddleWare")
 
 
 router.get("/",authenticate, authorizeRoles("ADMIN","HR", "MANAGER", "USER"), departmentController.getAll);
-router.get("/:id", authenticate, authorizeRoles("ADMIN"), departmentController.getById);
+router.get("/:id", authenticate, authorizeRoles("ADMIN",'USER','HR','MANAGER'), departmentController.getById);
 router.post("/", authenticate, authorizeRoles("ADMIN"), departmentController.create);
 router.patch("/:id", authenticate, authorizeRoles("ADMIN"), departmentController.update);
 router.delete("/:id", authenticate, authorizeRoles("ADMIN"), departmentController.delete);

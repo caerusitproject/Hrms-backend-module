@@ -4,7 +4,7 @@ const leaveController = require("../controllers/leaveController");
 const { authenticate, authorizeRoles } = require("../middleware/authMiddleWare");
 
 // Employee applies for leave
-router.post("/apply", leaveController.applyLeave);
+router.post("/apply",authenticate,authorizeRoles("USER","MANAGER","HR","ADMIN"), leaveController.applyLeave);
 router.patch("/update/:id", authenticate,authorizeRoles("USER","MANAGER","HR","ADMIN"), leaveController.updateLeave);
 router.delete("/delete/:id", authenticate,authorizeRoles("USER","MANAGER","HR","ADMIN"), leaveController.deleteLeave);
 
@@ -13,7 +13,7 @@ router.delete("/delete/:id", authenticate,authorizeRoles("USER","MANAGER","HR","
 //tanmay's manage leave module
 router.patch("/approve/:id", authenticate, authorizeRoles("MANAGER","ADMIN"), leaveController.approveLeave);
 router.patch("/reject/:id", authenticate,authorizeRoles("MANAGER","ADMIN"), leaveController.rejectLeave);
-router.get("/total", authenticate, authorizeRoles("USER","MANAGER","HR"),leaveController.getLeavesCount);
-router.get("/total/month", authenticate,authorizeRoles("USER","MANAGER","HR"), leaveController.getLeavesCountMonth);
-router.get("/leave-list", authenticate,authorizeRoles("MANAGER","USER"), leaveController.getLeavesList);
+router.get("/total", authenticate, authorizeRoles("USER","MANAGER","HR","ADMIN"),leaveController.getLeavesCount);
+router.get("/total/month", authenticate,authorizeRoles("USER","MANAGER","HR","ADMIN"), leaveController.getLeavesCountMonth);
+router.get("/leave-list", authenticate,authorizeRoles("MANAGER","USER","ADMIN"), leaveController.getLeavesList);
 module.exports = router;

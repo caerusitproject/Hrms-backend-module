@@ -4,11 +4,8 @@ const { Op } = require("sequelize");
 
 exports.applyLeave = async (data) => {
   try {
-    const { employeeId, managerId, startDate, endDate, reason } = data;
+    const { employeeId, startDate, endDate, reason } = data;
 
-    // === Input Validation ===
-    if (!employeeId) throw new Error("Employee ID is required");
-    if (!managerId) throw new Error("Manager ID is required");
     if (!startDate) throw new Error("Start date is required");
     if (!endDate) throw new Error("End date is required");
     if (!reason || reason.trim() === "") throw new Error("Reason is required");
@@ -17,9 +14,23 @@ exports.applyLeave = async (data) => {
     const employee = await Employee.findByPk(employeeId);
     if (!employee) throw new Error("Employee not found");
 
+    const managerId = employee.managerId;
+    data.managerId = managerId;
+    //if (!manager) throw new Error("Manager not found");
     const manager = await Employee.findByPk(managerId);
-    if (!manager) throw new Error("Manager not found");
+    /*const emailDetails = {
+      subject: "Leave Application Received",
+      text: `Employee ${employee.name} applied for leave from ${data.startDate} to ${data.endDate}.
+Reason: ${data.reason}`,
+    };
 
+    if (!manager) {
+      console.warn(`Manager not found for employee ID: ${employeeId}`);
+      await sendEmail("HR@caerusit.com", emailDetails.subject, emailDetails.text);
+    } else {
+      console.log(`Manager found: ${manager.name} (${manager.email})`);
+      await sendEmail(manager.email, emailDetails.subject, emailDetails.text);
+    }*/
     // === Create Leave Record ===
     const leave = await Leave.create(data);
 

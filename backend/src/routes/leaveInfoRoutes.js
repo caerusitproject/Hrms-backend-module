@@ -5,8 +5,8 @@ const { authenticate, authorizeRoles } = require("../middleware/authMiddleWare")
 
 // Employee applies for leave
 router.post("/",authenticate,authorizeRoles("ADMIN"), leaveInfoController.addOrUpdateLeave);
-router.get("/",authenticate,authorizeRoles("ADMIN"), leaveInfoController.getAllLeaveInfo);
-router.get("/:id",authenticate,authorizeRoles("ADMIN"), leaveInfoController.getLeaveInfoByEmployee);
+router.get("/",authenticate,authorizeRoles("ADMIN","HR","MANAGER","USER"), leaveInfoController.getAllLeaveInfo);
+router.get("/:id",authenticate,authorizeRoles("ADMIN","MANAGER","USER"), leaveInfoController.getLeaveInfoByEmployee);
 router.delete("/:id",authenticate,authorizeRoles("ADMIN"), leaveInfoController.deleteLeaveInfo);
 // router.put("/update/:id", authenticate,authorizeRoles("USER","MANAGER","HR"), leaveController.updateLeave);
 // router.delete("/delete/:id", authenticate,authorizeRoles("USER","MANAGER","HR"), leaveController.deleteLeave);

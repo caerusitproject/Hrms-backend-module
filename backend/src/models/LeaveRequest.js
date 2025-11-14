@@ -15,6 +15,11 @@ const Leave = sequelize.define("Leave", {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  type:{
+    type: DataTypes.STRING,
+    allowNull:false,
+    defaultValue:"Casual Leave",
+  },
   startDate: {
     type: DataTypes.DATE,
     allowNull: false,

@@ -3,6 +3,9 @@ const managerService = require('../services/managerService.js');
 const { get } = require("./workflow/workflowController.js");
 const applyLeave = async (req, res) => {
   try {
+    req.body = req.body || {};
+    const eid=req.user.id;
+    req.body.employeeId=eid;
     const leave = await leaveService.applyLeave(req.body);
     return res.status(201).json({ message: "Leave applied successfully", leave });
   } catch (error) {

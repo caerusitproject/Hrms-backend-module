@@ -40,8 +40,8 @@ router.post('/create', authenticate, authorizeRoles('HR','ADMIN'), create);
  *       200:
  *         description: List of broadcasts
  */
-router.get('/all', authenticate, getAllOnly);  
-router.get('/all/:filter', authenticate, getAll);
+router.get('/all', authenticate, authorizeRoles('HR','ADMIN','MANAGER','USER'), getAllOnly);  
+router.get('/all/:filter', authenticate,authorizeRoles('HR','ADMIN','MANAGER','USER'), getAll);
 
 
 /**
