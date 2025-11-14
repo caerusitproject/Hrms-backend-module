@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const workflowController = require('../controllers/workflow/workflowController');
-const leaveWorkflow = require('../controllers/workflow/leaveWorkflowController')
+//const leaveWorkflow = require('../controllers/workflow/leaveWorkflow');
 
 router.use('/workflow', workflowController);
-router.use('/leave', leaveWorkflow.create);
+//router.use('/leave', leaveWorkflow.create);
+
 
 /*router.use('/leave', leaveController.create);
 router.use('/leave/:id/submit', leaveController.submit);
