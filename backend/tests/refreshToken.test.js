@@ -17,7 +17,7 @@ jest.mock("../src/services/authService", () => ({
 }));
 
 jest.mock("../src/services/employeeService", () => ({
-  getEmployeeDetailsById: jest.fn(),
+  getEmployeeById: jest.fn(),
 }));
 
 describe("Auth Controller", () => {
@@ -108,84 +108,95 @@ describe("Auth Controller", () => {
   // REFRESH TOKEN
   // ------------------------------
   describe("refresh", () => {
-        it("should return 400 if refresh token is missing", async () => {
-        req.body = {};
-        await authController.refresh(req, res);
+  it("should return 400 if refresh token is missing", async () => {
+    req.body = {};
+    await authController.refresh(req, res);
 
-        expect(res.status).toHaveBeenCalledWith(400);
-        expect(res.json).toHaveBeenCalledWith({ message: "Refresh token required" });
-      });
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ message: "Refresh token required" });
+  });
 
-      it("should return 403 if user refresh token expired", async () => {
-        req.body = { refreshToken: "expired-token" };
-        authService.verifyRefreshToken.mockResolvedValue(false); // ✅ match controller import name
+  it("should return 403 if user refresh token expired", async () => {
+    req.body = { refreshToken: "expired-token" };
+    authService.verifyRefreshToken.mockResolvedValue(false);
 
-        await authController.refresh(req, res);
+    await authController.refresh(req, res);
 
-        expect(res.status).toHaveBeenCalledWith(403);
-        expect(res.json).toHaveBeenCalledWith({
-          message: "Refresh token was expired. Please make a new signin request",
-        });
-    });
-
-    it("should refresh tokens successfully for employee", async () => {
-      req.body = { refreshToken: "valid-token" };
-      authService.verifyRefreshToken.mockResolvedValue(true);
-      authService.findRefreshToken.mockResolvedValue({ id: 10, empId: 5 });
-      empService.getEmployeeDetailsById.mockResolvedValue({
-        id: 5,
-        email: "emp@example.com",
-        roles: [{ role: "EMPLOYEE" }],
-      });
-      authService.generateNewrefreshtoken.mockResolvedValue({
-        newAccessToken: "new-access",
-        newRefreshToken: "new-refresh",
-      });
-
-      await authController.refresh(req, res);
-
-      expect(authService.verifyRefreshToken).toHaveBeenCalledWith("valid-token");
-      expect(authService.findRefreshToken).toHaveBeenCalledWith("valid-token");
-      expect(empService.getEmployeeDetailsById).toHaveBeenCalledWith(5);
-      expect(authService.generateNewrefreshtoken).toHaveBeenCalled();
-      expect(res.json).toHaveBeenCalledWith({
-        accessToken: "new-access",
-        refreshToken: "new-refresh",
-      });
-    });
-
-    it("should refresh tokens successfully for non-employee user", async () => {
-      req.body = { refreshToken: "valid-user-token" };
-      authService.verifyRefreshToken.mockResolvedValue(true);
-      authService.findRefreshToken.mockResolvedValue({ id: 22, userId: 9 });
-      authService.findUserById.mockResolvedValue({
-        id: 9,
-        email: "user@example.com",
-      });
-      authService.generateNewrefreshtoken.mockResolvedValue({
-        newAccessToken: "tokenA",
-        newRefreshToken: "tokenB",
-      });
-
-      await authController.refresh(req, res);
-
-      expect(authService.findUserById).toHaveBeenCalledWith(9);
-      expect(authService.generateNewrefreshtoken).toHaveBeenCalled();
-      expect(res.json).toHaveBeenCalledWith({
-        accessToken: "tokenA",
-        refreshToken: "tokenB",
-      });
-    });
-
-    it("should handle refresh token errors", async () => {
-      req.body = { refreshToken: "invalid" };
-      const error = new Error("Invalid token");
-      authService.verifyRefreshToken.mockRejectedValue(error);
-
-      await authController.refresh(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(401);
-      expect(res.json).toHaveBeenCalledWith({ message: "Invalid token" });
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith({
+      message: "Refresh token was expired. Please make a new signin request",
     });
   });
+
+  it("should refresh tokens successfully for employee", async () => {
+    req.body = { refreshToken: "valid-token" };
+
+    authService.verifyRefreshToken.mockResolvedValue(true);
+    authService.findRefreshToken.mockResolvedValue({ id: 10, empId: 5 });
+
+    // ✅ UPDATED to getEmployeeById
+    empService.getEmployeeById.mockResolvedValue({
+      id: 5,
+      email: "emp@example.com",
+      roles: [{ role: "EMPLOYEE" }],
+    });
+
+    authService.generateNewrefreshtoken.mockResolvedValue({
+      newAccessToken: "new-access",
+      newRefreshToken: "new-refresh",
+    });
+
+    await authController.refresh(req, res);
+
+    expect(authService.verifyRefreshToken).toHaveBeenCalledWith("valid-token");
+    expect(authService.findRefreshToken).toHaveBeenCalledWith("valid-token");
+
+    // ✅ UPDATED HERE
+    expect(empService.getEmployeeById).toHaveBeenCalledWith(5);
+
+    expect(authService.generateNewrefreshtoken).toHaveBeenCalled();
+    expect(res.json).toHaveBeenCalledWith({
+      accessToken: "new-access",
+      refreshToken: "new-refresh",
+    });
+  });
+
+  it("should refresh tokens successfully for non-employee user", async () => {
+    req.body = { refreshToken: "valid-user-token" };
+
+    authService.verifyRefreshToken.mockResolvedValue(true);
+    authService.findRefreshToken.mockResolvedValue({ id: 22, userId: 9 });
+    authService.findUserById.mockResolvedValue({
+      id: 9,
+      email: "user@example.com",
+    });
+
+    authService.generateNewrefreshtoken.mockResolvedValue({
+      newAccessToken: "tokenA",
+      newRefreshToken: "tokenB",
+    });
+
+    await authController.refresh(req, res);
+
+    expect(authService.findUserById).toHaveBeenCalledWith(9);
+    expect(authService.generateNewrefreshtoken).toHaveBeenCalled();
+    expect(res.json).toHaveBeenCalledWith({
+      accessToken: "tokenA",
+      refreshToken: "tokenB",
+    });
+  });
+
+  it("should handle refresh token errors", async () => {
+    req.body = { refreshToken: "invalid" };
+    const error = new Error("Invalid token");
+
+    authService.verifyRefreshToken.mockRejectedValue(error);
+
+    await authController.refresh(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith({ message: "Invalid token" });
+  });
+});
+
 });
