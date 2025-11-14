@@ -27,11 +27,12 @@ dbInfo.PayrollLineItem = require('./payroll/payrollLineItem');
 dbInfo.Payslip = require('./payroll/payslip');
 dbInfo.AiConversion = require('./AiConversation');
 dbInfo.Broadcast = require('./Broadcast')
-
 dbInfo.AiConversation = require('./AiConversation')
-
 dbInfo.workflowHistory = require('./WorkflowHistory');
 dbInfo.workflowLog = require('./WorkflowLog');
+
+
+
 
 dbInfo.Employee.hasMany(dbInfo.Payroll, { foreignKey: 'employeeId' });
 dbInfo.Payroll.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
