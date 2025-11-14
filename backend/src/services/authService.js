@@ -1,6 +1,10 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { User, Role, RefreshToken, Employee, EmployeeRole, Department } = require("../models");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
+const { User, Role, RefreshToken,  EmployeeRole,Employee, Department} = require("../models");
+
+
 //const RefreshTokenDb = require("../models/RefreshToken");
 //const JWT_REFRESH_SECRET  = "5cbc66888043682105be8f7d49d1e64d5c898972ad91631cdf15a7f596f903d6";
 
@@ -57,7 +61,7 @@ const generateAccessToken = async (user) => {
     id: user.id,
     empId: user.empId,
     email: user.email,
-    roles: user.role || ["USER"], // default role
+    roles: user.role || "USER", // default role
   };
   const accesstoken = jwt.sign(payload, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || "1h",
@@ -72,7 +76,7 @@ const generateRefreshToken = async (user) => {
     id: user.id,
     empId: user.empId,
     email: user.email,
-    roles: user.role || ["USER"], // default role
+    roles: user.role || "USER", // default role
   };
   const token = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
     expiresIn: process.env.JWT_EXP_REFRESH || "5d",
@@ -202,4 +206,75 @@ const loginEmployee = async (email, password) => {
   }
 
 }
-module.exports = { registerUser, loginUser, verifyRefreshToken, generateRefreshToken, findUserById, findRefreshToken, generateNewrefreshtoken, loginEmployee };
+
+const PasswordResetToken = require("../models/PasswordResetToken");
+// Generate token and email link
+const sendPasswordResetEmail = async (email) => {
+  const employee = await Employee.findOne({ where: { email } });
+  if (!employee) throw new Error("No account found with that email");
+
+  // Create reset token
+  const token = crypto.randomBytes(4).toString("hex");
+  const expiry = new Date(Date.now() + 3600000); // 1 hour expiry
+
+  // Store token
+  await PasswordResetToken.create({
+    userId: employee.id,
+    token,
+    expiry
+  });
+
+  // Send email
+  const resetLink = `${process.env.FRONTEND_URL}/app/reset-password/${token}`;
+  
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.SMTP_EMAIL,
+      pass: process.env.SMTP_PASSWORD,
+    },
+  });
+
+  await transporter.sendMail({
+    from: process.env.SMTP_EMAIL,
+    to: employee.email,
+    subject: "Password Reset Request",
+    html: `
+      <h3>Password Reset</h3>
+      <p>Click the link below to reset your password:</p>
+      <a href="${resetLink}">${resetLink}</a>
+      <p>This link expires in 1 hour.</p>
+    `,
+  });
+
+  return true;
+};
+
+const resetUserPassword = async (token, newPassword) => {
+  // 1️⃣ Find the reset token
+  const resetToken = await PasswordResetToken.findOne({ where: { token } });
+  if (!resetToken) throw new Error("Invalid or expired password reset token");
+
+  // 2️⃣ Check expiry
+  if (resetToken.expiry < new Date()) throw new Error("Token has expired");
+
+  // 3️⃣ Find the employee using the stored userId
+  const employee = await Employee.findByPk(resetToken.userId);
+  if (!employee) throw new Error("User not found");
+
+  // 4️⃣ Hash the new password
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  // 5️⃣ Update password in DB (correct order)
+  await Employee.update(
+    { password: hashedPassword },
+    { where: { id: employee.id } }
+  );
+
+  // 6️⃣ Delete used reset token
+  await resetToken.destroy();
+
+  return true;
+};
+
+module.exports = { registerUser, loginUser, verifyRefreshToken, generateRefreshToken, findUserById, findRefreshToken, generateNewrefreshtoken, loginEmployee , sendPasswordResetEmail, resetUserPassword};

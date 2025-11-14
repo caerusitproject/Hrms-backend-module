@@ -3,7 +3,7 @@ const router = express.Router();
 const { authenticate, authorizeRoles } = require("../middleware/authEmpMiddleware");
 const EmployeeService = require("../services/empAuthService");
 
-router.get("/", authenticate, authorizeRoles("HR"), async (req, res) => {
+router.get("/", authenticate, authorizeRoles("HR",'ADMIN'), async (req, res) => {
   try {
     const employees = await EmployeeService.getAllEmployees();
     res.json(employees);
@@ -12,7 +12,7 @@ router.get("/", authenticate, authorizeRoles("HR"), async (req, res) => {
   }
 });
 
-router.get("/managers", authenticate, authorizeRoles("HR"), async (req, res) => {
+router.get("/managers", authenticate, authorizeRoles("HR","ADMIN"), async (req, res) => {
   try {
     const managers = await EmployeeService.getEmployeesByRole("Manager");
     res.json(managers);

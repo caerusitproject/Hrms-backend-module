@@ -4,9 +4,9 @@ const roleController = require("../controllers/roleController");
 const authMiddleware = require("../middleware/authMiddleWare")
 
 // Only ADMIN can create new roles
-router.post("/",  roleController.addRole);
+router.post("/",authMiddleware.authenticate, authMiddleware.authorizeRoles("ADMIN"),  roleController.addRole);
 
 // All logged-in users can view roles
-router.get("/", roleController.listRoles);
+router.get("/",authMiddleware.authenticate, authMiddleware.authorizeRoles("ADMIN","USER","HR","MANAGER"), roleController.listRoles);
 
 module.exports = router;

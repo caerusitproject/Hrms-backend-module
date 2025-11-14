@@ -20,7 +20,7 @@ const Employee = sequelize.define('employee', {
   fatherName: { type: DataTypes.STRING, allowNull: true },
   managerId: {
     type: DataTypes.INTEGER,
-    allowNull: true,
+    allowNull:false
   },
   idNumber: { type: DataTypes.STRING, allowNull: true },
   address: { type: DataTypes.STRING, allowNull: true },
