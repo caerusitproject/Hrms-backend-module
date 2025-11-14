@@ -31,7 +31,7 @@ dbInfo.Broadcast = require('./Broadcast')
 dbInfo.AiConversation = require('./AiConversation')
 
 dbInfo.workflowHistory = require('./WorkflowHistory');
-dbInfo.workflowLog = require('./workflowLog');
+dbInfo.workflowLog = require('./WorkflowLog');
 
 dbInfo.Employee.hasMany(dbInfo.Payroll, { foreignKey: 'employeeId' });
 dbInfo.Payroll.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
