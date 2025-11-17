@@ -3,10 +3,10 @@ const { workflowLog, workflowHistory } = require("../../models");
 //const { sendNotification } = require("./kafkaProducer");
 
 class WorkflowEngine {
-  async start(processType, refId,employeeId, initiatorId, startDate,EndDate,reson, data = {}) {
-    const wf = await workflowLog.create({ processType, refId,employeeId, status: "INITIATED", initiatedBy: initiatorId ,startDate: startDate,endDate:EndDate, reson:reson}); 
+  async start(processType, employeeId, initiatorId, startDate,endDate,reson, data = {}) {
+    const wf = await workflowLog.create({ employeeId, payload: {data : `Leave from ${startDate} to ${endDate} for reason: ${reson}`}, processType, status: "INITIATED", initiatedBy: initiatorId}); 
     //.create({ processType, refId, status: "INITIATED", initiatedBy: initiatorId });
-    await workflowHistory.create({ workflowId: wf.id, action: "INITIATED", actorId: initiatorId, remarks: "Workflow started" , comment: `Leave from ${startDate} to ${EndDate} for reason: ${reson}`});
+    await workflowHistory.create({ workflowId: wf.id, action: "INITIATED", actorId: initiatorId, remarks: "Workflow started" , comment: `Leave from ${startDate} to ${endDate} for reason: ${reson}`});
 
     //await sendNotification("workflow-topic", { type: `${processType}_STARTED`, data: { workflowId: wf.id, ...data } });
     return wf;

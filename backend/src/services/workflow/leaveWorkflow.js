@@ -7,18 +7,19 @@ exports.startLeave = async (leaveData) => {
   // create leave
     const leave = await LeaveRequest.findByPk(leaveData.id);
   // start workflow
-  const wf = await engine.start("LEAVE", leaveData.id, leaveData.employeeId, leaveData.startDate,leaveData.EndDate, leaveData.reason );
+  const wf = await engine.start("LEAVE", leaveData.id, leaveData.employeeId, leaveData.startDate,leaveData.endDate, leaveData.reason );
 
   if (!leave) throw new Error("Leave request not found");
   // link workflow id
   leave.workflowId = wf.id;
-  await leave.save();
+  const updateleave = await leave.save();
+  console.log("Leave workflow started with ID:", updateleave.workflowId);
   // notify manager
   /*await sendNotification("workflow-topic", {
     type: "LEAVE_INITIATED",
     data: { leaveId: leaveData.id, employeeId: leaveData.employeeId, managerId: leaveData.managerId, message: "New leave request" }
   });*/
-  return leaveData;
+  return updateleave;
 };
 
 exports.approveLeave = async (leaveId, managerId, status, remarks) => {
