@@ -36,7 +36,7 @@ Reason: ${data.reason}`,
     const leave = await Leave.create(data);
 
     // === Start Leave Workflow ===
-    await leaveWorkflow.startLeave({
+   const leaveInfo = await leaveWorkflow.startLeave({
       id: leave.id,
       employeeId: employee.id,
       managerId: manager.id,
@@ -45,7 +45,7 @@ Reason: ${data.reason}`,
       reason: leave.reason,
     });
 
-    return leave;
+    return leaveInfo;
   } catch (err) {
     // Pass the error to your existing error handler
     throw err;
