@@ -30,7 +30,7 @@ dbInfo.Broadcast = require('./Broadcast')
 dbInfo.AiConversation = require('./AiConversation');
 //workflow models
 dbInfo.workflowHistory = require('./WorkflowHistory');
-dbInfo.workflowLog = require('./WorkflowLog');
+dbInfo.workflow = require('./Workflow');
 
 
 
@@ -66,7 +66,7 @@ dbInfo.Leave.belongsTo(dbInfo.Employee, { as: "employee", foreignKey: "employeeI
 dbInfo.Leave.belongsTo(dbInfo.Employee, { as: "manager", foreignKey: "managerId" });
 dbInfo.LeaveInfo.belongsTo(dbInfo.Employee, { as: "employee", foreignKey: "employeeId" });
 
-dbInfo.Leave.belongsTo(dbInfo.workflowLog, { as: "workflow", foreignKey: "workflowId" });
+dbInfo.Leave.belongsTo(dbInfo.workflow, { as: "workflow", foreignKey: "workflowId" });
 
 // Associations
 
@@ -81,6 +81,9 @@ dbInfo.Compensation.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
 
 dbInfo.Employee.hasOne(dbInfo.Compensation, { foreignKey: 'employeeId' });
 dbInfo.Compensation.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
+
+dbInfo.workflow.hasMany(dbInfo.workflowHistory, {  foreignKey: 'workflowId',  as: 'histories' });
+dbInfo.workflowHistory.belongsTo(dbInfo.workflow, {   foreignKey: 'workflowId',  as: 'workflow'  });
 
 //Document
 dbInfo.Document.belongsTo(dbInfo.Employee, { foreignKey: "uploadedBy", as: "uploader" });

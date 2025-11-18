@@ -1,16 +1,12 @@
-module.exports = {
-    leave : {
-        INITIATED: "INITIATED",
-        PENDING_APPROVAL: "PENDING_APPROVAL",
-        APPROVED: "APPROVED",
-        REJECTED: "REJECTED",
-        COMPLETED: "COMPLETED",
+const workflowConfig = {
+  leaveStates: {
+    INITIATED: "INITIATED",
+    PENDING_APPROVAL: "PENDING_APPROVAL",
+    APPROVED: "APPROVED",
+    REJECTED: "REJECTED",
+    COMPLETED: "COMPLETED",
+  },
 
-    }
-  
-};
-
-/*module.exports = {
   leave: {
     initialState: 'draft',
     transitions: {
@@ -81,4 +77,6 @@ module.exports = {
       completed: ['applySalaryChange', 'notifyEmployee']
     }
   }
-};*/
+};
+
+module.exports = workflowConfig;

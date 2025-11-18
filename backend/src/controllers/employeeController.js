@@ -2,29 +2,13 @@ const EmployeeService = require("../services/employeeService");
 const authService = require("../services/authService");
 
 
-exports.registerEmployee = async (req, res) => {
-  try {
-    const { name, email, password, roleIds } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const employee = await Employee.create({ name, email, password: hashedPassword });
-
-    if (roleIds && roleIds.length > 0) {
-      await employee.setRoles(roleIds);
-    }
-
-    return res.status(201).json({ message: "Employee created successfully", employee });
-  } catch (err) {
-    return res.status(500).json({ message: "Error creating employee", error: err.message });
-  }
-};
-
-
 
 exports.createEmployee = async (req, res) => {
   try {
 
     if(req.body.name == null || req.body.email == null ) return res.status(400).json({ error:400, message: "Missing required fields."});
-    const employee = await EmployeeService.createEmployee(req.body);  
+    const id= req.user.id;
+    const employee = await EmployeeService.createEmployee(req.body, id);  
     return res.status(201).json({ message: "Employee created successfully", employee });
   } catch (err) {
     return res.status(500).json({ error:500, message: "Error "+" "+err });
@@ -104,7 +88,7 @@ exports.updateEmployee = async (req, res) => {
 };
 
 
-exports.getAllEmployees = async (req, res) => {
+exports.getAllEmployeesPag = async (req, res) => {
   let { page = 1, limit = 10 } = req.query;
   page = Number(page);
   limit = Number(limit);
@@ -113,7 +97,7 @@ exports.getAllEmployees = async (req, res) => {
   if (page < 1) return res.status(400).json({ error: 400, message: "Page must be > 0" });
 
   try {
-    const result = await EmployeeService.getAllEmployees(page, limit);
+    const result = await EmployeeService.getAllEmployeesPag(page, limit);
     return res.status(200).json(result);
   } catch (err) {
     console.error(err);
@@ -121,6 +105,17 @@ exports.getAllEmployees = async (req, res) => {
   }
 };
 
+
+exports.getAllEmployees = async (req, res) => {
+
+  try {
+    const result = await EmployeeService.getAllEmployees();
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error:500, message: "Failed to fetch employees" });
+  }
+};
 
 exports.removeEmployee = async (req, res) => {
   try {

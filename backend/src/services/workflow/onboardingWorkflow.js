@@ -4,9 +4,9 @@ const engine = require("./workflowEngine");
 //const { sendNotification } = require("../services/notificationProducer");
 
 exports.startOnboarding = async (data) => {
-  const ob = await Onboarding.create(data);
-  const wf = await engine.start("ONBOARDING", ob.id, data.employeeId, { onboardingId: ob.id });
-  ob.workflowId = wf.id; await ob.save();
+  //const ob = await Onboarding.create(data);
+  const wf = await engine.start(data.processType, data.employeeId, { onboardingId: ob.id });
+  ob.workflowId = wf.id; //await ob.save();
   await sendNotification("workflow-topic", { type: "ONBOARDING_STARTED", data: { onboardingId: ob.id, message: "Onboarding started" }});
   return ob;
 };

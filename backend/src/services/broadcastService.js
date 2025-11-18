@@ -89,7 +89,7 @@ const getAllBroadcastsOnly = async (page = 1, limit = 10) => {
         order: [['id', 'ASC']],
         attributes: ['id', 'title', 'content', 'createdAt', 'updatedAt']
       });
-      if( broad.length ===0)return {message:"NO BROADCASTS FOR THE SPECIFIED PERIOD!!!!"};
+      if( broad.length ===0)return {message:"NO BROADCASTS FOR THE SPECIFIED PERIOD!!!!", data:[]};
       return broad;
     } catch (error) {
       throw new Error(error.message || 'Failed to fetch broadcasts');

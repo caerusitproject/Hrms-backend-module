@@ -3,167 +3,41 @@ const { addEmployeeHandler, getDashboard, getAllEmployees, getEmployee, editEmpl
 const { authenticate, authorizeRoles } = require('../middleware/authMiddleWare.js');
 const { validateId } = require('../middleware/validation.js');
 const ctrl = require("../controllers/employeeController");
+const upload = require("../middleware/uploadMiddleware");
+const uploadEmployeeMiddleware = require("../middleware/UploadEmployeeProfileImage");
+const Upload = require("../controllers/uploadController");
+const leaveController = require("../controllers/leaveController");
+
 
 const router = express.Router();
 
-/**
- * @swagger
- * /hr/add-employee:
- *   post:
- *     summary: Add a new employee
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               email:
- *                 type: string
- *               designation:
- *                 type: string
- *               status:
- *                 type: string
- *               managerId:
- *                 type: string
- *               departmentId:
- *                 type: integer
- *               profile:
- *                 type: object
- *     responses:
- *       200:
- *         description: Created employee
- */
-router.post('/add/employee', authenticate, authorizeRoles('HR'), ctrl.createEmployee);
+router.post('/add/employee', authenticate, authorizeRoles('HR','ADMIN'), ctrl.createEmployee);
+//router.get('/dashboard', authenticate, authorizeRoles('HR','ADMIN'), getDashboard);//--> to be reviewed
 
-/**
- * @swagger
- * /hr/dashboard:
- *   get:
- *     summary: Get HR dashboard data
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Dashboard data
- */
-router.get('/dashboard', authenticate, authorizeRoles('HR'), getDashboard);
+router.get('/employee/:empCode', authenticate, authorizeRoles('HR','ADMIN'), validateId, ctrl.getEmployeeById);
 
-/**
- * @swagger
- * /hr/all-employees:
- *   get:
- *     summary: Get list of all employees
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: List of employees
- */
-router.get('/all/employees', authenticate, authorizeRoles('HR'), getAllEmployees);
-
-/**
- * @swagger
- * /hr/employee/{empCode}:
- *   get:
- *     summary: Get employee profile by empCode
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: empCode
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Employee profile
- */
-router.get('/employee/:empCode', authenticate, authorizeRoles('HR'), validateId, getEmployee);
-
-/**
- * @swagger
- * /hr/employee/{empCode}:
- *   put:
- *     summary: Edit employee profile by empCode
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: empCode
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               email:
- *                 type: string
- *               designation:
- *                 type: string
- *               status:
- *                 type: string
- *               managerId:
- *                 type: string
- *               departmentId:
- *                 type: integer
- *               profile:
- *                 type: object
- *     responses:
- *       200:
- *         description: Updated employee
- */
-//router.put('/employee/edit/:empCode', authenticate, authorizeRoles('HR'), validateId, editEmployee);
-
-/**
- * @swagger
- * /hr/upload-document:
- *   post:
- *     summary: Upload handbook or policy document
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               title:
- *                 type: string
- *               content:
- *                 type: string
- *               type:
- *                 type: string
- *     responses:
- *       200:
- *         description: Uploaded document
- */
-router.post('/upload-document', authenticate, authorizeRoles('HR'), uploadDocumentHandler);
-
-/**
- * @swagger
- * /hr/own-profile:
- *   get:
- *     summary: Get own HR profile
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: HR profile
- */
-router.get('/own-profile', authenticate, authorizeRoles('HR'), getOwnProfileHandler);
+router.put('/employee/:empCode', authenticate, authorizeRoles('HR','ADMIN'), validateId, ctrl.updateEmployee);
+router.get("/leave-list", authenticate,authorizeRoles("MANAGER","USER","ADMIN"), leaveController.getLeavesList);
 
 
+
+
+// Upload profile image
+router.post("/:id/profile",authenticate,authorizeRoles("ADMIN","HR"), uploadEmployeeMiddleware, Upload.uploadFile);
+
+// Upload document
+router.post("/:id/document",authenticate,authorizeRoles("ADMIN","MANAGER","HR"), upload, Upload.uploadDocument);
+
+// Get all uploads for employee
+router.get("/:id/image", authenticate,authorizeRoles("ADMIN","HR","USER","MANAGER"),Upload.getFiles);
+router.get("/:id/files", authenticate,authorizeRoles("ADMIN","HR","USER","MANAGER"),Upload.getDoc);
+
+// Delete a file
+router.delete("/image/:fileId",authenticate,authorizeRoles("HR","USER","ADMIN"), Upload.deleteImage);
+router.delete("/:fileId",authenticate,authorizeRoles("HR","USER","ADMIN"), Upload.deleteFile);
+
+// router.post('/upload-document', authenticate, authorizeRoles('HR'), uploadDocumentHandler);
+
+// router.get('/own-profile', authenticate, authorizeRoles('HR'), getOwnProfileHandler);
 
 module.exports = router;

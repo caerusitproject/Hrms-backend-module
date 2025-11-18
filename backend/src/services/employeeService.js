@@ -8,6 +8,7 @@ const Role = db.Role;
 const { Sequelize } = require("sequelize");;
 const { sendEmailNotification } = require('../services/notification/notificationHandler');
 const { where } = require("sequelize");
+const {completeOnboarding, verifyDocs, startOnboarding} = require("./workflow/onboardingWorkflow");
 
 class EmployeeService {
 
@@ -16,15 +17,11 @@ class EmployeeService {
     * @param {Object} payload - employee details
     * @returns {Promise<Object>}
     */
-  static async createEmployee(payload) {
+  static async createEmployee(payload,id) {
 
-    //await this.initKafka();
-    // if no joining_date provided, set to today
     if (!payload.joining_date) {
       payload.joining_date = new Date();
     }
-    // const hashedPassword = await bcrypt.hash(payload.password, 10);
-    // payload.password = hashedPassword;
     try {
       if (payload.password) {
         const hashedPassword = await bcrypt.hash(payload.password, 10);
@@ -41,8 +38,6 @@ class EmployeeService {
       await EmployeeRole.create({ employeeId: employee.id, roleId: roleIds });
     }
 
-
-    //// ✅ Send mail message for email notification
     try {
 
       const message = {
@@ -59,6 +54,19 @@ class EmployeeService {
         },
       };
       await sendEmailNotification(message);
+      payload.processType = 'ONBOARDING';
+      payload.employeeId = employee.id;
+      payload.initiatorId = id;
+      const ob= await  startOnboarding(payload);
+
+
+
+
+
+
+
+
+
     } catch (error) {
       console.error("Error sending email notification:", error);
     }
@@ -76,7 +84,7 @@ class EmployeeService {
    * @returns {Promise<Array>}
    */
 
-  static async getAllEmployees(page = 1, limit = 10) {
+  static async getAllEmployeesPag(page = 1, limit = 10) {
     const offset = (page - 1) * limit;
     const total = await Employee.count({ where: { status: 'Active' } });
 
@@ -128,6 +136,41 @@ class EmployeeService {
       }
     };
   }
+
+  static async getAllEmployees() {
+  const total = await Employee.count({ where: { status: 'Active' } });
+
+  if (total === 0) {
+    return {
+      message: "No active employees found",
+      employees: []
+    };
+  }
+
+  const employees = await Employee.findAll({
+    where: { status: 'Active' },
+    attributes: ['id', 'name', 'email', 'designation', 'status'],
+    include: [
+      {
+        model: Department,
+        as: 'department',
+        attributes: ['id', 'departmentName'],
+      },
+      {
+        model: Role,
+        as: 'roles',
+        attributes: ['id', 'role'],
+        through: { attributes: [] },
+      },
+    ],
+    order: [['id', 'ASC']],
+  });
+
+  return {
+    employees
+  };
+}
+
 
   /**
    * Get employee by ID
@@ -266,34 +309,43 @@ class EmployeeService {
   }
 
   // 🔍 Get all employees who are Managers
-  static async getAllManagers() {
+ static async getAllManagers() {
+  try {
+    // First get distinct managerIds (excluding null)
+    const managerIdsData = await Employee.findAll({
+      attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('managerId')), 'managerId']],
+      where: {
+        managerId: { [Sequelize.Op.ne]: null }
+      },
+      raw: true,
+    });
 
-    try {
+    const managerIds = managerIdsData.map(item => item.managerId);
 
-      const managers = await Employee.findAll({
-        include: [
-          {
-            model: Role,
-            as: 'roles',
-            where: { role: 'MANAGER' },
-            through: { attributes: [] }, // hide join table
-            attributes: ['role'],
-          },
-        ],
-        where: {
-          managerId: null,
+    // Fetch employees whose IDs are in the managerIds array, and who have the role "MANAGER"
+    const managers = await Employee.findAll({
+      where: {
+        id: managerIds
+      },
+      include: [
+        {
+          model: Role,
+          as: 'roles',
+          where: { role: 'MANAGER' },
+          through: { attributes: [] }, // hide join table
+          attributes: ['role'],
         },
-        attributes: ['id', 'name', 'email', 'managerId'],
-      });
+      ],
+      attributes: ['id', 'name', 'email', 'managerId'],
+    });
 
-
-
-      return managers;
-    } catch (error) {
-      console.error("Error fetching managers:", error);
-      throw error;
-    }
+    return managers;
+  } catch (error) {
+    console.error("Error fetching managers:", error);
+    throw error;
   }
+}
+
 
 
   // 🧠 Get a specific manager by ID
@@ -391,6 +443,7 @@ class EmployeeService {
       if (roles.includes('ADMIN') || roles.includes('HR')) {
         // Admins and HR can see all employees
         const employees = await Employee.findAndCountAll({
+          where: { status: 'Active' },
           attributes: [
             'id',
             'empCode',

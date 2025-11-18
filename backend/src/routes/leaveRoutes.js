@@ -11,8 +11,8 @@ router.delete("/delete/:id", authenticate,authorizeRoles("USER","MANAGER","HR","
 // Manager approves/rejects leave
 //router.post("/manage",  leaveController.manageLeave);
 //tanmay's manage leave module
-router.patch("/approve/:id", authenticate, authorizeRoles("MANAGER","ADMIN"), leaveController.approveLeave);
-router.patch("/reject/:id", authenticate,authorizeRoles("MANAGER","ADMIN"), leaveController.rejectLeave);
+router.patch("/approve/:id", authenticate, authorizeRoles("MANAGER","ADMIN","HR"), leaveController.approveLeave);
+router.patch("/reject/:id", authenticate,authorizeRoles("MANAGER","ADMIN","HR"), leaveController.rejectLeave);
 router.get("/total", authenticate, authorizeRoles("USER","MANAGER","HR","ADMIN"),leaveController.getLeavesCount);
 router.get("/total/month", authenticate,authorizeRoles("USER","MANAGER","HR","ADMIN"), leaveController.getLeavesCountMonth);
 router.get("/leave-list", authenticate,authorizeRoles("MANAGER","USER","ADMIN"), leaveController.getLeavesList);

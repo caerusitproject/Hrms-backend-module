@@ -42,10 +42,9 @@ const getTemplateByType = async (req, res) => {
 
 const getAllTemplateTypes = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
-    const templates = await emailTemplateService.getAllTemplateTypes({ page, limit });
+    const templates = await emailTemplateService.getAllTemplateTypes();
     if (!templates || templates.length === 0) {
-      return res.status(404).json({ message: 'No template types exist. Please create a new one.' });
+      return res.status(200).json({ message: 'No template types exist. Please create a new one.' });
     }
     return res.json({ message: 'Templates retrieved', templates });
   } catch (error) {
@@ -57,6 +56,9 @@ const getAllTemplate = async (req, res) => {
   try {
     
     const templates = await emailTemplateService.getAllTemplate();
+    if (!templates || templates.length === 0) {
+      return res.status(200).json({ message: 'No templates exist. Please create a new one.',templates:[] });
+    }
     return res.status(200).json({ message: 'Templates retrieved', templates });
   } catch (error) {
     return res.status(500).json({ error: error.message });

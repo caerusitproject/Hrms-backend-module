@@ -1,5 +1,5 @@
 const Employee = require('../../models/Employee');
-const WorkflowLog = require('../../models/WorkflowLog');
+const WorkflowLog = require('../../models/Workflow');
 //const eventPublisher = require('../eventPublisher');
 /**
  * Simple synchronous workflow orchestration methods.

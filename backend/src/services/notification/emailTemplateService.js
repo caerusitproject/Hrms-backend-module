@@ -41,19 +41,16 @@ class emailTemplateService {
     return template;
   };
 
-  async getAllTemplateTypes({ page = 1, limit = 10 }) {
-    const offset = (page - 1) * limit;
-    const tempType = await EmailTemplate.findAndCountAll({
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-      attributes: ['id', 'type', 'allowedVariables']
-    });
-    
-    if (tempType.count ===0 ) {
-      return { message: "NO templates exist in the database" };
-    }
-    return tempType;
-  };
+ async getAllTemplateTypes() {
+  const tempType = await EmailTemplate.findAll({
+    attributes: ['id', 'type', 'allowedVariables']
+  });
+
+  if (tempType.length === 0) {
+    return;
+  }
+  return tempType;
+};
 
 
   async getAllTemplate() {
@@ -61,7 +58,7 @@ class emailTemplateService {
       attributes: ['id', 'type', 'allowedVariables', 'subject', 'body']
     });
     if (tempAll.count ===0 ) {
-      return { message: "NO templates exist in the database" };
+      return ;
     }
     return tempAll;
   };
