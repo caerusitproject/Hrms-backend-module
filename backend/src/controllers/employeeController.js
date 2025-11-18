@@ -8,7 +8,8 @@ exports.createEmployee = async (req, res) => {
 
     if(req.body.name == null || req.body.email == null ) return res.status(400).json({ error:400, message: "Missing required fields."});
     const id= req.user.id;
-    const employee = await EmployeeService.createEmployee(req.body, id);  
+    const payload=req.body;
+    const employee = await EmployeeService.createEmployee(payload, id);  
     return res.status(201).json({ message: "Employee created successfully", employee });
   } catch (err) {
     return res.status(500).json({ error:500, message: "Error "+" "+err });

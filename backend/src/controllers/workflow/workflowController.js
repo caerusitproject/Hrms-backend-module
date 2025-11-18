@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const workflow = require('../../services/workflow/workflowService');
-
+const {verifyDocs}= require('../../services/workflow/onboardingWorkflow');
 // start workflow: creates employee & sends offer
 router.post('/start', async (req, res) => {
   try {
@@ -76,5 +76,20 @@ router.post('/:id/induction', async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 });
+
+router.put('/:id/docs-verified', async (req, res) => {
+  try {
+    const workflowId = req.params.id;
+    const verifierId = req.user.id;
+    const wf = await verifyDocs(workflowId, verifierId);
+    return res.status(200).json(emp);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+
+
 
 module.exports = router;
