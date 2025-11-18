@@ -33,6 +33,9 @@ exports.emailTemplateGetter = async (payload) => {
       startDate: payload.startDate,
       endDate: payload.endDate,
       reason: payload.reason,
+      employeeCode: payload.onboardingEmpCode,//this  keys will be used for onboarding workflow thing where we have initiator and the employee details
+      employeeName:payload.onboardingFor,
+      initiatorName:payload.name
     };
 
     const filteredData = {};

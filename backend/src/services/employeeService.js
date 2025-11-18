@@ -54,35 +54,22 @@ class EmployeeService {
         },
       };
       await sendEmailNotification(message);
-      payload.processType = 'ONBOARDING';
-      payload.employeeId = employee.id;
-      payload.initiatorId = id;
+      const payload ={
+        processType: "ONBOARDING",
+        employeeId: employee.id,
+        initiatorId: id, 
+        data: message
+      }
       const ob= await  startOnboarding(payload);
+        
 
-
-
-
-
-
-
-
+     return ob;
 
     } catch (error) {
       console.error("Error sending email notification:", error);
     }
-
-    //await sendNotificationEvent(message);
-    //console.log('✅ Kafka event published for employee registration');
-
-    //await startConsumerScheduler();
-
     return employee;
   }
-
-  /**
-   * Get all employees
-   * @returns {Promise<Array>}
-   */
 
   static async getAllEmployeesPag(page = 1, limit = 10) {
     const offset = (page - 1) * limit;

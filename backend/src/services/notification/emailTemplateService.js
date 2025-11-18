@@ -15,7 +15,7 @@ class emailTemplateService {
     if (!body || !body.trim()) {
       throw new Error('Body is required and must be a non-empty string');
     }
-    const existingTemplate = await EmailTemplate.findOne({ type: type.trim() });
+    const existingTemplate = await EmailTemplate.findOne({where: { type: type.trim() }});
     if (existingTemplate) {
       throw new Error('Template type already exists. Please choose a different type name for the template.');
     }
