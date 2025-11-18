@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const workflowController = require('../controllers/workflow/workflowController');
+const {docsVerified }= require('../controllers/workflow/workflowController');
+const auth = require('../middleware/authMiddleWare');
 //const leaveWorkflow = require('../controllers/workflow/leaveWorkflow');
 
-router.use('/workflow', workflowController);
+//router.use('/workflow', workflowController);
 //router.use('/leave', leaveWorkflow.create);
-
+router.put('/docsVerified/:id',auth.authenticate, auth.authorizeRoles("ADMIN","MANAGER","HR"), docsVerified);
 
 /*router.use('/leave', leaveController.create);
 router.use('/leave/:id/submit', leaveController.submit);

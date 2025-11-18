@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const workflow = require('../../services/workflow/workflowService');
-const {verifyDocs}= require('../../services/workflow/onboardingWorkflow');
+//const workflow = require('../../services/workflow/workflowService');
+const {verifyDocs, completeOnboarding}= require('../../services/workflow/onboardingWorkflow');
 // start workflow: creates employee & sends offer
-router.post('/start', async (req, res) => {
+/*router.post('/start', async (req, res) => {
   try {
     const emp = await workflow.createEmployeeAndOffer(req.body);
     return res.status(201).json(emp);
@@ -75,21 +75,21 @@ router.post('/:id/induction', async (req, res) => {
     console.error(err);
     return res.status(500).json({ error: err.message });
   }
-});
-
-router.put('/:id/docs-verified', async (req, res) => {
+});*/
+exports.docsVerified = async (req,res) =>{
   try {
-    const workflowId = req.params.id;
-    const verifierId = req.user.id;
+    console.log(req);
+    const workflowId= req.params.id;
+    const verifierId= req.user.id;
     const wf = await verifyDocs(workflowId, verifierId);
-    return res.status(200).json(emp);
+    const wf2 = await completeOnboarding(workflowId, verifierId);
+    return res.status(200).json(wf2);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: err.message });
   }
-});
+}
 
 
 
 
-module.exports = router;

@@ -33,15 +33,15 @@ exports.startOnboarding = async (data) => {
 exports.verifyDocs = async (workflowId, verifierId) => {
   const wf= await engine.updateStatus(workflowId, states.onboarding.transitions.in_progress[0], verifierId, "Documents verified for the employees's onboarding process",{"documents":{"idProof":"verified","addressProof":"verified","educationCertificates":"pending","previousEmploymentDocs":"verified"},"overallStatus":"partially_verified","comments":"Education certificates still pending."});
   console.log("Documents verified for onboarding workflow ID:", workflowId);
-  const workflow= await workflow.findByPk(workflowId);
+  const workflow2= await workflow.findByPk(workflowId);
   const verifier= await Employee.findByPk(verifierId);
-  const employee= await Employee.findByPk(workflow.employeeId);
+  const employee= await Employee.findByPk(workflow2.employeeId);
   const message={
     type:"Workflow_onboarding_docs_verified",
-    email: emp.email,
+    email: verifier.email,
     subject:"Onboarding Process Started",
     payload:{
-      name:emp.name,
+      name:verifier.name,
       message:`Documents have been verified successfully for your onboarding process.`,
       email: verifier.email,
       type:"Workflow_onboarding_docs_verified",
@@ -51,13 +51,29 @@ exports.verifyDocs = async (workflowId, verifierId) => {
   }
   
   await sendEmailNotification(message);
-  return ;
+  return wf;
 };
 
-exports.completeOnboarding = async (onboardingId, actorId) => {
-  const ob = await Onboarding.findByPk(onboardingId);
-  ob.status = "COMPLETED"; await ob.save();
-  await engine.updateStatus(ob.workflowId, "COMPLETED", actorId, "Onboarding completed");
-  await sendNotification("workflow-topic", { type: "ONBOARDING_COMPLETED", data: { onboardingId: ob.id }});
-  return ob;
+exports.completeOnboarding = async (workflowId, verifierId) => {
+  const wf= await engine.updateStatus(workflowId, states.onboarding.transitions.in_progress[0], verifierId, "All the intermediate steps have been completed for the onBoarding process. The employee is now inducted ",{"documents":{"idProof":"verified","addressProof":"verified","educationCertificates":"verified","previousEmploymentDocs":"verified"},"overallStatus":"Inducted","comments":"Documents Verified  successfully."});
+  console.log("Documents verified for onboarding workflow ID:", workflowId);
+  const workflow2= await workflow.findByPk(workflowId);
+  const verifier= await Employee.findByPk(verifierId);
+  const employee= await Employee.findByPk(workflow2.employeeId);
+  const message={
+    type:"Workflow_onboarding_completed",
+    email: verifier.email,
+    subject:"Onboarding Process Completed",
+    payload:{
+      name:verifier.name,
+      message:`The employee has been successfully verified.`,
+      email: verifier.email,
+      type:"Workflow_onboarding_completed",
+      onboardingFor:employee.name,
+      onboardingEmpCode:employee.empCode
+    }
+  }
+  
+  await sendEmailNotification(message);
+  return wf;
 };
