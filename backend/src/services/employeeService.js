@@ -34,7 +34,7 @@ class EmployeeService {
       throw new Error("Error hashing password: " + err.message);
     }
 
-    if(!payload.managerId)payload.managerId=1;
+    if (!payload.managerId) payload.managerId = 1;
     const roleIds = payload.roleIds;
     const employee = await Employee.create(payload);
     if (roleIds) {
@@ -168,11 +168,76 @@ class EmployeeService {
    */
 
 
-  static async updateEmployee(id, updates) {
-    const employee = await Employee.findByPk(id);
+  /*static async updateEmployee(id, updates) {
+   const employee = await Employee.findByPk(id);
+
     if (!employee) throw new Error("Employee not found");
     await employee.update(updates);
     return employee;
+  }*/
+
+  static async updateEmployee(employeeId, data) {
+    const employee = await Employee.findByPk(employeeId);
+    if (!employee) {
+      throw new Error("Employee not found");
+    }
+
+    // Allowed fields to update
+    const allowedFields = [
+      "name",
+      "email",
+      "phone",
+      "address",
+      "designation",
+      "dob",
+      "joiningDate",
+      "managerId",
+      "departmentId"
+    ];
+
+    // Filter only allowed fields
+    const updatePayload = {};
+    for (const key of allowedFields) {
+      if (data[key] !== undefined) {
+        updatePayload[key] = data[key];
+      }
+    }
+
+  
+
+    // Handle role update if provided
+    
+    if (data.roleIds) {
+      const roledata = await EmployeeRole.findOne({ where: { employeeId } });
+      roledata.roleId = data.roleIds;
+      await EmployeeRole.update(roledata.dataValues, { where: { employeeId }  });
+      
+    }
+
+      // Update employee main table
+    await employee.update(updatePayload);
+
+    // Fetch updated employee with relations
+    const updatedEmployee =  await Employee.findOne({
+      where: { id: employeeId },
+      include: [
+        {
+          model: Department,
+          as: "department",
+          attributes: ["id", "departmentName"],
+        },
+        
+        {
+          model: Role,
+          as: "roles", // 👈 use the belongsToMany alias
+          attributes: ["id", "name", "role"],
+          through: { attributes: [] }, // hide join table columns
+        },
+      ],
+    });
+
+    return updatedEmployee;
+
   }
 
   static async removeEmployee(id) {
@@ -261,7 +326,7 @@ class EmployeeService {
     if (!manager) throw new Error("Manager not found");
     employee.managerId = managerId;
     await employee.save();
-    
+
     return employee;
   }
 
@@ -478,11 +543,11 @@ class EmployeeService {
         where: { id: userId },
         include: [
           {
-             model: Role,
-             as: 'roles',
-             through: { attributes: [] },
-           },
-          
+            model: Role,
+            as: 'roles',
+            through: { attributes: [] },
+          },
+
         ],
       });
 
