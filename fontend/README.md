@@ -165,3 +165,4 @@ The application uses React Context for global state management:
 ## 📄 License
 
 This project is licensed under the MIT License.
+Fontend
