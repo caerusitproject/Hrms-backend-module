@@ -62,9 +62,6 @@ class EmployeeService {
       }
       const ob= await  startOnboarding(payload);
         
-
-     return ob;
-
     } catch (error) {
       console.error("Error sending email notification:", error);
     }

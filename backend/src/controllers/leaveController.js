@@ -45,22 +45,23 @@ const deleteLeave = async (req, res) => {
 
 const approveLeave = async (req, res) => {
   try {
-    const leave = await managerService.handleLeave(req.params.id, 'APPROVED');
+    const { id, status } = req.query;
+    const leave = await managerService.handleLeave(id, status);
     return res.status(200).json(leave);
   } catch (error) {
     return res.status(500).json({ error: 500, message: error.message });
   }
 };
 
-const rejectLeave = async (req, res) => {
-  try {
-    const leave = await managerService.handleLeave(req.params.id, 'REJECTED');
-    return res.status(200).json(leave);
-  }catch (error) {
-    return res.status(500).json({ error: 500, message: error.message });
-  }
+// const rejectLeave = async (req, res) => {
+//   try {
+//     const leave = await managerService.handleLeave(req.params.id, 'REJECTED');
+//     return res.status(200).json(leave);
+//   }catch (error) {
+//     return res.status(500).json({ error: 500, message: error.message });
+//   }
   
-};
+// };
 
 const getLeavesCount = async (req, res) => {
   try {
@@ -91,5 +92,5 @@ const getLeavesList = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
-module.exports = { approveLeave, rejectLeave, applyLeave, updateLeave, deleteLeave, getLeavesCount, getLeavesCountMonth, getLeavesList };
+module.exports = { approveLeave, applyLeave, updateLeave, deleteLeave, getLeavesCount, getLeavesCountMonth, getLeavesList };
 
