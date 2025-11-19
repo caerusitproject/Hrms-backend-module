@@ -4,27 +4,17 @@ const engine = require("./workflowEngine");
 const states= require("./workflowStates");
 const {Employee, workflow}= require("../../models")
 const { sendEmailNotification } = require("../notification/notificationHandler");
+const { getWorkflowDetails } = require("../workflow/workflowService");
+const { setPayload } = require("../../util/mailMerge");
 
 exports.startOnboarding = async (data) => {
   //const ob = await Onboarding.create(data);
   const wf = await engine.start(data.processType, data.employeeId,data.initiatorId, states.onboarding.initialState, data.data);
-  //ob.workflowId = wf.id; //await ob.save();
+const workflow2= await getWorkflowDetails(wf.id);
   const emp = await Employee.findByPk(data.initiatorId);
-  const emp1= await Employee.findByPk(data.employeeId);
-  const message={
-    type:"Workflow_onboarding_init",
-    email: emp.email,
-    subject:"Onboarding Process Started",
-    payload:{
-      name:emp.name,
-      message:`Onboarding process has been started for you.`,
-      email: emp.email,
-      type:"Workflow_onboarding_init",
-      onboardingFor:emp1.name,
-      onboardingEmpCode:emp1.empCode
-    }
-  }
-  console.log("Sending onboarding email to:", emp.email);
+  console.log("Sending onboarding email to:", workflow2.employee.email);
+  const message = await setPayload(workflow2,"Workflow_onboarding_init",emp);
+  
   await sendEmailNotification(message);//"workflow-topic", { type: "ONBOARDING_STARTED", data: { onboardingId: ob.id, message: "Onboarding started" }}
   console.log("Onboarding workflow started with ID:", wf.id);
   return wf;
@@ -33,9 +23,9 @@ exports.startOnboarding = async (data) => {
 exports.verifyDocs = async (workflowId, verifierId) => {
   const wf= await engine.updateStatus(workflowId, states.onboarding.transitions.in_progress[0], verifierId, "Documents verified for the employees's onboarding process",{"documents":{"idProof":"verified","addressProof":"verified","educationCertificates":"pending","previousEmploymentDocs":"verified"},"overallStatus":"partially_verified","comments":"Education certificates still pending."});
   console.log("Documents verified for onboarding workflow ID:", workflowId);
-  const workflow2= await workflow.findByPk(workflowId);
+  const workflow2= await getWorkflowDetails(workflowId);
   const verifier= await Employee.findByPk(verifierId);
-  const employee= await Employee.findByPk(workflow2.employeeId);
+  //const employee= await Employee.findByPk(workflow2.employeeId);
   const message={
     type:"Workflow_onboarding_docs_verified",
     email: verifier.email,
@@ -45,8 +35,8 @@ exports.verifyDocs = async (workflowId, verifierId) => {
       message:`Documents have been verified successfully for your onboarding process.`,
       email: verifier.email,
       type:"Workflow_onboarding_docs_verified",
-      onboardingFor:employee.name,
-      onboardingEmpCode:employee.empCode
+      onboardingFor:Employee.name,
+      onboardingEmpCode:Employee.empCode
     }
   }
   

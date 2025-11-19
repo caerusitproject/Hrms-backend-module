@@ -1,6 +1,7 @@
 // src/workflow/leaveWorkflow.js
 const LeaveRequest = require("../../models/LeaveRequest");
 const engine = require("./workflowEngine");
+const sendEmailNotification = require("../../services/notification/notificationHandler")
 //const { sendNotification } = require("./kafkaProducer");
 exports.startLeave = async (leaveData) => {
   // create leave
@@ -14,10 +15,9 @@ exports.startLeave = async (leaveData) => {
   const updateleave = await leave.save();
   console.log("Leave workflow started with ID:", updateleave.workflowId);
   // notify manager
-  /*await sendNotification("workflow-topic", {
-    type: "LEAVE_INITIATED",
-    data: { leaveId: leaveData.id, employeeId: leaveData.employeeId, managerId: leaveData.managerId, message: "New leave request" }
-  });*/
+ 
+     
+  sendEmailNotification(message);
   return updateleave;
 };
 
@@ -38,3 +38,18 @@ exports.rejectLeave = async (leaveId, managerId, remarks) => {
   //await sendNotification("workflow-topic", { type: "LEAVE_REJECTED", data: { leaveId, employeeId: leave.employeeId, managerId, message: remarks } });
   return leave;
 };
+// exports.setPayload = async (workflowId, payload) => {
+//  return   message = {
+//         type: 'LEAVE_APPLY',
+//         email: employee.email,
+//         subject: 'Welcome to HRMS!',
+//         template: 'employee_welcome',
+//         payload: {
+//           name: employee.name,
+//           department: employee.departmentId,
+//           email: employee.email,
+//           type: "employee_registration",
+//           empCode: employee.empCode
+//         },
+//       };
+// };

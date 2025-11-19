@@ -1,5 +1,5 @@
 const Employee = require('../../models/Employee');
-const WorkflowLog = require('../../models/Workflow');
+const workflow = require('../../models/Workflow');
 //const eventPublisher = require('../eventPublisher');
 /**
  * Simple synchronous workflow orchestration methods.
@@ -76,6 +76,13 @@ async function startInduction(employeeId) {
   await eventPublisher.publish(TOPICS.INDUCTION, 'InductionStarted', { employeeId: emp.id });
   return emp;
 }
+async function getWorkflowDetails(workflowId) {
+  const wf=await workflow.findOne({where:{id:workflowId},
+    include: [{ model: Employee, as: 'employee', attributes: ['id', 'name', 'email', 'managerId'] }]
+  });
+  return wf;
+}
+
 
 module.exports = {
   createEmployeeAndOffer,
@@ -84,5 +91,6 @@ module.exports = {
   verifyDocuments,
   startOnboarding,
   activateEmployee,
-  startInduction
+  startInduction,
+  getWorkflowDetails
 };

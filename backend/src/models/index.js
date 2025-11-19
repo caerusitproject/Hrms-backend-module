@@ -81,6 +81,8 @@ dbInfo.Compensation.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
 
 dbInfo.Employee.hasOne(dbInfo.Compensation, { foreignKey: 'employeeId' });
 dbInfo.Compensation.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
+dbInfo.workflow.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId', as: 'employee' });
+dbInfo.Employee.hasMany(dbInfo.workflow, { foreignKey: 'employeeId', as: 'workflows' });
 
 dbInfo.workflow.hasMany(dbInfo.workflowHistory, {  foreignKey: 'workflowId',  as: 'histories' });
 dbInfo.workflowHistory.belongsTo(dbInfo.workflow, {   foreignKey: 'workflowId',  as: 'workflow'  });
