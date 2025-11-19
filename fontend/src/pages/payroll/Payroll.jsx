@@ -104,6 +104,8 @@ const Payroll = () => {
   const [openEditModal, setOpenEditModal] = useState(false);
   const [editingPayroll, setEditingPayroll] = useState(null);
   const [employees, setEmployees] = useState([]);
+  const [employeeError, setEmployeeError] = useState("");
+  const [baseSalaryError, setBaseSalaryError] = useState("");
   const totals = useMemo(() => {
     const totalEarnings = earningsFields.reduce(
       (sum, field) => sum + (Number.parseFloat(formData[field]) || 0),
@@ -138,17 +140,49 @@ const Payroll = () => {
   }, []);
 
   const handleChange = (e) => {
+    console.log("Changed field:", e.target.name, "Value:", e.target.value);
+    if(e.target.name === "baseSalary") {
+      {
+        const validationMsg = validateBaseSalary(e.target.value);
+        setBaseSalaryError(validationMsg);
+      }
+    }
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
 
-  const handleSave = async () => {
+
+  const validateEmployeeSelection = (selectedEmployee) => {
     if (!selectedEmployee) {
-     // alert("Please select an employee.");
+      return "Please select an employee.";
+    }
+    return "";
+  };
+  const validateBaseSalary = (baseSalary) => {
+    if (!baseSalary || Number(baseSalary) <= 0) {
+      return "Base Salary Required.";
+    }
+    return "";
+  };
+  const handleSave = async () => {
+    const validationMessage = validateEmployeeSelection(selectedEmployee);
+
+    if (validationMessage) {
+      setEmployeeError(validationMessage); // show red message under Select
+      return; // stop saving
+    }
+
+    // Clear error when valid
+    setEmployeeError("");
+    const baseSalaryValidationMsg = validateBaseSalary(formData.baseSalary);
+    if (baseSalaryValidationMsg) {
+      setBaseSalaryError(baseSalaryValidationMsg);
       return;
     }
+    setBaseSalaryError("");
+
     const payload = {
       ...formatNumberFields(formData),
       ...totals,
@@ -241,7 +275,7 @@ const Payroll = () => {
                 fontWeight={700}
                 sx={{ color: "success.main" }}
               >
-                ₹{Number(totals.totalEarnings||0).toLocaleString()}
+                ₹{Number(totals.totalEarnings || 0).toLocaleString()}
               </Typography>
             </Stack>
           </TotalBox>
@@ -261,7 +295,7 @@ const Payroll = () => {
                 fontWeight={700}
                 sx={{ color: "error.main" }}
               >
-                ₹{Number(totals.totalDeductions||0).toLocaleString()}
+                ₹{Number(totals.totalDeductions || 0).toLocaleString()}
               </Typography>
             </Stack>
           </TotalBox>
@@ -281,7 +315,7 @@ const Payroll = () => {
                 fontWeight={700}
                 sx={{ color: "primary.main" }}
               >
-                ₹{Number(totals.netSalary||0).toLocaleString()}
+                ₹{Number(totals.netSalary || 0).toLocaleString()}
               </Typography>
             </Stack>
           </TotalBox>
@@ -291,19 +325,19 @@ const Payroll = () => {
   );
 
   const formatNumberFields = (data) => {
-  const formatted = {};
+    const formatted = {};
 
-  formFields.forEach((field) => {
-    const value = data[field];
-    const numberValue = Number.parseFloat(value || 0);
-    formatted[field] = numberValue.toFixed(2); // Converts to 15000.00 format
-  });
+    formFields.forEach((field) => {
+      const value = data[field];
+      const numberValue = Number.parseFloat(value || 0);
+      formatted[field] = numberValue.toFixed(2); // Converts to 15000.00 format
+    });
 
-  return {
-    ...data,
-    ...formatted,
+    return {
+      ...data,
+      ...formatted,
+    };
   };
-};
 
   return (
     <div>
@@ -342,11 +376,15 @@ const Payroll = () => {
                 <Select
                   value={selectedEmployee}
                   label="Select Employee"
-                  onChange={(e) => setSelectedEmployee(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedEmployee(e.target.value);
+                    setEmployeeError(""); // clear error when user chooses a value
+                  }}
                   sx={{
                     "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
                       borderColor: theme.colors.primary,  // orange
-                    }}}
+                    }
+                  }}
                 >
 
                   {employees.map((emp) => (
@@ -355,6 +393,11 @@ const Payroll = () => {
                     </MenuItem>
                   ))}
                 </Select>
+                {employeeError && (
+                  <Typography variant="caption" color="error" sx={{ fontSize: 14 }}>
+                    {employeeError}
+                  </Typography>
+                )}
               </FormControl>
             </Grid>
 
@@ -379,6 +422,7 @@ const Payroll = () => {
                       type="number"
                       value={formData[field]}
                       onChange={handleChange}
+
                       variant="outlined"
                       size="small"
                       sx={{
@@ -390,6 +434,11 @@ const Payroll = () => {
                         },
                       }}
                     />
+                    {baseSalaryError && field === "baseSalary" && (
+                      <Typography variant="caption" color="error" sx={{ fontSize: 14, marginLeft:0}}>
+                        {baseSalaryError}
+                      </Typography>
+                    )}
                   </Grid>
                 ))}
               </Grid>
@@ -732,7 +781,7 @@ const Payroll = () => {
                               Base Salary
                             </Typography>
                             <Typography variant="body2" fontWeight={700}>
-                              ₹{Number(p.baseSalary||0).toLocaleString()}
+                              ₹{Number(p.baseSalary || 0).toLocaleString()}
                             </Typography>
                           </Stack>
                         </Grid>
@@ -747,7 +796,7 @@ const Payroll = () => {
                               Bonus
                             </Typography>
                             <Typography variant="body2" fontWeight={700}>
-                              ₹{Number(p.bonus||0).toLocaleString()}
+                              ₹{Number(p.bonus || 0).toLocaleString()}
                             </Typography>
                           </Stack>
                         </Grid>
@@ -766,7 +815,7 @@ const Payroll = () => {
                               fontWeight={700}
                               sx={{ color: "success.main" }}
                             >
-                              ₹{Number(p.totalEarnings||0).toLocaleString()}
+                              ₹{Number(p.totalEarnings || 0).toLocaleString()}
                             </Typography>
                           </Stack>
                         </Grid>
@@ -785,7 +834,7 @@ const Payroll = () => {
                               fontWeight={700}
                               sx={{ color: "error.main" }}
                             >
-                              ₹{Number(p.totalDeductions||0).toLocaleString()}
+                              ₹{Number(p.totalDeductions || 0).toLocaleString()}
                             </Typography>
                           </Stack>
                         </Grid>
@@ -804,7 +853,7 @@ const Payroll = () => {
                               fontWeight={700}
                               sx={{ color: "primary.main" }}
                             >
-                              ₹{Number(p.netSalary||0).toLocaleString()}
+                              ₹{Number(p.netSalary || 0).toLocaleString()}
                             </Typography>
                           </Stack>
                         </Grid>
@@ -817,7 +866,7 @@ const Payroll = () => {
           )}
         </Stack>
       </Box>
-    </div>
+    </div >
   );
 };
 
