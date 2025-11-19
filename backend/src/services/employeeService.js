@@ -213,7 +213,7 @@ class EmployeeService {
     const allowedFields = [
       "name",
       "email",
-      "phone",
+      "mobile",
       "address",
       "designation",
       "dob",

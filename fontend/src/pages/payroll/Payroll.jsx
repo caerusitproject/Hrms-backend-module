@@ -146,11 +146,11 @@ const Payroll = () => {
 
   const handleSave = async () => {
     if (!selectedEmployee) {
-      alert("Please select an employee.");
+     // alert("Please select an employee.");
       return;
     }
     const payload = {
-      ...formData,
+      ...formatNumberFields(formData),
       ...totals,
       employeeId: selectedEmployee,
     };
@@ -162,7 +162,7 @@ const Payroll = () => {
       setPayrolls(updatedPayrolls);
     } catch (error) {
       console.error("Error saving compensation:", error);
-      alert("Error saving compensation.");
+      //alert("Error saving compensation.");
     }
   };
 
@@ -202,7 +202,7 @@ const Payroll = () => {
   const handleUpdate = async () => {
     const payload = {
       id: editingPayroll.id,
-      ...formData,
+      ...formatNumberFields(formData),
       ...totals,
     };
     try {
@@ -214,7 +214,7 @@ const Payroll = () => {
       setPayrolls(updatedPayrolls);
     } catch (error) {
       console.error("Error updating payroll:", error);
-      alert("Error updating payroll.");
+      //alert("Error updating payroll.");
     }
   };
 
@@ -241,7 +241,7 @@ const Payroll = () => {
                 fontWeight={700}
                 sx={{ color: "success.main" }}
               >
-                ₹{totals.totalEarnings.toLocaleString()}
+                ₹{Number(totals.totalEarnings||0).toLocaleString()}
               </Typography>
             </Stack>
           </TotalBox>
@@ -261,7 +261,7 @@ const Payroll = () => {
                 fontWeight={700}
                 sx={{ color: "error.main" }}
               >
-                ₹{totals.totalDeductions.toLocaleString()}
+                ₹{Number(totals.totalDeductions||0).toLocaleString()}
               </Typography>
             </Stack>
           </TotalBox>
@@ -281,7 +281,7 @@ const Payroll = () => {
                 fontWeight={700}
                 sx={{ color: "primary.main" }}
               >
-                ₹{totals.netSalary.toLocaleString()}
+                ₹{Number(totals.netSalary||0).toLocaleString()}
               </Typography>
             </Stack>
           </TotalBox>
@@ -289,6 +289,21 @@ const Payroll = () => {
       </Grid>
     </Grid>
   );
+
+  const formatNumberFields = (data) => {
+  const formatted = {};
+
+  formFields.forEach((field) => {
+    const value = data[field];
+    const numberValue = Number.parseFloat(value || 0);
+    formatted[field] = numberValue.toFixed(2); // Converts to 15000.00 format
+  });
+
+  return {
+    ...data,
+    ...formatted,
+  };
+};
 
   return (
     <div>
@@ -329,11 +344,11 @@ const Payroll = () => {
                   label="Select Employee"
                   onChange={(e) => setSelectedEmployee(e.target.value)}
                   sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 1.5,
-                    },
-                  }}
+                    "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: theme.colors.primary,  // orange
+                    }}}
                 >
+
                   {employees.map((emp) => (
                     <MenuItem key={emp.id} value={emp.id}>
                       {emp.name} • {emp.empCode} • {emp.designation}
@@ -369,6 +384,9 @@ const Payroll = () => {
                       sx={{
                         "& .MuiOutlinedInput-root": {
                           borderRadius: 1.5,
+                          "&.Mui-focused fieldset": {
+                            borderColor: theme.colors.primary, // or theme.palette.border.large
+                          },
                         },
                       }}
                     />
@@ -401,6 +419,9 @@ const Payroll = () => {
                       sx={{
                         "& .MuiOutlinedInput-root": {
                           borderRadius: 1.5,
+                          "&.Mui-focused fieldset": {
+                            borderColor: theme.colors.primary, // or theme.palette.border.large
+                          },
                         },
                       }}
                     />
@@ -424,6 +445,9 @@ const Payroll = () => {
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: 1.5,
+                    "&.Mui-focused fieldset": {
+                      borderColor: theme.colors.primary, // or theme.palette.border.large
+                    },
                   },
                 }}
               />
@@ -442,6 +466,9 @@ const Payroll = () => {
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: 1.5,
+                    "&.Mui-focused fieldset": {
+                      borderColor: theme.colors.primary, // or theme.palette.border.large
+                    },
                   },
                 }}
               />
@@ -498,6 +525,9 @@ const Payroll = () => {
                       sx={{
                         "& .MuiOutlinedInput-root": {
                           borderRadius: 1.5,
+                          "&.Mui-focused fieldset": {
+                            borderColor: theme.colors.primary, // or theme.palette.border.large
+                          },
                         },
                       }}
                     />
@@ -530,6 +560,9 @@ const Payroll = () => {
                       sx={{
                         "& .MuiOutlinedInput-root": {
                           borderRadius: 1.5,
+                          "&.Mui-focused fieldset": {
+                            borderColor: theme.colors.primary, // or theme.palette.border.large
+                          },
                         },
                       }}
                     />
@@ -553,6 +586,9 @@ const Payroll = () => {
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: 1.5,
+                    "&.Mui-focused fieldset": {
+                      borderColor: theme.colors.primary, // or theme.palette.border.large
+                    },
                   },
                 }}
               />
@@ -571,6 +607,9 @@ const Payroll = () => {
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: 1.5,
+                    "&.Mui-focused fieldset": {
+                      borderColor: theme.colors.primary, // or theme.palette.border.large
+                    },
                   },
                 }}
               />
@@ -693,7 +732,7 @@ const Payroll = () => {
                               Base Salary
                             </Typography>
                             <Typography variant="body2" fontWeight={700}>
-                              ₹{p.baseSalary.toLocaleString()}
+                              ₹{Number(p.baseSalary||0).toLocaleString()}
                             </Typography>
                           </Stack>
                         </Grid>
@@ -708,7 +747,7 @@ const Payroll = () => {
                               Bonus
                             </Typography>
                             <Typography variant="body2" fontWeight={700}>
-                              ₹{p.bonus.toLocaleString()}
+                              ₹{Number(p.bonus||0).toLocaleString()}
                             </Typography>
                           </Stack>
                         </Grid>
@@ -727,7 +766,7 @@ const Payroll = () => {
                               fontWeight={700}
                               sx={{ color: "success.main" }}
                             >
-                              ₹{p.totalEarnings.toLocaleString()}
+                              ₹{Number(p.totalEarnings||0).toLocaleString()}
                             </Typography>
                           </Stack>
                         </Grid>
@@ -746,7 +785,7 @@ const Payroll = () => {
                               fontWeight={700}
                               sx={{ color: "error.main" }}
                             >
-                              ₹{p.totalDeductions.toLocaleString()}
+                              ₹{Number(p.totalDeductions||0).toLocaleString()}
                             </Typography>
                           </Stack>
                         </Grid>
@@ -765,7 +804,7 @@ const Payroll = () => {
                               fontWeight={700}
                               sx={{ color: "primary.main" }}
                             >
-                              ₹{p.netSalary.toLocaleString()}
+                              ₹{Number(p.netSalary||0).toLocaleString()}
                             </Typography>
                           </Stack>
                         </Grid>

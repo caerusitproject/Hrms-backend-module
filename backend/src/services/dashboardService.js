@@ -19,14 +19,7 @@ class DashboardService {
       const today = new Date();
       today.setHours(0, 0, 0, 0); // start of today
 
-      const upcomingBroadcasts = await Broadcast.findAll({
-        where: {
-          createdAt: {
-            [Op.gte]: today
-          }
-        },
-        order: [['createdAt', 'ASC']]
-      });
+      const upcomingBroadcasts = await managerService.getTodaysBroadcast();
       if (!upcomingBroadcasts) {
         throw new Error('Error in retrieving broadcasts found');
       }
