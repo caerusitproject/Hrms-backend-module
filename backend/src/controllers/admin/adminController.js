@@ -66,6 +66,28 @@ exports.createDepartment = async (req, res) => {
   }
 };
 
+exports.getUsers = async (req, res) => {
+  try {
+    const users = await adminService.getAllUsers();
+    res.status(200).json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+
+exports.updateUsers = async (req, res) => {
+  try {
+    const { id, username, email} = req.body;  
+    if (!id) {
+      return res.status(400).json({ error: "Missing id" });
+    }
+    const updatedUser = await adminService.updateUserRole(id, username, email);
+    res.status(200).json(updatedUser);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }   
+};
 
 
 // config Mail, config template , create Payroll information details, 

@@ -17,231 +17,161 @@ import {
   Tabs,
   Tab,
 } from "@mui/material";
-import { Edit, Delete } from "@mui/icons-material";
+import { Edit } from "lucide-react";
 import { theme as customTheme } from "../../theme/theme";
 import Button from "../../components/common/Button";
-
-// Dummy API calls
-const DesignationAPI = {
-  getAll: async () => {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    return {
-      designations: [
-        {
-          id: 1,
-          name: "Software Engineer",
-          description: "Develops software applications",
-          createdAt: "2024-01-15",
-        },
-        {
-          id: 2,
-          name: "Senior Developer",
-          description: "Leads development teams",
-          createdAt: "2024-01-20",
-        },
-        {
-          id: 3,
-          name: "Project Manager",
-          description: "Manages project timelines",
-          createdAt: "2024-02-10",
-        },
-      ],
-    };
-  },
-  create: async (data) => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    console.log("Creating designation:", data);
-    return { id: Date.now(), ...data };
-  },
-  update: async (id, data) => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    console.log("Updating designation:", id, data);
-    return { id, ...data };
-  },
-  delete: async (id) => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    console.log("Deleting designation:", id);
-    return { success: true };
-  },
-};
-
-const DepartmentAPI = {
-  getAll: async () => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    return {
-      departments: [
-        {
-          id: 1,
-          name: "Engineering",
-          description: "Software development team",
-          createdAt: "2024-01-10",
-        },
-        {
-          id: 2,
-          name: "Human Resources",
-          description: "HR and recruitment",
-          createdAt: "2024-01-12",
-        },
-        {
-          id: 3,
-          name: "Marketing",
-          description: "Brand and marketing team",
-          createdAt: "2024-02-05",
-        },
-      ],
-    };
-  },
-  create: async (data) => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    console.log("Creating department:", data);
-    return { id: Date.now(), ...data };
-  },
-  update: async (id, data) => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    console.log("Updating department:", id, data);
-    return { id, ...data };
-  },
-  delete: async (id) => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    console.log("Deleting department:", id);
-    return { success: true };
-  },
-};
+import Alert from "../../components/common/Alert";
+import { ConfigApi as AdminApi } from "../../api/adminApi"; // Adjust path as needed
 
 export default function AdminConfig() {
-  const [activeTab, setActiveTab] = useState(0);
-  const [designations, setDesignations] = useState([]);
+  const [activeTab, setActiveTab] = useState(0); // 0: Departments, 1: Account Management
   const [departments, setDepartments] = useState([]);
-  const [open, setOpen] = useState(false);
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [deleteItem, setDeleteItem] = useState(null);
-  const [formData, setFormData] = useState({
-    id: null,
-    name: "",
-    description: "",
-  });
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
 
+  const [open, setOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    deptid: null,
+    id: null,
+    departmentName: "",
+    description: "",
+    username: "",
+    email: "",
+  });
+
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertSeverity, setAlertSeverity] = useState("success");
+  const [alertMessage, setAlertMessage] = useState("");
+
+  // Load data
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 900);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
-  const fetchDesignations = async () => {
-    try {
-      setLoading(true);
-      const data = await DesignationAPI.getAll();
-      setDesignations(data.designations);
-    } catch (error) {
-      console.error("Error fetching designations:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    if (activeTab === 1) fetchDepartments();
+    if (activeTab === 0) fetchUsers();
+  }, [activeTab]);
 
   const fetchDepartments = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const data = await DepartmentAPI.getAll();
-      setDepartments(data.departments);
-    } catch (error) {
-      console.error("Error fetching departments:", error);
+      const data = await AdminApi.getAllDepartments();
+      setDepartments(data);
+    } catch (err) {
+      showAlert("error", "Failed to load departments");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchDesignations();
-    fetchDepartments();
-  }, []);
-
-  const handleTabChange = (event, newValue) => {
-    setActiveTab(newValue);
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const data = await AdminApi.getAllUsers();
+      setUsers(data);
+    } catch (err) {
+      showAlert("error", "Failed to load users");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const showAlert = (severity, message) => {
+    setAlertSeverity(severity);
+    setAlertMessage(message);
+    setAlertOpen(true);
+  };
+
+  const handleTabChange = (e, newValue) => setActiveTab(newValue);
 
   const handleOpen = (item = null) => {
     if (item) {
-      setFormData(item);
+      if (activeTab === 0) {
+        setFormData({
+          id: item.id,
+          username: item.username,
+          email: item.email,
+          departmentName: "",
+          description: "",
+        });
+      } else {
+        setFormData({
+          deptid: item.id,
+          departmentName: item.departmentName,
+          description: item.description || "",
+          username: "",
+          email: "",
+        });
+      }
     } else {
       setFormData({
         id: null,
-        name: "",
+        departmentName: "",
         description: "",
+        username: "",
+        email: "",
       });
     }
     setOpen(true);
   };
 
   const handleSave = async () => {
-    const isDesignation = activeTab === 0;
-    const API = isDesignation ? DesignationAPI : DepartmentAPI;
+    if (activeTab === 0) {
+      if (!formData.email.trim()) {
+        showAlert("error", "Email is required");
+        return;
+      }
+      // console.log("Form Data:", formData);
+      const { id, email, username } = formData;
+      const payload = { id, email, username };
 
-    try {
-      setLoading(true);
-      if (formData.id) {
-        await API.update(formData.id, {
-          name: formData.name,
-          description: formData.description,
-        });
-      } else {
-        await API.create({
-          name: formData.name,
-          description: formData.description,
-        });
+      try {
+        await AdminApi.updateUserEmail(payload);
+        showAlert("success", "User email updated successfully");
+        fetchUsers();
+      } catch (err) {
+        showAlert("error", "Failed to update email");
+      }
+      // User - only email is editable
+    } else {
+      // Department
+      if (!formData.departmentName.trim()) {
+        showAlert("error", "Department name is required");
+        return;
       }
 
-      if (isDesignation) {
-        fetchDesignations();
-      } else {
+      const { departmentName, description } = formData;
+
+      const payload = {
+        departmentName,
+        description,
+      };
+      try {
+        if (formData.deptid) {
+          await AdminApi.updateDepartment(formData.deptid, payload);
+          showAlert("success", "Department updated successfully");
+        } else {
+          await AdminApi.createDepartment({
+            departmentName: formData.departmentName,
+            description: formData.description,
+          });
+          showAlert("success", "Department created successfully");
+        }
         fetchDepartments();
+      } catch (err) {
+        showAlert("error", "Failed to save department");
       }
-
-      setOpen(false);
-      setFormData({ id: null, name: "", description: "" });
-    } catch (error) {
-      console.error("Error saving:", error);
-    } finally {
-      setLoading(false);
     }
+
+    setOpen(false);
+    setFormData({
+      id: null,
+      departmentName: "",
+      description: "",
+      username: "",
+      email: "",
+    });
   };
 
-  const handleDeleteConfirm = async () => {
-    if (!deleteItem) return;
-
-    const isDesignation = activeTab === 0;
-    const API = isDesignation ? DesignationAPI : DepartmentAPI;
-
-    try {
-      setLoading(true);
-      await API.delete(deleteItem.id);
-
-      if (isDesignation) {
-        fetchDesignations();
-      } else {
-        fetchDepartments();
-      }
-
-      setDeleteConfirmOpen(false);
-      setDeleteItem(null);
-    } catch (error) {
-      console.error("Error deleting:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDelete = (item) => {
-    setDeleteItem(item);
-    setDeleteConfirmOpen(true);
-  };
-
-  const currentData = activeTab === 0 ? designations : departments;
-  const currentType = activeTab === 0 ? "Designation" : "Department";
+  const currentData = activeTab === 0 ? users : departments;
+  const currentType = activeTab === 0 ? "User Details" : "Department";
 
   return (
     <div>
@@ -251,49 +181,40 @@ export default function AdminConfig() {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: "20px",
-          flexWrap: "wrap",
-          gap: 2,
+          mb: 3,
         }}
       >
-        <h1
-          style={{
-            fontSize: window.innerWidth < 640 ? "24px" : "32px",
-            fontWeight: 700,
-            color: customTheme.colors.text.primary,
-            margin: 0,
-          }}
+        <Typography
+          variant="h4"
+          sx={{ fontWeight: 700, color: customTheme.colors.text.primary }}
         >
-          {currentType}s
-        </h1>
-
-        <Button
-          variant="contained"
-          onClick={() => handleOpen()}
-          sx={{
-            backgroundColor: customTheme.colors.primary,
-            textTransform: "none",
-            borderRadius: customTheme.borderRadius.medium,
-            padding: "10px 20px",
-            fontWeight: 500,
-            boxShadow: customTheme.shadows.small,
-            "&:hover": {
-              boxShadow: customTheme.shadows.medium,
-            },
-          }}
-        >
-          + New {currentType}
-        </Button>
+          Admin Configuration
+        </Typography>
+        {activeTab === 1 && (
+          <Button
+            variant="contained"
+            onClick={() => handleOpen()}
+            disabled={activeTab === 0} // Disable "Add" for Users
+            sx={{
+              backgroundColor: customTheme.colors.primary,
+              textTransform: "none",
+              borderRadius: customTheme.borderRadius.medium,
+              padding: "10px 24px",
+              fontWeight: 500,
+              boxShadow: customTheme.shadows.small,
+            }}
+          >
+            + {activeTab === 0 ? "" : "Department"}
+          </Button>
+        )}
       </Box>
 
       {/* Tabs */}
       <Paper
         sx={{
-          marginBottom: "20px",
-          borderRadius: customTheme.borderRadius.large,
-          boxShadow: customTheme.shadows.medium,
+          mb: 3,
+          borderRadius: customTheme.borderRadius.medium,
           backgroundColor: customTheme.colors.surface,
-          //borderBottom: `4px solid ${customTheme.colors.primaryLight}`, // ✅ thicker bottom border
         }}
       >
         <Tabs
@@ -302,29 +223,17 @@ export default function AdminConfig() {
           sx={{
             "& .MuiTab-root": {
               textTransform: "none",
-              fontWeight: 500,
-              fontSize: "16px",
-              minHeight: "60px",
-              borderRadius: customTheme.borderRadius.medium,
-              transition: "all 0.3s ease",
-              color: customTheme.colors.text.secondary, // ✅ default (inactive) color
-            },
-            "& .MuiTab-root:hover": {
-              backgroundColor: `${customTheme.colors.primaryLight}22`,
-            },
-            "& .Mui-selected": {
-              color: customTheme.colors.primary, // ✅ only active tab turns primary
-              backgroundColor: `${customTheme.colors.primaryLight}34`, // ✅ light highlight background
               fontWeight: 600,
+              color: customTheme.colors.text.secondary,
             },
+            "& .Mui-selected": { color: customTheme.colors.primary },
             "& .MuiTabs-indicator": {
               backgroundColor: customTheme.colors.primary,
-              height: "4px",
-              borderRadius: "4px",
+              height: 3,
             },
           }}
         >
-          <Tab label="Designations" />
+          <Tab label="Account Management" />
           <Tab label="Departments" />
         </Tabs>
       </Paper>
@@ -334,36 +243,82 @@ export default function AdminConfig() {
         sx={{
           overflowX: "auto",
           borderRadius: customTheme.borderRadius.large,
-          boxShadow: customTheme.shadows.medium,
           backgroundColor: customTheme.colors.surface,
         }}
       >
-        <Table sx={{ minWidth: 300 }}>
+        <Table>
           <TableHead>
-            <TableRow sx={{ backgroundColor: customTheme.colors.gray }}>
-              <TableCell>
-                <b>Name</b>
-              </TableCell>
-              <TableCell align="right">
-                <b>Actions</b>
+            <TableRow sx={{ backgroundColor: customTheme.colors.lightGray }}>
+              {activeTab === 0 ? (
+                <>
+                  <TableCell
+                    sx={{
+                      color: customTheme.colors.text.primary,
+                      fontWeight: 600,
+                    }}
+                  >
+                    User
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      color: customTheme.colors.text.primary,
+                      fontWeight: 600,
+                    }}
+                  >
+                    Email
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      color: customTheme.colors.text.primary,
+                      fontWeight: 600,
+                    }}
+                  >
+                    Role
+                  </TableCell>
+                </>
+              ) : (
+                <>
+                  <TableCell
+                    sx={{
+                      color: customTheme.colors.text.primary,
+                      fontWeight: 600,
+                    }}
+                  >
+                    Department Name
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      color: customTheme.colors.text.primary,
+                      fontWeight: 600,
+                    }}
+                  >
+                    Description
+                  </TableCell>
+                </>
+              )}
+              <TableCell
+                align="right"
+                sx={{ color: customTheme.colors.text.primary, fontWeight: 600 }}
+              >
+                Actions
               </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={4} align="center">
-                  <Typography sx={{ py: 3 }}>Loading...</Typography>
+                <TableCell colSpan={activeTab === 0 ? 4 : 3} align="center">
+                  Loading...
                 </TableCell>
               </TableRow>
             ) : currentData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} align="center">
-                  <Typography
-                    sx={{ py: 3, color: customTheme.colors.text.secondary }}
-                  >
-                    No {currentType.toLowerCase()}s found
-                  </Typography>
+                <TableCell
+                  colSpan={activeTab === 0 ? 4 : 3}
+                  align="center"
+                  sx={{ color: customTheme.colors.text.secondary }}
+                >
+                  No {currentType.toLowerCase()}s found
                 </TableCell>
               </TableRow>
             ) : (
@@ -371,38 +326,50 @@ export default function AdminConfig() {
                 <TableRow
                   key={item.id}
                   sx={{
-                    "&:hover": { backgroundColor: customTheme.colors.gray },
-                    transition: customTheme.transitions.fast,
+                    "&:hover": {
+                      backgroundColor: `${customTheme.colors.lightGray}22`,
+                    },
                   }}
                 >
-                  <TableCell sx={{ fontWeight: 500 }}>{item.name}</TableCell>
+                  {activeTab === 0 ? (
+                    <>
+                      <TableCell
+                        sx={{
+                          color: customTheme.colors.text.primary,
+                          fontWeight: 500,
+                        }}
+                      >
+                        {item.username}
+                      </TableCell>
+                      <TableCell
+                        sx={{ color: customTheme.colors.text.primary }}
+                      >
+                        {item.email}
+                      </TableCell>
+                      <TableCell
+                        sx={{ color: customTheme.colors.primaryLight }}
+                      >
+                        {item.role}
+                      </TableCell>
+                    </>
+                  ) : (
+                    <>
+                      <TableCell
+                        sx={{ color: customTheme.colors.text.primary }}
+                      >
+                        {item.departmentName}
+                      </TableCell>
+                      <TableCell
+                        sx={{ color: customTheme.colors.text.secondary }}
+                      >
+                        {item.description || "-"}
+                      </TableCell>
+                    </>
+                  )}
                   <TableCell align="right">
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        gap: 0.5,
-                      }}
-                    >
-                      <IconButton
-                        onClick={() => handleOpen(item)}
-                        size="small"
-                        sx={{
-                          color: customTheme.colors.primary,
-                        }}
-                      >
-                        <Edit fontSize="small" />
-                      </IconButton>
-                      <IconButton
-                        onClick={() => handleDelete(item)}
-                        size="small"
-                        sx={{
-                          color: customTheme.colors.error,
-                        }}
-                      >
-                        <Delete fontSize="small" />
-                      </IconButton>
-                    </Box>
+                    <IconButton onClick={() => handleOpen(item)} size="small">
+                      <Edit size={18} color={customTheme.colors.primary} />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               ))
@@ -411,106 +378,154 @@ export default function AdminConfig() {
         </Table>
       </Paper>
 
-      {/* Create/Edit Dialog */}
+      {/* Add/Edit Dialog */}
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
         fullWidth
         maxWidth="sm"
+        PaperProps={{
+          sx: {
+            backgroundColor: customTheme.colors.surface,
+            color: customTheme.colors.text.primary,
+          },
+        }}
       >
-        <DialogTitle sx={{ pb: 2, pt: 3 }}>
-          <Typography variant="h6" fontWeight={600}>
-            {formData.id ? `Edit ${currentType}` : `Create New ${currentType}`}
-          </Typography>
+        <DialogTitle>
+          {formData.id
+            ? `Edit ${currentType}`
+            : activeTab === 0
+            ? "Edit User Details"
+            : "Create New Department"}
         </DialogTitle>
-        <DialogContent dividers sx={{ p: 3 }}>
-          <TextField
-            fullWidth
-            label={`${currentType} Name`}
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            margin="normal"
-            variant="outlined"
-            sx={{ mb: 2 }}
-            required
-          />
-          <TextField
-            fullWidth
-            label="Description"
-            value={formData.description}
-            onChange={(e) =>
-              setFormData({ ...formData, description: e.target.value })
-            }
-            margin="normal"
-            variant="outlined"
-            multiline
-            rows={4}
-            sx={{ mb: 2 }}
-          />
+        <DialogContent dividers>
+          {activeTab === 0 ? (
+            <>
+              <TextField
+                autoFocus
+                fullWidth
+                label="Username"
+                value={formData.username}
+                required
+                margin="normal"
+                 sx={{
+                  "& .MuiInputLabel-root": {
+                    color: customTheme.colors.text.secondary,
+                  },
+                  "& .MuiOutlinedInput-root": {
+                    color: customTheme.colors.text.primary,
+                    "& fieldset": { borderColor: customTheme.colors.lightGray },
+                    "&:hover fieldset": { borderColor: customTheme.colors.mediumGray },
+                    "&.Mui-focused fieldset": {
+                      borderColor: customTheme.colors.primary,
+                      borderWidth: "2px",
+                    },
+                  },
+                }}
+              />
+              <TextField
+                autoFocus
+                fullWidth
+                label="Email"
+                type="email"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                margin="normal"
+                required
+                sx={{
+                  "& .MuiInputLabel-root": {
+                    color: customTheme.colors.text.secondary,
+                  },
+                  "& .MuiOutlinedInput-root": {
+                    color: customTheme.colors.text.primary,
+                    "& fieldset": { borderColor: customTheme.colors.lightGray },
+                    "&:hover fieldset": { borderColor: customTheme.colors.mediumGray },
+                    "&.Mui-focused fieldset": {
+                      borderColor: customTheme.colors.primary,
+                      borderWidth: "2px",
+                    },
+                  },
+                }}
+              />
+            </>
+          ) : (
+            <>
+              <TextField
+                autoFocus
+                fullWidth
+                label="Department Name"
+                value={formData.departmentName}
+                onChange={(e) =>
+                  setFormData({ ...formData, departmentName: e.target.value })
+                }
+                margin="normal"
+                required
+                sx={{
+                  "& .MuiInputLabel-root": {
+                    color: customTheme.colors.text.secondary,
+                  },
+                  "& .MuiOutlinedInput-root": {
+                    color: customTheme.colors.text.primary,
+                    "& fieldset": { borderColor: customTheme.colors.lightGray },
+                    "&:hover fieldset": { borderColor: customTheme.colors.mediumGray },
+                    "&.Mui-focused fieldset": {
+                      borderColor: customTheme.colors.primary,
+                      borderWidth: "2px",
+                    },
+                  },
+                }}
+              />
+              <TextField
+                fullWidth
+                required
+                label="Description"
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+                margin="normal"
+                multiline
+                rows={3}
+                sx={{
+                  "& .MuiInputLabel-root": {
+                    color: customTheme.colors.text.secondary,
+                  },
+                  "& .MuiOutlinedInput-root": {
+                    color: customTheme.colors.text.primary,
+                    "& fieldset": { borderColor: customTheme.colors.lightGray },
+                    "&:hover fieldset": { borderColor: customTheme.colors.mediumGray },
+                    "&.Mui-focused fieldset": {
+                      borderColor: customTheme.colors.primary,
+                      borderWidth: "2px",
+                    },
+                  },
+                }}
+              />
+            </>
+          )}
         </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button
-            onClick={() => {
-              setOpen(false);
-              setFormData({ id: null, name: "", description: "" });
-            }}
-            type="secondary"
-          >
+        <DialogActions>
+          <Button type="secondary" onClick={() => setOpen(false)}>
             Cancel
           </Button>
           <Button
             variant="contained"
-            sx={{
-              ml: 2,
-              backgroundColor: customTheme.colors.primary,
-            }}
             onClick={handleSave}
-            disabled={!formData.name.trim() || loading}
+            sx={{ backgroundColor: customTheme.colors.primary }}
           >
-            {loading ? "Saving..." : `Save ${currentType}`}
+            Save
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={deleteConfirmOpen}
-        onClose={() => {
-          setDeleteConfirmOpen(false);
-          setDeleteItem(null);
-        }}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Confirm Delete</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete <b>{deleteItem?.name}</b>? This
-            action cannot be undone.
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button
-            onClick={() => {
-              setDeleteConfirmOpen(false);
-              setDeleteItem(null);
-            }}
-            type="secondary"
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: customTheme.colors.error,
-            }}
-            onClick={handleDeleteConfirm}
-            disabled={loading}
-          >
-            {loading ? "Deleting..." : "Delete"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <Alert
+        open={alertOpen}
+        onClose={() => setAlertOpen(false)}
+        severity={alertSeverity}
+        message={alertMessage}
+      />
     </div>
   );
 }
