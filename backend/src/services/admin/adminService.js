@@ -1,4 +1,11 @@
-const { Employee, Role, Department, EmployeeRole } = require("../../models");
+const { stat } = require("fs");
+const {
+  Employee,
+  Role,
+  Department,
+  EmployeeRole,
+  User,
+} = require("../../models");
 const bcrypt = require("bcrypt");
 class AdminService {
   // 🔹 Create a new role
@@ -8,7 +15,6 @@ class AdminService {
     const roledata = await Role.create({ name, role });
     return roledata;
   }
-
 
   // 🔹 Get all roles
   static async getAllRoles() {
@@ -26,15 +32,27 @@ class AdminService {
     return Department.create(data);
   }
 
-
   // 🔹 Create employee (Admin adding directly)
-  static async createEmployee({ name, email, password, departmentId, roleIds }) {
+  static async createEmployee({
+    name,
+    email,
+    password,
+    departmentId,
+    roleIds,
+  }) {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const emp = await Employee.create({ name, email, password: hashedPassword, departmentId });
+    const emp = await Employee.create({
+      name,
+      email,
+      password: hashedPassword,
+      departmentId,
+    });
 
     if (roleIds && roleIds.length > 0) {
       await Promise.all(
-        roleIds.map((roleId) => EmployeeRole.create({ employeeId: emp.id, roleId }))
+        roleIds.map((roleId) =>
+          EmployeeRole.create({ employeeId: emp.id, roleId })
+        )
       );
     }
 
@@ -80,8 +98,48 @@ class AdminService {
       include: [{ model: Role, as: "roles", through: { attributes: [] } }],
     });
   }
-}
 
+  // Fetch default users
+
+  static async getAllUsers() {
+    const data = await User.findAll({
+      attributes: ["id", "username", "email", "roleId"],
+      include: [{ model: Role, as: "role", attributes: ["role"] }],
+    });
+
+    const users = data.map((user) => {
+      const {
+        id,
+        username,
+        email,
+        roleId,
+        role: { role },
+      } = user; // destructure here
+      return { id, username, email, roleId, role };
+    });
+
+    return users;
+  }
+
+  static async updateUserRole(id, username, email) {
+    const user = await User.findByPk(id);
+    if (!user) {
+      return {
+        status: false,
+        message: "User not found",
+        data: null,
+      };
+    }
+
+    await user.update({ username, email });
+
+    return {
+      status: true,
+      message: "User updated successfully",
+      data: user,
+    };
+  }
+}
 
 /*
 const adminService = {
