@@ -28,6 +28,19 @@ export const ConfigApi = {
     }
     return response.json();
   },
+  async createUser(payload) {
+    try {
+      const response = await axios.post(`${LOCAL_API}/auth/register`, payload, {
+      });
+      return response.data;
+    } catch (error) {
+      console.error(
+        "Error assigning manager:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  },
 
   async updateUserEmail(payload) {
     try {
