@@ -16,6 +16,10 @@ import {
   IconButton,
   Tabs,
   Tab,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { Edit } from "lucide-react";
 import { theme as customTheme } from "../../theme/theme";
@@ -23,12 +27,19 @@ import Button from "../../components/common/Button";
 import Alert from "../../components/common/Alert";
 import { ConfigApi as AdminApi } from "../../api/adminApi"; // Adjust path as needed
 
+const roleOptions = [
+  { label: "Admin", value: 1 },
+  { label: "HR", value: 2 },
+  { label: "Manager", value: 3 },
+  { label: "Employee", value: 4 },
+];
+
 export default function AdminConfig() {
   const [activeTab, setActiveTab] = useState(0); // 0: Departments, 1: Account Management
   const [departments, setDepartments] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  const [addUserOpen, setAddUserOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     deptid: null,
@@ -37,6 +48,13 @@ export default function AdminConfig() {
     description: "",
     username: "",
     email: "",
+  });
+  const [userForm, setUserForm] = useState({
+    fullname: "",
+    username: "",
+    email: "",
+    password: "",
+    roleId: "",
   });
 
   const [alertOpen, setAlertOpen] = useState(false);
@@ -170,6 +188,46 @@ export default function AdminConfig() {
     });
   };
 
+  const handleUserSave = async () => {
+    const { fullname, username, email, password, roleId } = userForm;
+
+    // Validate mandatory fields
+    if (!fullname || !username || !email || !password || !roleId) {
+      setAlertSeverity("error");
+      setAlertMessage("All fields are mandatory.");
+      setAlertOpen(true);
+      return;
+    }
+
+    const payload = {
+      fullname,
+      username,
+      email,
+      password,
+      roleId,
+    };
+
+    try {
+      await AdminApi.createUser(payload);
+      setAlertSeverity("success");
+      setAlertMessage("User created successfully!");
+      setAlertOpen(true);
+      setAddUserOpen(false);
+       fetchUsers();
+      setUserForm({
+        fullname: "",
+        username: "",
+        email: "",
+        password: "",
+        roleId: "",
+      });
+    } catch (err) {
+      setAlertSeverity("error");
+      setAlertMessage("Failed to create user.");
+      setAlertOpen(true);
+    }
+  };
+
   const currentData = activeTab === 0 ? users : departments;
   const currentType = activeTab === 0 ? "User Details" : "Department";
 
@@ -194,7 +252,6 @@ export default function AdminConfig() {
           <Button
             variant="contained"
             onClick={() => handleOpen()}
-            disabled={activeTab === 0} // Disable "Add" for Users
             sx={{
               backgroundColor: customTheme.colors.primary,
               textTransform: "none",
@@ -204,7 +261,23 @@ export default function AdminConfig() {
               boxShadow: customTheme.shadows.small,
             }}
           >
-            + {activeTab === 0 ? "" : "Department"}
+            + {activeTab === 0 ? "User" : "Department"}
+          </Button>
+        )}
+        {activeTab === 0 && (
+          <Button
+            variant="contained"
+            onClick={() => setAddUserOpen(true)}
+            sx={{
+              backgroundColor: customTheme.colors.primary,
+              textTransform: "none",
+              borderRadius: customTheme.borderRadius.medium,
+              padding: "10px 24px",
+              fontWeight: 500,
+              boxShadow: customTheme.shadows.small,
+            }}
+          >
+            + Add User
           </Button>
         )}
       </Box>
@@ -408,14 +481,16 @@ export default function AdminConfig() {
                 value={formData.username}
                 required
                 margin="normal"
-                 sx={{
+                sx={{
                   "& .MuiInputLabel-root": {
                     color: customTheme.colors.text.secondary,
                   },
                   "& .MuiOutlinedInput-root": {
                     color: customTheme.colors.text.primary,
                     "& fieldset": { borderColor: customTheme.colors.lightGray },
-                    "&:hover fieldset": { borderColor: customTheme.colors.mediumGray },
+                    "&:hover fieldset": {
+                      borderColor: customTheme.colors.mediumGray,
+                    },
                     "&.Mui-focused fieldset": {
                       borderColor: customTheme.colors.primary,
                       borderWidth: "2px",
@@ -441,7 +516,9 @@ export default function AdminConfig() {
                   "& .MuiOutlinedInput-root": {
                     color: customTheme.colors.text.primary,
                     "& fieldset": { borderColor: customTheme.colors.lightGray },
-                    "&:hover fieldset": { borderColor: customTheme.colors.mediumGray },
+                    "&:hover fieldset": {
+                      borderColor: customTheme.colors.mediumGray,
+                    },
                     "&.Mui-focused fieldset": {
                       borderColor: customTheme.colors.primary,
                       borderWidth: "2px",
@@ -469,7 +546,9 @@ export default function AdminConfig() {
                   "& .MuiOutlinedInput-root": {
                     color: customTheme.colors.text.primary,
                     "& fieldset": { borderColor: customTheme.colors.lightGray },
-                    "&:hover fieldset": { borderColor: customTheme.colors.mediumGray },
+                    "&:hover fieldset": {
+                      borderColor: customTheme.colors.mediumGray,
+                    },
                     "&.Mui-focused fieldset": {
                       borderColor: customTheme.colors.primary,
                       borderWidth: "2px",
@@ -495,7 +574,9 @@ export default function AdminConfig() {
                   "& .MuiOutlinedInput-root": {
                     color: customTheme.colors.text.primary,
                     "& fieldset": { borderColor: customTheme.colors.lightGray },
-                    "&:hover fieldset": { borderColor: customTheme.colors.mediumGray },
+                    "&:hover fieldset": {
+                      borderColor: customTheme.colors.mediumGray,
+                    },
                     "&.Mui-focused fieldset": {
                       borderColor: customTheme.colors.primary,
                       borderWidth: "2px",
@@ -516,6 +597,98 @@ export default function AdminConfig() {
             sx={{ backgroundColor: customTheme.colors.primary }}
           >
             Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={addUserOpen}
+        onClose={() => setAddUserOpen(false)}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{
+          sx: {
+            backgroundColor: customTheme.colors.surface,
+            color: customTheme.colors.text.primary,
+          },
+        }}
+      >
+        <DialogTitle>Add New User</DialogTitle>
+
+        <DialogContent dividers>
+          <TextField
+            fullWidth
+            label="Full Name"
+            required
+            value={userForm.fullname}
+            onChange={(e) =>
+              setUserForm({ ...userForm, fullname: e.target.value })
+            }
+            margin="normal"
+          />
+
+          <TextField
+            fullWidth
+            label="Username"
+            required
+            value={userForm.username}
+            onChange={(e) =>
+              setUserForm({ ...userForm, username: e.target.value })
+            }
+            margin="normal"
+          />
+
+          <TextField
+            fullWidth
+            label="Email"
+            required
+            value={userForm.email}
+            onChange={(e) =>
+              setUserForm({ ...userForm, email: e.target.value })
+            }
+            margin="normal"
+          />
+
+          <TextField
+            fullWidth
+            label="Password"
+            required
+            type="password"
+            value={userForm.password}
+            onChange={(e) =>
+              setUserForm({ ...userForm, password: e.target.value })
+            }
+            margin="normal"
+          />
+
+          <FormControl fullWidth required margin="normal">
+            <InputLabel>Role</InputLabel>
+            <Select
+              value={userForm.roleId}
+              label="Role"
+              onChange={(e) =>
+                setUserForm({ ...userForm, roleId: e.target.value })
+              }
+            >
+              {roleOptions.map((role) => (
+                <MenuItem key={role.value} value={role.value}>
+                  {role.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogContent>
+
+        <DialogActions>
+          <Button type="secondary" onClick={() => setAddUserOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            sx={{ backgroundColor: customTheme.colors.primary }}
+            onClick={handleUserSave}
+          >
+            Save User
           </Button>
         </DialogActions>
       </Dialog>
