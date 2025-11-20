@@ -23,7 +23,7 @@ dbInfo.Document=require("./Document")
 //payroll
 dbInfo.Compensation = require('./payroll/compensation');
 dbInfo.Payroll = require('./payroll/payroll');
-dbInfo.PayrollLineItem = require('./payroll/payrollLineItem');
+//dbInfo.PayrollLineItem = require('./payroll/payrollLineItem');
 dbInfo.Payslip = require('./payroll/payslip');
 dbInfo.AiConversion = require('./AiConversation');
 dbInfo.Broadcast = require('./Broadcast')
@@ -38,14 +38,14 @@ dbInfo.workflowLog = require('./WorkflowLog');
 dbInfo.Employee.hasMany(dbInfo.Payroll, { foreignKey: 'employeeId' });
 dbInfo.Payroll.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
 
-dbInfo.Payroll.hasMany(dbInfo.PayrollLineItem, { foreignKey: 'payrollId' });
-dbInfo.PayrollLineItem.belongsTo(dbInfo.Payroll, { foreignKey: 'payrollId' });
+//dbInfo.Payroll.hasMany(dbInfo.PayrollLineItem, { foreignKey: 'payrollId' });
+//dbInfo.PayrollLineItem.belongsTo(dbInfo.Payroll, { foreignKey: 'payrollId' });
 
 // 🧩 Initialize associations AFTER loading all models
-//dbInfo.Department.hasMany(dbInfo.Employee, { foreignKey: "departmentId", as: "employees" });
+dbInfo.Department.hasMany(dbInfo.Employee, { foreignKey: "departmentId", as: "employees" });
 dbInfo.Employee.belongsTo(dbInfo.Department, { foreignKey: "departmentId", as: "department" });
 
-dbInfo.Employee.belongsTo(dbInfo.Upload, { foreignKey: "imageId", as: "image" });
+dbInfo.Employee.hasMany(dbInfo.Upload, { foreignKey: "imageId", as: "image" });
 dbInfo.Upload.belongsTo(dbInfo.Employee, { foreignKey: "employee_id", as: "employee" });
 
 dbInfo.Employee.hasMany(dbInfo.Employee, { as: 'Subordinates', foreignKey: 'managerId' });
@@ -73,8 +73,8 @@ dbInfo.Leave.belongsTo(dbInfo.workflowLog, { as: "workflow", foreignKey: "workfl
 
 dbInfo.Employee.hasMany(dbInfo.Payroll, { foreignKey: 'employeeId' });
 dbInfo.Payroll.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
-dbInfo.Payroll.hasMany(dbInfo.PayrollLineItem, { foreignKey: 'payrollId' });
-dbInfo.PayrollLineItem.belongsTo(dbInfo.Payroll, { foreignKey: 'payrollId' });
+//dbInfo.Payroll.hasMany(dbInfo.PayrollLineItem, { foreignKey: 'payrollId' });
+//dbInfo.PayrollLineItem.belongsTo(dbInfo.Payroll, { foreignKey: 'payrollId' });
 dbInfo.Employee.hasOne(dbInfo.Compensation, { foreignKey: 'employeeId' });
 dbInfo.Compensation.belongsTo(dbInfo.Employee, { foreignKey: 'employeeId' });
 
@@ -93,13 +93,19 @@ dbInfo.AiConversion.belongsTo(dbInfo.Employee, { foreignKey: "empId", as: "emplo
 
 
 
-// Many-to-Many with Role
-    dbInfo.Employee.belongsToMany(dbInfo.Role, {
-      through: dbInfo.EmployeeRole,
-      foreignKey: 'employeeId',
-      otherKey: 'roleId',
-      as: 'roles',
-    });
+// Employee ↔ Role (Many-to-Many)
+dbInfo.Employee.belongsToMany(dbInfo.Role, {
+  through: dbInfo.EmployeeRole,
+  foreignKey: "employeeId",
+  otherKey: "roleId",
+  as: "roles",
+});
+dbInfo.Role.belongsToMany(dbInfo.Employee, {
+  through: dbInfo.EmployeeRole,
+  foreignKey: "roleId",
+  otherKey: "employeeId",
+  as: "employees",
+});
   
 
 

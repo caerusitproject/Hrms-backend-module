@@ -1,6 +1,7 @@
 require('dotenv').config();
 const app = require('./app');
 const sequelize = require('./db');
+const { seedInitialData } = require("./bootstrap/seedInitialData");
 
 const PORT = process.env.PORT || 5000;
 
@@ -10,7 +11,9 @@ async function start() {
     console.log("Postgres connected");
 
     // Optional in dev only
-    // await sequelize.sync({ alter: true });
+     await sequelize.sync({ alter: false });
+
+      await seedInitialData();
 
     app.listen(PORT, () =>
       console.log(`🚀 Server running on port ${PORT}`)
@@ -32,4 +35,3 @@ process.on('SIGINT', async () => {
 if (process.env.NODE_ENV !== 'test') {
   start().catch(err => { console.error(err); process.exit(1); });
 }
-//start();

@@ -3,7 +3,7 @@ const sequelize = require('../db');
 const Employee = require('./Employee');
 
 const Attendance = sequelize.define('Attendance', {
-  id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   empCode: { type: DataTypes.STRING, allowNull: false },
   date: { type: DataTypes.DATEONLY, allowNull: false },
   checkIn: { type: DataTypes.TIME },

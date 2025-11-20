@@ -1,11 +1,12 @@
 const Compensation = require('../../models/payroll/compensation');
 const Payroll = require('../../models/payroll/payroll');
 const { Op } = require('sequelize');
-const PayrollLineItem = require('../../models/payroll/payrollLineItem');
 const Employee = require('../../models/Employee');
 const generatePDF = require('../../util/payslipGenerator')
 const { sendPayslipEmail } = require('../../services/notification/notificationHandler');
 const { where } = require('sequelize');
+
+const  payrollWorkflow = require('../workflow/payrollWorkflow');
 
 
 exports.processPayroll = async (payrollIds) => {
@@ -55,6 +56,15 @@ exports.processPayroll = async (payrollIds) => {
 
       
       const pdfPath = await generatePDF.generatePayslip(employee, payLoad);
+
+      //workflow update to PAYSLIP_GENERATED
+      await payrollWorkflow.initiatePayroll({
+        refId: payroll.id,
+        employeeId: employee.id,
+        initiatedBy: 1, //system user
+        month: payroll.month,
+        year: payroll.year
+      });
 
       
       await sendPayslipEmail(employee, pdfPath);
