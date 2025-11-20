@@ -9,13 +9,16 @@ exports.createOrUpdateCompensation = async (employeeId, data) => {
   const allowedFields = [
     'baseSalary', 'bonus', 'incentives', 'overtimePay', 'commission',
     'allowances', 'hra', 'da', 'lta', 'medicalAllowance', 'pf', 'esi',
-    'gratuity', 'professionalTax', 'incomeTax', 'deductions', 'remarks'
+    'gratuity', 'professionalTax', 'incomeTax', 'deductions', 'remarks', 'netSalary', 'totalDeductions', 'totalEarnings'//added
   ];
   const filteredData = {};
   for (const key of allowedFields) {
-    if (data[key] !== undefined) filteredData[key] = data[key];
+    if (data[key] !== undefined) {
+      if(key !== 'remarks'){filteredData[key] = parseFloat(data[key],0.00);}
+      else{filteredData[key] = data[key];}
+    }
   }
-  const isPartial = Object.keys(filteredData).length <= 2; 
+  const isPartial = Object.keys(filteredData).length <= 2;
   if (isPartial) {
     const baseSalary = data.baseSalary || 0;
     const defaults = {
@@ -34,6 +37,9 @@ exports.createOrUpdateCompensation = async (employeeId, data) => {
       professionalTax: baseSalary * 0.01,
       incomeTax: baseSalary * 0.06,
       deductions: baseSalary * 0.02,
+      totalEarnings: parseInt(baseSalary +bonus+incentives+overtimePay+commission+allowances+hra+da+lta+medicalAllowance),
+      totalDeductions: parseInt(pf+esi+gratuity+professionalTax+incomeTax+deductions),
+      netSalary:totalEarnings-totalDeductions,
       remarks: 'Auto-generated compensation structure'
     };
     for (const key of Object.keys(defaults)) {
@@ -47,7 +53,10 @@ exports.createOrUpdateCompensation = async (employeeId, data) => {
   let compensation = await Compensation.findOne({ where: { employeeId } });
 
   if (compensation) {
-    await compensation.update(filteredData);
+    await compensation.update(filteredData, {
+      where: { id: compensation.id }
+    });
+
     return { message: 'Compensation updated successfully', compensation };
   } else {
     compensation = await Compensation.create({ employeeId, ...filteredData });
