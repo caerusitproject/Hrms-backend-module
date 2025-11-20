@@ -1,56 +1,70 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { theme } from "../../theme/theme";
 import { useAuth } from "../../hooks/useAuth";
 import { BroadcastAPI } from "../../api/broadcastApi";
 import CustomLoader from "../../components/common/CustomLoader";
 import Button from "../../components/common/Button";
 import { FiEdit2 } from "react-icons/fi";
+import { ChevronDown } from "lucide-react";
+
 const Broadcast = () => {
   const { user } = useAuth();
   const [broadcasts, setBroadcasts] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [newBroadcast, setNewBroadcast] = useState({ title: "", content: "" });
-  const [filter, setFilter] = useState(""); // "" = all, "today", "yesterday", etc.
+  const [filter, setFilter] = useState(""); // "" = all
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
-  const isAdminOrHR = ["HR", "ADMIN"].includes(user?.role);
+  const isAdminOrHR = ["HR", "ADMIN"].includes(user?.role?.toUpperCase());
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // ------------------- Load broadcasts -------------------
-  const loadBroadcasts = async (filterParam = "") => {
+  // Fixed: Properly handle both { data: [...] } and raw array responses
+  const loadBroadcasts = useCallback(async (filterParam = "") => {
     setLoading(true);
     try {
       const res = await BroadcastAPI.getAll(filterParam);
-      setBroadcasts(
-        res.data.map((b) => ({ ...b, expanded: false })) // add expanded for UI
-      );
+
+      // Normalize response safely
+      let broadcastsData = [];
+
+      if (Array.isArray(res)) {
+        broadcastsData = res;
+      } else if (res && res.data && Array.isArray(res.data)) {
+        broadcastsData = res.data;
+      } else if (res && Array.isArray(res)) {
+        broadcastsData = res;
+      }
+
+      setBroadcasts(broadcastsData.map((b) => ({ ...b, expanded: false })));
     } catch (err) {
       console.error("Failed to fetch broadcasts", err);
+      setBroadcasts([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
+  // Reload when filter changes
   useEffect(() => {
     loadBroadcasts(filter);
-  }, [filter]);
+  }, [filter, loadBroadcasts]);
 
-  // ------------------- Modal handlers -------------------
+  // Modal handlers
   const handleOpenModal = (id = null) => {
     if (id) {
-      const broadcast = broadcasts.find(b => b.id === id);
+      const broadcast = broadcasts.find((b) => b.id === id);
       if (broadcast) {
         setNewBroadcast({ title: broadcast.title, content: broadcast.content });
+        setEditingId(id);
       }
-      setEditingId(id);
     } else {
       setNewBroadcast({ title: "", content: "" });
       setEditingId(null);
@@ -65,29 +79,33 @@ const Broadcast = () => {
   };
 
   const handlePublish = async () => {
-    if (!newBroadcast.title || !newBroadcast.content) return;
+    if (!newBroadcast.title.trim() || !newBroadcast.content.trim()) return;
+
     try {
-      const body = { title: newBroadcast.title, content: newBroadcast.content };
+      const body = {
+        title: newBroadcast.title.trim(),
+        content: newBroadcast.content.trim(),
+      };
+
       if (editingId) {
         await BroadcastAPI.update(editingId, body);
       } else {
         await BroadcastAPI.create(body);
       }
+
       handleCloseModal();
-      loadBroadcasts(filter); // refresh list
+      loadBroadcasts(filter); // Refresh with current filter
     } catch (err) {
       console.error("Failed to save broadcast", err);
     }
   };
 
-  // ------------------- Expand toggle -------------------
   const toggleExpand = (id) => {
     setBroadcasts((prev) =>
       prev.map((b) => (b.id === id ? { ...b, expanded: !b.expanded } : b))
     );
   };
 
-  // ------------------- Date utils -------------------
   const isToday = (dateString) => {
     const today = new Date();
     const date = new Date(dateString);
@@ -98,11 +116,8 @@ const Broadcast = () => {
     );
   };
 
-  // ------------------- Edit permission -------------------
-  const canEdit = (broadcast) =>
-    isAdminOrHR && isToday(broadcast.createdAt);
+  const canEdit = (broadcast) => isAdminOrHR && isToday(broadcast.createdAt);
 
-  // ------------------- Render -------------------
   const renderBroadcastCard = (broadcast) => (
     <div
       key={broadcast.id}
@@ -114,7 +129,6 @@ const Broadcast = () => {
         border: `1px solid ${theme.colors.background}`,
         boxShadow: theme.shadows.small,
         transition: "all 0.3s ease",
-
       }}
     >
       <div
@@ -125,7 +139,9 @@ const Broadcast = () => {
           cursor: "pointer",
           padding: isMobile ? theme.spacing.sm : theme.spacing.md,
           borderRadius: theme.borderRadius.small,
-          backgroundColor: broadcast.expanded ? theme.colors.background : "transparent",
+          backgroundColor: broadcast.expanded
+            ? theme.colors.background
+            : "transparent",
           transition: "background-color 0.2s ease",
         }}
         onClick={() => toggleExpand(broadcast.id)}
@@ -135,8 +151,9 @@ const Broadcast = () => {
             style={{
               fontWeight: 600,
               color: theme.colors.text.primary,
-              margin: "0 0 " + theme.spacing.xs + " 0",
+              margin: `0 0 ${theme.spacing.xs} 0`,
               fontSize: isMobile ? "16px" : "18px",
+              wordBreak: "break-word",
             }}
           >
             {broadcast.title}
@@ -148,10 +165,21 @@ const Broadcast = () => {
               fontSize: isMobile ? "12px" : "14px",
             }}
           >
-            {new Date(broadcast.createdAt).toDateString()}
+            {new Date(broadcast.createdAt).toLocaleDateString(undefined, {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
           </p>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: theme.spacing.sm }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: theme.spacing.sm,
+          }}
+        >
           {canEdit(broadcast) && (
             <button
               onClick={(e) => {
@@ -165,8 +193,6 @@ const Broadcast = () => {
                 color: theme.colors.text.secondary,
                 fontSize: isMobile ? "18px" : "20px",
                 padding: 0,
-                display: "flex",
-                alignItems: "center",
               }}
               title="Edit"
             >
@@ -178,29 +204,35 @@ const Broadcast = () => {
               color: theme.colors.text.secondary,
               fontSize: isMobile ? "20px" : "24px",
               fontWeight: 600,
+              display: "inline-flex",
+              alignItems: "center",
               transition: "transform 0.3s ease",
               transform: broadcast.expanded ? "rotate(180deg)" : "rotate(0deg)",
-              cursor: "pointer",
             }}
           >
-            {broadcast.expanded ? "▲" : "▼"}
+            <ChevronDown size={isMobile ? 20 : 24} />
           </span>
         </div>
       </div>
 
       {broadcast.expanded && (
-        <div style={{
-          padding: isMobile ? theme.spacing.md : theme.spacing.lg,
-          borderTop: `1px solid ${theme.colors.border}`,
-          backgroundColor: theme.colors.background,
-          borderRadius: `0 0 ${theme.borderRadius.small} ${theme.borderRadius.small}`,
-        }}>
-          <p style={{
-            color: theme.colors.text.primary,
-            margin: 0,
-            lineHeight: 1.6,
-            fontSize: isMobile ? "14px" : "16px",
-          }}>
+        <div
+          style={{
+            padding: isMobile ? theme.spacing.md : theme.spacing.lg,
+            borderTop: `1px solid ${theme.colors.border}`,
+            backgroundColor: theme.colors.background,
+            borderRadius: `0 0 ${theme.borderRadius.small} ${theme.borderRadius.small}`,
+          }}
+        >
+          <p
+            style={{
+              color: theme.colors.text.primary,
+              margin: 0,
+              lineHeight: 1.6,
+              fontSize: isMobile ? "14px" : "16px",
+              whiteSpace: "pre-wrap",
+            }}
+          >
             {broadcast.content}
           </p>
         </div>
@@ -229,12 +261,14 @@ const Broadcast = () => {
           gap: theme.spacing.md,
         }}
       >
-        <h1 style={{
-          fontSize: isMobile ? "28px" : "32px",
-          fontWeight: 700,
-          color: theme.colors.text.primary,
-          margin: 0,
-        }}>
+        <h1
+          style={{
+            fontSize: isMobile ? "28px" : "32px",
+            fontWeight: 700,
+            color: theme.colors.text.primary,
+            margin: 0,
+          }}
+        >
           Broadcasts
         </h1>
         {isAdminOrHR && (
@@ -249,38 +283,46 @@ const Broadcast = () => {
         )}
       </div>
 
-      {/* Filter buttons */}
-      <div style={{
-        display: "flex",
-        gap: theme.spacing.sm,
-        marginBottom: theme.spacing.xxl,
-        flexWrap: "wrap",
-        justifyContent: isMobile ? "center" : "flex-start",
-      }}>
-        {["", "today", "yesterday", "this-month", "last-month"].map((f) => (
+      {/* Filter Buttons */}
+      <div
+        style={{
+          display: "flex",
+          gap: theme.spacing.sm,
+          marginBottom: theme.spacing.xxl,
+          flexWrap: "wrap",
+          justifyContent: isMobile ? "center" : "flex-start",
+        }}
+      >
+        {[
+          { value: "", label: "All" },
+          { value: "today", label: "Today" },
+          { value: "yesterday", label: "Yesterday" },
+          { value: "this-month", label: "This Month" },
+          { value: "last-month", label: "Last Month" },
+        ].map((f) => (
           <Button
-            key={f}
-            type={filter === f ? "primary" : "secondary"}
-            variant={filter === f ? "filled" : "outlined"}
+            key={f.value}
+            type={filter === f.value ? "primary" : "secondary"}
+            variant={filter === f.value ? "filled" : "outlined"}
             size={isMobile ? "small" : "medium"}
-            onClick={() => setFilter(f)}
+            onClick={() => setFilter(f.value)}
           >
-            {f === "" ? "All" : f.replace("-", " ")}
+            {f.label}
           </Button>
         ))}
       </div>
 
       {/* Broadcast List */}
-      <div
-        style={{ marginTop: theme.spacing.xxl }}
-      >
+      <div style={{ marginTop: theme.spacing.xxl }}>
         {broadcasts.length === 0 ? (
-          <p style={{
-            color: theme.colors.text.secondary,
-            textAlign: "center",
-            fontSize: isMobile ? "16px" : "18px",
-            margin: theme.spacing.xl + " 0",
-          }}>
+          <p
+            style={{
+              color: theme.colors.text.secondary,
+              textAlign: "center",
+              fontSize: isMobile ? "16px" : "18px",
+              margin: `${theme.spacing.xl} 0`,
+            }}
+          >
             No broadcasts available.
           </p>
         ) : (
@@ -316,16 +358,24 @@ const Broadcast = () => {
               boxShadow: theme.shadows.large,
             }}
           >
-            <h2 style={{
-              fontSize: isMobile ? "20px" : "24px",
-              fontWeight: 700,
-              color: theme.colors.text.primary,
-              marginTop: 0,
-              marginBottom: theme.spacing.md,
-            }}>
+            <h2
+              style={{
+                fontSize: isMobile ? "20px" : "24px",
+                fontWeight: 700,
+                color: theme.colors.text.primary,
+                marginTop: 0,
+                marginBottom: theme.spacing.md,
+              }}
+            >
               {editingId ? "Edit Broadcast" : "New Broadcast"}
             </h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: theme.spacing.md }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: theme.spacing.md,
+              }}
+            >
               <div>
                 <label
                   style={{
@@ -352,17 +402,15 @@ const Broadcast = () => {
                     borderRadius: theme.borderRadius.small,
                     fontSize: "15px",
                     color: theme.colors.text.primary,
-                    outline: "none",
-                    transition: "border-color 0.2s",
-                    boxSizing: "border-box",
                     backgroundColor: theme.colors.surface,
+                    boxSizing: "border-box",
                   }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = theme.colors.primary;
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = theme.colors.border;
-                  }}
+                  onFocus={(e) =>
+                    (e.target.style.borderColor = theme.colors.primary)
+                  }
+                  onBlur={(e) =>
+                    (e.target.style.borderColor = theme.colors.border)
+                  }
                 />
               </div>
               <div>
@@ -382,7 +430,10 @@ const Broadcast = () => {
                   placeholder="Enter broadcast details"
                   value={newBroadcast.content}
                   onChange={(e) =>
-                    setNewBroadcast({ ...newBroadcast, content: e.target.value })
+                    setNewBroadcast({
+                      ...newBroadcast,
+                      content: e.target.value,
+                    })
                   }
                   style={{
                     width: "100%",
@@ -391,29 +442,29 @@ const Broadcast = () => {
                     borderRadius: theme.borderRadius.small,
                     fontSize: "15px",
                     color: theme.colors.text.primary,
-                    outline: "none",
-                    transition: "border-color 0.2s",
+                    backgroundColor: theme.colors.surface,
                     resize: "vertical",
                     fontFamily: "inherit",
                     boxSizing: "border-box",
-                    backgroundColor: theme.colors.surface,
                   }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = theme.colors.primary;
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = theme.colors.border;
-                  }}
+                  onFocus={(e) =>
+                    (e.target.style.borderColor = theme.colors.primary)
+                  }
+                  onBlur={(e) =>
+                    (e.target.style.borderColor = theme.colors.border)
+                  }
                 />
               </div>
             </div>
-            <div style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: theme.spacing.md,
-              marginTop: theme.spacing.lg,
-              flexWrap: "wrap",
-            }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: theme.spacing.md,
+                marginTop: theme.spacing.lg,
+                flexWrap: "wrap",
+              }}
+            >
               <Button
                 type="secondary"
                 variant="outlined"
@@ -427,7 +478,9 @@ const Broadcast = () => {
                 variant="filled"
                 size={isMobile ? "small" : "medium"}
                 onClick={handlePublish}
-                disabled={!newBroadcast.title || !newBroadcast.content}
+                disabled={
+                  !newBroadcast.title.trim() || !newBroadcast.content.trim()
+                }
               >
                 {editingId ? "Update" : "Publish"}
               </Button>
