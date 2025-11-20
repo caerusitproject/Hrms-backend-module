@@ -10,6 +10,6 @@ router.post('/upload/csv', authenticate, authorizeRoles('HR', 'ADMIN'), Attendan
 // Get all attendance records
 router.get('/records', authenticate, authorizeRoles('HR', 'ADMIN'), AttendanceController.getAttendance);
 
-router.get('/record/:empCode/:month/:year',authenticate, authorizeRoles('HR', 'ADMIN','MANAGER'), AttendanceController.getAttendanceByEmployee);
+router.get('/record/:empCode/:month/:year',authenticate, authorizeRoles('HR', 'ADMIN', "MANAGER", "USER"), AttendanceController.getAttendanceByEmployee);
 
 module.exports = router;

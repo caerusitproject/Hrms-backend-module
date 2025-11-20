@@ -8,7 +8,7 @@ import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
 import CustomLoader from "../../components/common/CustomLoader";
 import { ROLE_OPTIONS, ROLE_IDS } from "../../utils/roles";
-
+ 
 const EmployeeProfileEdit = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ const EmployeeProfileEdit = () => {
   const isEditMode = !!id;
   const role = user?.role || "USER";
   const currentUserId = Number(user?.id);
-
+ 
   const {
     register,
     handleSubmit,
@@ -29,7 +29,7 @@ const EmployeeProfileEdit = () => {
     control,
     name: "personalDetails.mobile",
   });
-
+ 
   const sectionStyle = (highlight) => ({
       backgroundColor: theme.colors.surface,
       borderRadius: theme.borderRadius.large,
@@ -39,7 +39,7 @@ const EmployeeProfileEdit = () => {
       borderRight: highlight ? `4px solid ${theme.colors.primary}` : "none",
       transition: theme.transitions.medium,
     });
-
+ 
      const dummyDocuments = [
     { name: "Offer Letter", icon: "📄" },
     { name: "ID Proof", icon: "🆔" },
@@ -55,17 +55,17 @@ const EmployeeProfileEdit = () => {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-
+ 
   const isProfessionalEditable = ["HR", "ADMIN"].includes(role);
   const isOwnProfile = isEditMode && parseInt(id) === currentUserId;
   const canEditPersonal =
     !isEditMode || ["HR", "ADMIN"].includes(role) || isOwnProfile;
   const canSave = !isEditMode || canEditPersonal || isProfessionalEditable;
   const empPrefix = process.env.REACT_APP_EMP_PREFIX || "EMP";
-
+ 
   const generateEmpCode = () =>
     `${empPrefix}${Math.floor(1000 + Math.random() * 9000)}`;
-
+ 
   const onError = (errors) => {
     const firstErrorKey = Object.keys(errors)[0];
     if (firstErrorKey) {
@@ -78,14 +78,14 @@ const EmployeeProfileEdit = () => {
       }
     }
   };
-
+ 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
-
+ 
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -94,14 +94,14 @@ const EmployeeProfileEdit = () => {
             EmployeeAPI.getDepartments(),
             EmployeeAPI.getAllManagers(),
           ]);
-
+ 
           setDepartments(deptRes || []);
           setManagers(mgrRes?.data || []);
         }
-
+ 
         if (isEditMode) {
           const data = await EmployeeAPI.fetchEmployeeData(id);
-
+ 
           setValue("personalDetails.fullName", data.name || "");
           setValue("personalDetails.dateOfBirth", data.dateOfBirth || "");
           setValue("personalDetails.gender", data.gender || "");
@@ -113,10 +113,10 @@ const EmployeeProfileEdit = () => {
           setValue("personalDetails.mobile", data.mobile || "");
           setValue("personalDetails.phone", data.phone || "");
           setValue("professionalDetails.designation", data.designation || "");
-
+ 
           setCurrentDepartmentId(data.departmentId);
           setCurrentManagerId(data.managerId);
-
+ 
           if (isProfessionalEditable) {
             // Editable users (HR/Admin) — keep using IDs for dropdowns
             setValue(
@@ -145,7 +145,7 @@ const EmployeeProfileEdit = () => {
             data.employmentType || ""
           );
           setValue("professionalDetails.dateOfJoining", data.joiningDate || "");
-
+ 
           const nameToId = {
             ADMIN: ROLE_IDS.ADMIN,
             HR: ROLE_IDS.HR,
@@ -170,7 +170,7 @@ const EmployeeProfileEdit = () => {
     };
     loadData();
   }, [id, isEditMode, setValue]);
-
+ 
   const onSubmit = async (data) => {
     try {
       setSaving(true);
@@ -192,7 +192,7 @@ const EmployeeProfileEdit = () => {
         joiningDate: data.professionalDetails?.dateOfJoining,
         roleIds: parseInt(data.professionalDetails?.role),
       };
-
+ 
       const getDepartmentId = () =>
         isEditMode && !isProfessionalEditable
           ? currentDepartmentId
@@ -201,10 +201,10 @@ const EmployeeProfileEdit = () => {
         isEditMode && !isProfessionalEditable
           ? currentManagerId
           : parseInt(data.professionalDetails?.reportingManager || null);
-
+ 
       apiPayload.departmentId = getDepartmentId();
       apiPayload.managerId = getManagerId();
-
+ 
       if (!isEditMode) {
         apiPayload.password = data.professionalDetails?.password;
         apiPayload.empCode =
@@ -212,7 +212,7 @@ const EmployeeProfileEdit = () => {
         // apiPayload.status = "Active";
         // apiPayload.state = "OFFER_CREATED";
       }
-
+ 
       if (isEditMode) {
         await EmployeeAPI.updateEmployee(id, apiPayload);
         navigate(`/employee-profile/${id}`);
@@ -228,42 +228,42 @@ const EmployeeProfileEdit = () => {
       setSaving(false);
     }
   };
-
+ 
   const handleCancel = () =>
     navigate(isEditMode ? `/employee-profile/${id}` : "/employees-list");
-
+ 
   if (loading)
     return (
       <div style={{ textAlign: "center", padding: theme.spacing.xl }}>
         <CustomLoader />
       </div>
     );
-
+ 
   const gridStyle = {
     display: "grid",
     gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
     gap: isMobile ? theme.spacing.sm : theme.spacing.md,
   };
-
+ 
   const departmentOptions = [
     { value: "", label: "Select Department" },
     ...departments.map((d) => ({ value: d.id, label: d.departmentName })),
   ];
-
+ 
   const managerOptions = [
     { value: "", label: "Select Reporting Manager" },
     ...managers.map((m) => ({ value: m.id, label: m.name })),
   ];
-
+ 
   const roleOptions = ROLE_OPTIONS;
-
+ 
   const employmentTypeOptions = [
     { value: "Full-time", label: "Full-time" },
     { value: "Part-time", label: "Part-time" },
     { value: "Contractual", label: "Contractual" },
     { value: "Other", label: "Other" },
   ];
-
+ 
   const genderTypeOptions = [
     { value: "Male", label: "Male" },
     { value: "Female", label: "Female" },
@@ -281,7 +281,7 @@ const EmployeeProfileEdit = () => {
         : 0);
     return age >= 18 || "Employee must be at least 18 years old";
   };
-
+ 
   const validateMobile = (mobile) => {
     if (!mobile) return true;
     if (!mobile.startsWith("+91")) return "Mobile number must start with +91";
@@ -291,7 +291,7 @@ const EmployeeProfileEdit = () => {
     }
     return true;
   };
-
+ 
   const validatePhone = (phone) => {
     if (!phone) return true;
     if (!phone.startsWith("+91")) return "Phone number must start with +91";
@@ -304,7 +304,7 @@ const EmployeeProfileEdit = () => {
     }
     return true;
   };
-
+ 
   const maritalStatusOptions = [
     { value: "", label: "Select Marital Status" },
     { value: "Single", label: "Single" },
@@ -312,11 +312,11 @@ const EmployeeProfileEdit = () => {
     { value: "Divorced", label: "Divorced" },
     { value: "Widowed", label: "Widowed" },
   ];
-
+ 
   const isProfessionalFieldDisabled = isEditMode && !isProfessionalEditable;
   const isPersonalFieldDisabled = isEditMode && !canEditPersonal;
   const isSupportingDocsEditable =  isProfessionalEditable;
-
+ 
   return (
     <>
       <div style={{ paddingBottom: theme.spacing.xl }}>
@@ -343,7 +343,7 @@ const EmployeeProfileEdit = () => {
         >
           {isEditMode ? "Edit Employee Profile" : "Create Employee Profile"}
         </h1>
-
+ 
         {/* Avatar */}
         {isEditMode && (
           <div
@@ -446,7 +446,7 @@ const EmployeeProfileEdit = () => {
               disabled={isPersonalFieldDisabled}
               errors={errors}
             />
-
+ 
             <Input
               label="Date of Birth"
               name="personalDetails.dateOfBirth"
@@ -469,7 +469,7 @@ const EmployeeProfileEdit = () => {
               disabled={isPersonalFieldDisabled}
               errors={errors}
             />
-
+ 
             <Input
               label="Father's Name"
               name="personalDetails.fatherName"
@@ -525,7 +525,7 @@ const EmployeeProfileEdit = () => {
               errors={errors}
               placeholder="+91xxxxxxxxxx"
             />
-
+ 
             <Input
               label="Marital Status"
               name="personalDetails.maritalStatus"
@@ -537,7 +537,7 @@ const EmployeeProfileEdit = () => {
             />
           </div>
         </FormCard>
-
+ 
         {/* Professional Details */}
         <FormCard title="Professional Details">
           <div style={gridStyle}>
@@ -595,7 +595,7 @@ const EmployeeProfileEdit = () => {
               disabled={isProfessionalFieldDisabled}
               errors={errors}
             />
-
+ 
             {!isEditMode && (
               <Input
                 label="Password"
@@ -608,7 +608,7 @@ const EmployeeProfileEdit = () => {
                 errors={errors}
               />
             )}
-
+ 
             <Input
               label="Employment Type"
               name="professionalDetails.employmentType"
@@ -618,7 +618,7 @@ const EmployeeProfileEdit = () => {
               disabled={isProfessionalFieldDisabled}
               errors={errors}
             />
-
+ 
             <Input
               label="Reporting Manager"
               name="professionalDetails.reportingManager"
@@ -628,7 +628,7 @@ const EmployeeProfileEdit = () => {
               disabled={isProfessionalFieldDisabled}
               errors={errors}
             />
-
+ 
             <Input
               label="Date of Joining"
               name="professionalDetails.dateOfJoining"
@@ -695,7 +695,7 @@ const EmployeeProfileEdit = () => {
                 ))}
               </div>)}
       </div>
-
+ 
       {/* Fixed Bottom Buttons */}
       <div
         style={{
@@ -727,7 +727,7 @@ const EmployeeProfileEdit = () => {
     </>
   );
 };
-
+ 
 /* ---------- Helper Components ---------- */
 const FormCard = ({ title, children }) => (
   <div
@@ -754,5 +754,5 @@ const FormCard = ({ title, children }) => (
     {children}
   </div>
 );
-
+ 
 export default EmployeeProfileEdit;
