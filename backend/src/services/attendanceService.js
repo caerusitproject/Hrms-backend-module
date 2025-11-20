@@ -186,8 +186,27 @@ class CsvService {
         },
         order: [["date", "DESC"]],
       });
+      let totalHours = 0;
+      let daysPresent = 0;
+      let daysAbsent = 0;
+      let totalMin=0;
+      records.forEach((rec)=>{
+        if(rec.status==="Present"){
+          totalHours+= parseInt(rec.timeSpent.split(":")[0]);
+          totalMin= parseInt(rec.timeSpent.split(":")[1]);
+          totalHours+= totalMin/60;
+          daysPresent+=1;
+        }else if(rec.status==="Absent")daysAbsent+=1;
+      });
 
-      return records;
+      return {
+        summary:{
+          totalHours: totalHours.toFixed(2) || 0,
+          daysPreent : daysPresent || 0,
+          daysAbsent : daysAbsent ||0 
+        },
+        records
+      };
     } catch (error) {
       console.error("Error fetching attendance:", error);
       throw error;
