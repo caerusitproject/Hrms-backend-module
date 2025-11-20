@@ -45,7 +45,7 @@ Reason: ${data.reason}`,
       reason: leave.reason,
     });
 
-    return leaveInfo;
+    return leave;
   } catch (err) {
     // Pass the error to your existing error handler
     throw err;

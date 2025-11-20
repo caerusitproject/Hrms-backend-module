@@ -43,7 +43,7 @@ const deleteLeave = async (req, res) => {
 };
 
 
-const approveLeave = async (req, res) => {
+const approveLeave = async (req, res) => {  
   try {
     const { id, status } = req.query;
     const leave = await managerService.handleLeave(id, status);
