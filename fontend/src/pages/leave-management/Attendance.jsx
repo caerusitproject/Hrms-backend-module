@@ -22,6 +22,7 @@ const Attendance = () => {
   const role = user?.role || "USER";
   const canViewAll = ["MANAGER", "ADMIN", "HR"].includes(role);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [daysData, setDaysData]=useState({});
 
   // Default to current user's empCode
   useEffect(() => {
@@ -85,7 +86,8 @@ const Attendance = () => {
           year
         );
         if (response.success) {
-          setAttendanceData(response.data);
+          setAttendanceData(response.data.records);
+          setDaysData(response.data.summary)
         } else {
           throw new Error(
             response.message || "Failed to fetch attendance data"
@@ -122,15 +124,15 @@ const Attendance = () => {
   }));
 
   // Totals
-  const totalHours = attendanceData
-    .filter((a) => a.status !== "Absent")
-    .reduce((sum, a) => {
-      const hours = calculateHours(a.checkIn, a.checkOut);
-      return sum + (hours !== "Absent" ? parseFloat(hours) : 0);
-    }, 0);
-
-  const absentDays = attendanceData.filter((a) => a.status === "Absent").length;
-  const presentDays = attendanceData.length - absentDays;
+  // const totalHours = attendanceData
+  //   .filter((a) => a.status !== "Absent")
+  //   .reduce((sum, a) => {
+  //     const hours = calculateHours(a.checkIn, a.checkOut);
+  //     return sum + (hours !== "Absent" ? parseFloat(hours) : 0);
+  //   }, 0);
+  const totalHours = Number(daysData.totalHours) ||0;
+  const absentDays = daysData.daysAbsent;
+  const presentDays = daysData.daysPreent;
 
   const handleMonthChange = (direction) => {
     const newDate = new Date(currentDate);

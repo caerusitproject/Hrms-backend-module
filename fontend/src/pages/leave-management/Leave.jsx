@@ -142,7 +142,7 @@ const Leave = () => {
           year
         );
         if (response.success) {
-          setAttendanceData(response.data);
+          setAttendanceData(response.data.records);
         } else {
           throw new Error(
             response.message || "Failed to fetch attendance data"

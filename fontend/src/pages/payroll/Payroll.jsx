@@ -189,6 +189,7 @@ const Payroll = () => {
       employeeId: selectedEmployee,
     };
     try {
+      console.log("Saving payroll with payload:", payload);
       await PayrollApi.craetepayroll(payload);
       setFormData(initialFormData);
       setSelectedEmployee("");
@@ -236,11 +237,13 @@ const Payroll = () => {
   const handleUpdate = async () => {
     const payload = {
       id: editingPayroll.id,
+       employeeId: editingPayroll.employeeId,
       ...formatNumberFields(formData),
       ...totals,
     };
     try {
-      await PayrollApi.createpayroll(payload);
+      console.log("Updating payroll with payload:", payload); 
+      await PayrollApi.craetepayroll(payload);
       setOpenEditModal(false);
       setEditingPayroll(null);
       setFormData(initialFormData);
@@ -667,7 +670,7 @@ const Payroll = () => {
         </DialogContent>
         <Divider />
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={handleCloseModal} sx={{ borderRadius: 1.5 }}>
+          <Button type="secondary" onClick={handleCloseModal} sx={{ borderRadius: 1.5 }}>
             Cancel
           </Button>
           <Button
