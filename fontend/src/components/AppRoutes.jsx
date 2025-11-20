@@ -31,6 +31,7 @@ const EmailTemplateManager = lazy(() =>
   import("../pages/email-templete/EmailTemplateManager")
 );
 const SendMailPage = lazy(() => import("../pages/email-templete/SendMailPage"));
+const Work = lazy(() => import("../utils/Workflow"));
 const ScrollToTop = () => {
   const { pathname } = useLocation();
 
@@ -86,6 +87,14 @@ const AppRoutes = () => {
                     <Payroll />
                   </Suspense>
                 </ProtectedRoute>
+              }
+            />
+            <Route
+              path="work"
+              element={
+                <Suspense fallback={<CustomLoader />}>
+                  <Work />
+                </Suspense>
               }
             />
             <Route

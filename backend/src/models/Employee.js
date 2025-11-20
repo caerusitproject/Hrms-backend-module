@@ -29,7 +29,7 @@ const Employee = sequelize.define('employee', {
   mobile: { type: DataTypes.STRING, allowNull: true },
   phone: { type: DataTypes.STRING, allowNull: true },
   // FK field
-  departmentId: { type: DataTypes.INTEGER, allowNull: true, references: { model: 'department', key: 'id', }, },
+  departmentId: { type: DataTypes.INTEGER, allowNull: true},
 
   state: { type: DataTypes.STRING, allowNull: false, defaultValue: 'OFFER_CREATED' },
 
