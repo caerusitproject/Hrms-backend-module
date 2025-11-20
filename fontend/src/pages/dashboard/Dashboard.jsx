@@ -30,8 +30,6 @@ const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-
-
   useEffect(() => {
     const fetchDashboardData = async () => {
       if (!role) return;
@@ -82,32 +80,72 @@ const Dashboard = () => {
   let quickOverview = [];
 
   if (role === "USER" && dashboardData) {
-  quickOverview = [
-    { label: "Pending Leave Requests", value: (dashboardData?.pendingLeaveCount ?? 0).toString(), color: theme.colors.warning },
-    { label: "Attendance This Month", value: "20", color: theme.colors.success },
-  ];
-} else if (role === "MANAGER" && dashboardData) {
-  quickOverview = [
-    { label: "Active Team Members", value: (dashboardData?.totalTeamMembers ?? 0).toString(), color: theme.colors.success },
-    { label: "Pending Approvals", value: (dashboardData?.pendingLeaves?.length ?? 0).toString(), color: theme.colors.warning },
-    { label: "Attendance This Month", value: "20", color: theme.colors.success },
-    { label: "Pending Leave Requests", value: "2", color: theme.colors.warning },
-  ];
-} else if ((role === "HR" || role === "ADMIN") && dashboardData) {
-  quickOverview = [
-    { label: "Total Employees", value: (dashboardData?.totalEmployees ?? 0).toString(), color: theme.colors.primary },
-    { label: "Documents Shared", value: "35", color: theme.colors.primaryLight },
-    { label: "Attendance This Month", value: "20", color: theme.colors.success },
-    { label: "Pending Leave Requests", value: "2", color: theme.colors.warning },
-  ];
-}
+    quickOverview = [
+      {
+        label: "Pending Leave Requests",
+        value: (dashboardData?.pendingLeaveCount ?? 0).toString(),
+        color: theme.colors.warning,
+      },
+      {
+        label: "Attendance This Month",
+        value: "20",
+        color: theme.colors.success,
+      },
+    ];
+  } else if (role === "MANAGER" && dashboardData) {
+    quickOverview = [
+      {
+        label: "Active Team Members",
+        value: (dashboardData?.totalTeamMembers ?? 0).toString(),
+        color: theme.colors.success,
+      },
+      {
+        label: "Pending Approvals",
+        value: (dashboardData?.pendingLeaves?.length ?? 0).toString(),
+        color: theme.colors.warning,
+      },
+      {
+        label: "Attendance This Month",
+        value: "20",
+        color: theme.colors.success,
+      },
+      {
+        label: "Pending Leave Requests",
+        value: "2",
+        color: theme.colors.warning,
+      },
+    ];
+  } else if ((role === "HR" || role === "ADMIN") && dashboardData) {
+    quickOverview = [
+      {
+        label: "Total Employees",
+        value: (dashboardData?.totalEmployees ?? 0).toString(),
+        color: theme.colors.primary,
+      },
+      {
+        label: "Documents Shared",
+        value: "35",
+        color: theme.colors.primaryLight,
+      },
+      {
+        label: "Attendance This Month",
+        value: "20",
+        color: theme.colors.success,
+      },
+      {
+        label: "Pending Leave Requests",
+        value: "2",
+        color: theme.colors.warning,
+      },
+    ];
+  }
 
   // Upcoming Events Data - from broadcasts
   let upcomingEvents = [];
 
   if (dashboardData) {
     const todayBroadcasts = dashboardData.upcomingBroadcasts || [];
-    
+
     if (todayBroadcasts.length > 0) {
       upcomingEvents = todayBroadcasts.map((b) => ({
         id: b.id,
@@ -179,7 +217,7 @@ const Dashboard = () => {
                 fontSize: { xs: "20px", md: "24px" },
               }}
             >
-              View Your Profile
+              Quick Access
             </Typography>
 
             <Typography
@@ -203,23 +241,42 @@ const Dashboard = () => {
                 overflow: "auto",
               }}
             >
+              {role === "ADMIN" || role === "HR" ? (
+                <Button
+                  type="secondary"
+                  variant="filled"
+                  sx={{
+                    px: { xs: 2, md: 3 },
+                    py: 1.2,
+                    fontWeight: 600,
+                    textTransform: "none",
+                    fontSize: { xs: "13px", md: "14px" },
+                    whiteSpace: "nowrap",
+                  }}
+                  onClick={() => navigate("/employee/create")}
+                >
+                  Add Employee
+                </Button>
+              ) : (
+                <Button
+                  type="secondary"
+                  variant="filled"
+                  sx={{
+                    px: { xs: 2, md: 3 },
+                    py: 1.2,
+                    fontWeight: 600,
+                    textTransform: "none",
+                    fontSize: { xs: "13px", md: "14px" },
+                    whiteSpace: "nowrap",
+                  }}
+                  onClick={() => navigate("/employee-profile/" + user?.id)}
+                >
+                  View Profile
+                </Button>
+              )}
+
               <Button
-                type="primary"
-                variant="filled"
-                sx={{
-                  px: { xs: 2, md: 3 },
-                  py: 1.2,
-                  fontWeight: 600,
-                  textTransform: "none",
-                  fontSize: { xs: "13px", md: "14px" },
-                  whiteSpace: "nowrap",
-                }}
-                onClick={() => navigate("/employee-profile/" + user?.id)}
-              >
-                View Profile
-              </Button>
-              <Button
-                type="secondary"
+                type="white"
                 variant="outlined"
                 sx={{
                   px: { xs: 2, md: 3 },
@@ -392,7 +449,10 @@ const Dashboard = () => {
                       {activity.avatar}
                     </Avatar>
                     <Box sx={{ flex: 1 }}>
-                      <Typography variant="body1" sx={{ fontWeight: 600, mb: 0.5 }}>
+                      <Typography
+                        variant="body1"
+                        sx={{ fontWeight: 600, mb: 0.5 }}
+                      >
                         {activity.name}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">

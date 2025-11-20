@@ -12,13 +12,13 @@ const getAllBroadcastsOnly = async (page = 1, limit = 10) => {
   const offset = (page - 1) * limit;
   const broadcastList = await Broadcast.findAll();
   const totalBroadcast = await getBroadcastCount(broadcastList);
-  if (totalBroadcast === 0) {
-    return {
-      message: "No broadcast present ",
-      data: [],
-      pagination: null
-    };
-  }
+  // if (totalBroadcast === 0) {
+  //   return {
+  //     message: "No broadcast present ",
+  //     data: [],
+  //     pagination: null
+  //   };
+  // }
 
   try {
     const broad = await Broadcast.findAll({
@@ -89,7 +89,7 @@ const getAllBroadcastsOnly = async (page = 1, limit = 10) => {
         order: [['id', 'ASC']],
         attributes: ['id', 'title', 'content', 'createdAt', 'updatedAt']
       });
-      if( broad.length ===0)return {message:"NO BROADCASTS FOR THE SPECIFIED PERIOD!!!!"};
+      //if( broad.length ===0)return {message:"NO BROADCASTS FOR THE SPECIFIED PERIOD!!!!"};
       return broad;
     } catch (error) {
       throw new Error(error.message || 'Failed to fetch broadcasts');
