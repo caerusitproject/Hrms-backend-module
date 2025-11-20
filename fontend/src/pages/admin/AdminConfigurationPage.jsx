@@ -13,6 +13,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  DialogContentText,
   IconButton,
   Tabs,
   Tab,
@@ -20,12 +21,13 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Button as MuiButton,
 } from "@mui/material";
-import { Edit } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { theme as customTheme } from "../../theme/theme";
 import Button from "../../components/common/Button";
 import Alert from "../../components/common/Alert";
-import { ConfigApi as AdminApi } from "../../api/adminApi"; // Adjust path as needed
+import { ConfigApi as AdminApi } from "../../api/adminApi";
 
 const roleOptions = [
   { label: "Admin", value: 1 },
@@ -35,20 +37,29 @@ const roleOptions = [
 ];
 
 export default function AdminConfig() {
-  const [activeTab, setActiveTab] = useState(0); // 0: Departments, 1: Account Management
+  const [activeTab, setActiveTab] = useState(0); // 0: Account Management, 1: Departments, 2: Holidays
   const [departments, setDepartments] = useState([]);
   const [users, setUsers] = useState([]);
+  const [holidays, setHolidays] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  // Dialog states
   const [addUserOpen, setAddUserOpen] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+
+  // Form states
   const [formData, setFormData] = useState({
-    deptid: null,
     id: null,
     departmentName: "",
     description: "",
     username: "",
     email: "",
+    date: "",
+    title: "",
   });
+
   const [userForm, setUserForm] = useState({
     fullname: "",
     username: "",
@@ -57,14 +68,22 @@ export default function AdminConfig() {
     roleId: "",
   });
 
+  // Holiday-specific form (reuses formData but we keep separate logic)
+  const holidayForm = {
+    date: formData.date,
+    title: formData.title,
+    id: formData.id,
+  };
+
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertSeverity, setAlertSeverity] = useState("success");
   const [alertMessage, setAlertMessage] = useState("");
 
-  // Load data
+  // Load data based on active tab
   useEffect(() => {
-    if (activeTab === 1) fetchDepartments();
     if (activeTab === 0) fetchUsers();
+    if (activeTab === 1) fetchDepartments();
+    if (activeTab === 2) fetchHolidays();
   }, [activeTab]);
 
   const fetchDepartments = async () => {
@@ -91,6 +110,18 @@ export default function AdminConfig() {
     }
   };
 
+  const fetchHolidays = async () => {
+    setLoading(true);
+    try {
+      const data = await AdminApi.getAllHolidays(); // New API call
+      setHolidays(data);
+    } catch (err) {
+      showAlert("error", "Failed to load holidays");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const showAlert = (severity, message) => {
     setAlertSeverity(severity);
     setAlertMessage(message);
@@ -99,7 +130,8 @@ export default function AdminConfig() {
 
   const handleTabChange = (e, newValue) => setActiveTab(newValue);
 
-  const handleOpen = (item = null) => {
+  // Generic open edit/add dialog
+  const handleOpenEdit = (item = null) => {
     if (item) {
       if (activeTab === 0) {
         setFormData({
@@ -108,12 +140,26 @@ export default function AdminConfig() {
           email: item.email,
           departmentName: "",
           description: "",
+          date: "",
+          title: "",
         });
-      } else {
+      } else if (activeTab === 1) {
         setFormData({
-          deptid: item.id,
+          id: item.id,
           departmentName: item.departmentName,
           description: item.description || "",
+          username: "",
+          email: "",
+          date: "",
+          title: "",
+        });
+      } else if (activeTab === 2) {
+        setFormData({
+          id: item.id,
+          date: item.date.split("T")[0], // Format YYYY-MM-DD for input
+          title: item.title,
+          departmentName: "",
+          description: "",
           username: "",
           email: "",
         });
@@ -125,95 +171,103 @@ export default function AdminConfig() {
         description: "",
         username: "",
         email: "",
+        date: "",
+        title: "",
       });
     }
-    setOpen(true);
+    setEditDialogOpen(true);
   };
 
-  const handleSave = async () => {
-    if (activeTab === 0) {
-      if (!formData.email.trim()) {
-        showAlert("error", "Email is required");
-        return;
-      }
-      // console.log("Form Data:", formData);
-      const { id, email, username } = formData;
-      const payload = { id, email, username };
-
-      try {
-        await AdminApi.updateUserEmail(payload);
-        showAlert("success", "User email updated successfully");
-        fetchUsers();
-      } catch (err) {
-        showAlert("error", "Failed to update email");
-      }
-      // User - only email is editable
-    } else {
-      // Department
-      if (!formData.departmentName.trim()) {
-        showAlert("error", "Department name is required");
-        return;
-      }
-
-      const { departmentName, description } = formData;
-
-      const payload = {
-        departmentName,
-        description,
-      };
-      try {
-        if (formData.deptid) {
-          await AdminApi.updateDepartment(formData.deptid, payload);
-          showAlert("success", "Department updated successfully");
-        } else {
-          await AdminApi.createDepartment({
-            departmentName: formData.departmentName,
-            description: formData.description,
-          });
-          showAlert("success", "Department created successfully");
-        }
-        fetchDepartments();
-      } catch (err) {
-        showAlert("error", "Failed to save department");
-      }
-    }
-
-    setOpen(false);
+  const handleCloseEdit = () => {
+    setEditDialogOpen(false);
     setFormData({
       id: null,
       departmentName: "",
       description: "",
       username: "",
       email: "",
+      date: "",
+      title: "",
     });
   };
 
+  // Save logic per tab
+  const handleSave = async () => {
+    try {
+      if (activeTab === 0) {
+        // Update user email
+        if (!formData.email.trim())
+          return showAlert("error", "Email is required");
+        await AdminApi.updateUserEmail({
+          id: formData.id,
+          email: formData.email,
+          username: formData.username,
+        });
+        showAlert("success", "User updated successfully");
+        fetchUsers();
+      } else if (activeTab === 1) {
+        // Department
+        if (!formData.departmentName.trim())
+          return showAlert("error", "Department name is required");
+        const payload = {
+          departmentName: formData.departmentName,
+          description: formData.description,
+        };
+        if (formData.id) {
+          await AdminApi.updateDepartment(formData.id, payload);
+          showAlert("success", "Department updated");
+        } else {
+          await AdminApi.createDepartment(payload);
+          showAlert("success", "Department created");
+        }
+        fetchDepartments();
+      } else if (activeTab === 2) {
+        // Holiday
+        if (!formData.date || !formData.title.trim()) {
+          return showAlert("error", "Date and title are required");
+        }
+        let payload = {
+          date: formData.date,
+          title: formData.title,
+        };
+
+        if (formData.id) {
+          // Inject id into payload only for update
+          payload = { ...payload, id: formData.id };
+
+          await AdminApi.updateHoliday(payload);
+          showAlert("success", "Holiday updated successfully");
+        } else {
+          await AdminApi.createHoliday(payload);
+          showAlert("success", "Holiday created successfully");
+        }
+
+        fetchHolidays();
+      }
+    } catch (err) {
+      showAlert("error", "Operation failed");
+    } finally {
+      handleCloseEdit();
+    }
+  };
+
+  // Add User Save
   const handleUserSave = async () => {
     const { fullname, username, email, password, roleId } = userForm;
-
-    // Validate mandatory fields
     if (!fullname || !username || !email || !password || !roleId) {
-      setAlertSeverity("error");
-      setAlertMessage("All fields are mandatory.");
-      setAlertOpen(true);
+      showAlert("error", "All fields are mandatory");
       return;
     }
-
-    const payload = {
-      fullname,
-      username,
-      email,
-      password,
-      roleId,
-    };
-
     try {
-      await AdminApi.createUser(payload);
-      setAlertSeverity("success");
-      setAlertMessage("User created successfully!");
-      setAlertOpen(true);
+      await AdminApi.createUser({
+        fullname,
+        username,
+        email,
+        password,
+        roleId,
+      });
+      showAlert("success", "User created successfully");
       setAddUserOpen(false);
-       fetchUsers();
       setUserForm({
         fullname: "",
         username: "",
@@ -221,15 +275,35 @@ export default function AdminConfig() {
         password: "",
         roleId: "",
       });
+      fetchUsers();
     } catch (err) {
-      setAlertSeverity("error");
-      setAlertMessage("Failed to create user.");
-      setAlertOpen(true);
+      showAlert("error", "Failed to create user");
     }
   };
 
-  const currentData = activeTab === 0 ? users : departments;
-  const currentType = activeTab === 0 ? "User Details" : "Department";
+  // Delete Holiday
+  const handleDeleteClick = (holiday) => {
+    setItemToDelete(holiday);
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!itemToDelete?.id) return;
+    try {
+      await AdminApi.deleteHoliday(itemToDelete.id);
+      showAlert("success", "Holiday deleted successfully");
+      fetchHolidays();
+    } catch (err) {
+      showAlert("error", "Failed to delete holiday");
+    } finally {
+      setDeleteConfirmOpen(false);
+      setItemToDelete(null);
+    }
+  };
+
+  // Dynamic data and headers
+  const currentData =
+    activeTab === 0 ? users : activeTab === 1 ? departments : holidays;
 
   return (
     <div>
@@ -246,12 +320,13 @@ export default function AdminConfig() {
           variant="h4"
           sx={{ fontWeight: 700, color: customTheme.colors.text.primary }}
         >
-          Admin Configuration
+          {["Account", "Departments", "Holidays"][activeTab]} Management
         </Typography>
-        {activeTab === 1 && (
+
+        {(activeTab === 1 || activeTab === 2) && (
           <Button
             variant="contained"
-            onClick={() => handleOpen()}
+            onClick={() => handleOpenEdit()}
             sx={{
               backgroundColor: customTheme.colors.primary,
               textTransform: "none",
@@ -261,9 +336,10 @@ export default function AdminConfig() {
               boxShadow: customTheme.shadows.small,
             }}
           >
-            + {activeTab === 0 ? "User" : "Department"}
+            + {activeTab === 2 ? "Holiday" : "Department"}
           </Button>
         )}
+
         {activeTab === 0 && (
           <Button
             variant="contained"
@@ -308,6 +384,7 @@ export default function AdminConfig() {
         >
           <Tab label="Account Management" />
           <Tab label="Departments" />
+          <Tab label="Holidays" />
         </Tabs>
       </Paper>
 
@@ -322,7 +399,7 @@ export default function AdminConfig() {
         <Table>
           <TableHead>
             <TableRow sx={{ backgroundColor: customTheme.colors.lightGray }}>
-              {activeTab === 0 ? (
+              {activeTab === 0 && (
                 <>
                   <TableCell
                     sx={{
@@ -349,7 +426,8 @@ export default function AdminConfig() {
                     Role
                   </TableCell>
                 </>
-              ) : (
+              )}
+              {activeTab === 1 && (
                 <>
                   <TableCell
                     sx={{
@@ -366,6 +444,26 @@ export default function AdminConfig() {
                     }}
                   >
                     Description
+                  </TableCell>
+                </>
+              )}
+              {activeTab === 2 && (
+                <>
+                  <TableCell
+                    sx={{
+                      color: customTheme.colors.text.primary,
+                      fontWeight: 600,
+                    }}
+                  >
+                    Date
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      color: customTheme.colors.text.primary,
+                      fontWeight: 600,
+                    }}
+                  >
+                    Title
                   </TableCell>
                 </>
               )}
@@ -391,7 +489,13 @@ export default function AdminConfig() {
                   align="center"
                   sx={{ color: customTheme.colors.text.secondary }}
                 >
-                  No {currentType.toLowerCase()}s found
+                  No{" "}
+                  {activeTab === 0
+                    ? "users"
+                    : activeTab === 1
+                    ? "departments"
+                    : "holidays"}{" "}
+                  found
                 </TableCell>
               </TableRow>
             ) : (
@@ -404,7 +508,7 @@ export default function AdminConfig() {
                     },
                   }}
                 >
-                  {activeTab === 0 ? (
+                  {activeTab === 0 && (
                     <>
                       <TableCell
                         sx={{
@@ -425,7 +529,8 @@ export default function AdminConfig() {
                         {item.role}
                       </TableCell>
                     </>
-                  ) : (
+                  )}
+                  {activeTab === 1 && (
                     <>
                       <TableCell
                         sx={{ color: customTheme.colors.text.primary }}
@@ -439,10 +544,39 @@ export default function AdminConfig() {
                       </TableCell>
                     </>
                   )}
+                  {activeTab === 2 && (
+                    <>
+                      <TableCell
+                        sx={{ color: customTheme.colors.text.primary }}
+                      >
+                        {new Date(item.date).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell
+                        sx={{ color: customTheme.colors.text.primary }}
+                      >
+                        {item.title}
+                      </TableCell>
+                    </>
+                  )}
                   <TableCell align="right">
-                    <IconButton onClick={() => handleOpen(item)} size="small">
+                    <IconButton
+                      onClick={() => handleOpenEdit(item)}
+                      size="small"
+                    >
                       <Edit size={18} color={customTheme.colors.primary} />
                     </IconButton>
+                    {activeTab === 2 && (
+                      <IconButton
+                        onClick={() => handleDeleteClick(item)}
+                        size="small"
+                        sx={{ ml: 1 }}
+                      >
+                        <Trash2
+                          size={18}
+                          color={customTheme.colors.error || "#d32f2f"}
+                        />
+                      </IconButton>
+                    )}
                   </TableCell>
                 </TableRow>
               ))
@@ -451,10 +585,10 @@ export default function AdminConfig() {
         </Table>
       </Paper>
 
-      {/* Add/Edit Dialog */}
+      {/* Unified Edit/Add Dialog */}
       <Dialog
-        open={open}
-        onClose={() => setOpen(false)}
+        open={editDialogOpen}
+        onClose={handleCloseEdit}
         fullWidth
         maxWidth="sm"
         PaperProps={{
@@ -466,40 +600,26 @@ export default function AdminConfig() {
       >
         <DialogTitle>
           {formData.id
-            ? `Edit ${currentType}`
-            : activeTab === 0
-            ? "Edit User Details"
-            : "Create New Department"}
+            ? `Edit ${
+                activeTab === 2
+                  ? "Holiday"
+                  : activeTab === 1
+                  ? "Department"
+                  : "User"
+              }`
+            : `Add New ${activeTab === 2 ? "Holiday" : "Department"}`}
         </DialogTitle>
         <DialogContent dividers>
-          {activeTab === 0 ? (
+          {activeTab === 0 && (
             <>
               <TextField
-                autoFocus
                 fullWidth
                 label="Username"
                 value={formData.username}
-                required
+                disabled
                 margin="normal"
-                sx={{
-                  "& .MuiInputLabel-root": {
-                    color: customTheme.colors.text.secondary,
-                  },
-                  "& .MuiOutlinedInput-root": {
-                    color: customTheme.colors.text.primary,
-                    "& fieldset": { borderColor: customTheme.colors.lightGray },
-                    "&:hover fieldset": {
-                      borderColor: customTheme.colors.mediumGray,
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: customTheme.colors.primary,
-                      borderWidth: "2px",
-                    },
-                  },
-                }}
               />
               <TextField
-                autoFocus
                 fullWidth
                 label="Email"
                 type="email"
@@ -509,25 +629,10 @@ export default function AdminConfig() {
                 }
                 margin="normal"
                 required
-                sx={{
-                  "& .MuiInputLabel-root": {
-                    color: customTheme.colors.text.secondary,
-                  },
-                  "& .MuiOutlinedInput-root": {
-                    color: customTheme.colors.text.primary,
-                    "& fieldset": { borderColor: customTheme.colors.lightGray },
-                    "&:hover fieldset": {
-                      borderColor: customTheme.colors.mediumGray,
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: customTheme.colors.primary,
-                      borderWidth: "2px",
-                    },
-                  },
-                }}
               />
             </>
-          ) : (
+          )}
+          {activeTab === 1 && (
             <>
               <TextField
                 autoFocus
@@ -539,26 +644,9 @@ export default function AdminConfig() {
                 }
                 margin="normal"
                 required
-                sx={{
-                  "& .MuiInputLabel-root": {
-                    color: customTheme.colors.text.secondary,
-                  },
-                  "& .MuiOutlinedInput-root": {
-                    color: customTheme.colors.text.primary,
-                    "& fieldset": { borderColor: customTheme.colors.lightGray },
-                    "&:hover fieldset": {
-                      borderColor: customTheme.colors.mediumGray,
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: customTheme.colors.primary,
-                      borderWidth: "2px",
-                    },
-                  },
-                }}
               />
               <TextField
                 fullWidth
-                required
                 label="Description"
                 value={formData.description}
                 onChange={(e) =>
@@ -567,28 +655,39 @@ export default function AdminConfig() {
                 margin="normal"
                 multiline
                 rows={3}
-                sx={{
-                  "& .MuiInputLabel-root": {
-                    color: customTheme.colors.text.secondary,
-                  },
-                  "& .MuiOutlinedInput-root": {
-                    color: customTheme.colors.text.primary,
-                    "& fieldset": { borderColor: customTheme.colors.lightGray },
-                    "&:hover fieldset": {
-                      borderColor: customTheme.colors.mediumGray,
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: customTheme.colors.primary,
-                      borderWidth: "2px",
-                    },
-                  },
-                }}
+              />
+            </>
+          )}
+          {activeTab === 2 && (
+            <>
+              <TextField
+                autoFocus
+                fullWidth
+                label="Date"
+                type="date"
+                value={formData.date}
+                onChange={(e) =>
+                  setFormData({ ...formData, date: e.target.value })
+                }
+                InputLabelProps={{ shrink: true }}
+                margin="normal"
+                required
+              />
+              <TextField
+                fullWidth
+                label="Title"
+                value={formData.title}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
+                margin="normal"
+                required
               />
             </>
           )}
         </DialogContent>
         <DialogActions>
-          <Button type="secondary" onClick={() => setOpen(false)}>
+          <Button type="secondary" onClick={handleCloseEdit}>
             Cancel
           </Button>
           <Button
@@ -601,20 +700,15 @@ export default function AdminConfig() {
         </DialogActions>
       </Dialog>
 
+      {/* Add User Dialog (unchanged) */}
       <Dialog
         open={addUserOpen}
         onClose={() => setAddUserOpen(false)}
         fullWidth
         maxWidth="sm"
-        PaperProps={{
-          sx: {
-            backgroundColor: customTheme.colors.surface,
-            color: customTheme.colors.text.primary,
-          },
-        }}
+        PaperProps={{ sx: { backgroundColor: customTheme.colors.surface } }}
       >
         <DialogTitle>Add New User</DialogTitle>
-
         <DialogContent dividers>
           <TextField
             fullWidth
@@ -626,7 +720,6 @@ export default function AdminConfig() {
             }
             margin="normal"
           />
-
           <TextField
             fullWidth
             label="Username"
@@ -637,7 +730,6 @@ export default function AdminConfig() {
             }
             margin="normal"
           />
-
           <TextField
             fullWidth
             label="Email"
@@ -648,19 +740,17 @@ export default function AdminConfig() {
             }
             margin="normal"
           />
-
           <TextField
             fullWidth
             label="Password"
-            required
             type="password"
+            required
             value={userForm.password}
             onChange={(e) =>
               setUserForm({ ...userForm, password: e.target.value })
             }
             margin="normal"
           />
-
           <FormControl fullWidth required margin="normal">
             <InputLabel>Role</InputLabel>
             <Select
@@ -678,7 +768,6 @@ export default function AdminConfig() {
             </Select>
           </FormControl>
         </DialogContent>
-
         <DialogActions>
           <Button type="secondary" onClick={() => setAddUserOpen(false)}>
             Cancel
@@ -689,6 +778,36 @@ export default function AdminConfig() {
             onClick={handleUserSave}
           >
             Save User
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
+      >
+        <DialogTitle>Delete Holiday</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete the holiday "{itemToDelete?.title}"
+            on{" "}
+            {itemToDelete?.date &&
+              new Date(itemToDelete.date).toLocaleDateString()}
+            ? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button type="secondary" onClick={() => setDeleteConfirmOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            type="primary"
+            onClick={confirmDelete}
+            color="error"
+            variant="contained"
+          >
+            Delete
           </Button>
         </DialogActions>
       </Dialog>

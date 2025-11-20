@@ -35,8 +35,8 @@ class HolidayService {
       order: [["date", "ASC"]],
     });
 
-    if (!holidays || holidays.length === 0)
-      return { message: "No holidays found for this year", holidays: [] };
+    // if (!holidays || holidays.length === 0)
+    //   return { message: "No holidays found for this year", holidays: [] };
 
     return holidays;
   } catch (err) {
