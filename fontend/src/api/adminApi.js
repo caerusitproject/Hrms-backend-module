@@ -30,8 +30,11 @@ export const ConfigApi = {
   },
   async createUser(payload) {
     try {
-      const response = await axios.post(`${LOCAL_API}/auth/register`, payload, {
-      });
+      const response = await axios.post(
+        `${LOCAL_API}/auth/register`,
+        payload,
+        {}
+      );
       return response.data;
     } catch (error) {
       console.error(
@@ -100,6 +103,71 @@ export const ConfigApi = {
     } catch (error) {
       console.error(
         "Error assigning manager:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  },
+
+  //Holidays
+
+  async getAllHolidays() {
+    try {
+      const response = await axios.get(`${LOCAL_API}/admin/holiday`, {
+        headers: getAuthHeaders(),
+      });
+      return response.data;
+    } catch (error) {
+      console.error(
+        "Error fetching holidays:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  },
+  async createHoliday(payload) {
+    try {
+      const response = await axios.post(`${LOCAL_API}/admin/holiday`, payload, {
+        headers: getAuthHeaders(),
+      });
+      return response.data;
+    } catch (error) {
+      console.error(
+        "Error creating holiday:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  },
+  async updateHoliday(payload) {
+    console.log(payload);
+    try {
+      
+      const response = await axios.patch(
+        `${LOCAL_API}/admin/holiday`,
+        payload,
+        {
+          headers: getAuthHeaders(),
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error(
+        "Error updating holiday:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  },
+  async deleteHoliday(id) {
+    try {
+      const response = await axios.delete(`${LOCAL_API}/admin/holiday/${id}`, {
+        headers: getAuthHeaders(),
+      });
+      return response.data;
+    } catch (error) {
+      console.error(
+        "Error deleting holiday:",
         error.response?.data || error.message
       );
       throw error;
