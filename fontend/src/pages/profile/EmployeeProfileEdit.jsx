@@ -9,6 +9,7 @@ import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
 import CustomLoader from "../../components/common/CustomLoader";
 import { ROLE_OPTIONS, ROLE_IDS } from "../../utils/roles";
+import Alert from "../../components/common/Alert";
 
 const EmployeeProfileEdit = () => {
   const { id } = useParams();
@@ -58,7 +59,12 @@ const EmployeeProfileEdit = () => {
   const [avatarUploading, setAvatarUploading] = useState(false); // new
   const [showPassword, setShowPassword] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-
+  const [alert, setAlert] = useState({
+    open: false,
+    severity: "success", // 'success' | 'error' | 'warning' | 'info'
+    title: "",
+    message: "",
+  });
   const isProfessionalEditable = ["HR", "ADMIN"].includes(role);
   const isOwnProfile = isEditMode && parseInt(id) === currentUserId;
   const canEditPersonal =
@@ -81,7 +87,18 @@ const EmployeeProfileEdit = () => {
       }
     }
   };
+  const showAlert = (severity, title, message) => {
+    setAlert({
+      open: true,
+      severity,
+      title,
+      message,
+    });
+  };
 
+  const handleCloseAlert = () => {
+    setAlert((prev) => ({ ...prev, open: false }));
+  };
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
     checkMobile();
@@ -182,17 +199,16 @@ const EmployeeProfileEdit = () => {
       try {
         const res = await UploadAPI.getProfileImage(id);
         if (res && res.length > 0) {
-  const filePath = res[0].file_path;
-  const fileName = filePath.split("\\").pop().split("/").pop();
+          const filePath = res[0].file_path;
+          const fileName = filePath.split("\\").pop().split("/").pop();
 
-  console.log("Extracted filename:", fileName);
+          console.log("Extracted filename:", fileName);
 
-  const imageUrl = UploadAPI.getFileURL(fileName);
-  console.log("Final image URL:", imageUrl);
+          const imageUrl = UploadAPI.getFileURL(fileName);
+          console.log("Final image URL:", imageUrl);
 
-  setAvatarPreview(imageUrl + `?t=${Date.now()}`); 
-}
-
+          setAvatarPreview(imageUrl + `?t=${Date.now()}`);
+        }
       } catch (err) {
         console.log("No profile image or failed to load:", err.message);
         // Keep avatarPreview as null → shows initials
@@ -201,6 +217,12 @@ const EmployeeProfileEdit = () => {
 
     loadProfileImage();
   }, [id, isEditMode]);
+  useEffect(() => {
+  if (!isEditMode) {
+    const today = new Date().toISOString().split("T")[0];
+    setValue("professionalDetails.dateOfJoining", today);
+  }
+}, [isEditMode, setValue]);
 
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
@@ -232,6 +254,7 @@ const EmployeeProfileEdit = () => {
   const onSubmit = async (data) => {
     try {
       setSaving(true);
+      setError(null);
       const apiPayload = {
         name: data.personalDetails?.fullName,
         dateOfBirth: data.personalDetails?.dateOfBirth,
@@ -281,7 +304,14 @@ const EmployeeProfileEdit = () => {
         );
       }
     } catch (err) {
-      setError(err.message);
+      console.error("API Error:", err);
+
+    const message =
+      err.response?.data?.message ||
+      err.message ||
+      "Something went wrong. Please try again.";
+
+    showAlert("error", "Failed", message);
     } finally {
       setSaving(false);
     }
@@ -377,8 +407,16 @@ const EmployeeProfileEdit = () => {
 
   return (
     <>
+      <Alert
+        open={alert.open}
+        onClose={handleCloseAlert}
+        severity={alert.severity}
+        title={alert.title}
+        message={alert.message}
+        autoHideDuration={6000}
+      />
       <div style={{ paddingBottom: theme.spacing.xl }}>
-        {error && (
+        {/* {error && (
           <div
             style={{
               color: theme.colors.error,
@@ -390,7 +428,7 @@ const EmployeeProfileEdit = () => {
           >
             {error}
           </div>
-        )}
+        )} */}
         <h1
           style={{
             fontSize: "24px",
@@ -455,7 +493,7 @@ const EmployeeProfileEdit = () => {
               </div>
 
               {/* Upload button - ONLY for HR, ADMIN or Own Profile */}
-              {canEditPersonal && (
+              {isProfessionalEditable && (
                 <>
                   <input
                     id="avatar-upload"
@@ -484,7 +522,7 @@ const EmployeeProfileEdit = () => {
                     }}
                     title="Change Profile Picture"
                   >
-                    {avatarUploading ? "..." : ""}
+                    📷
                   </label>
                 </>
               )}
@@ -816,7 +854,10 @@ const EmployeeProfileEdit = () => {
         </Button>
         <Button
           type="primary"
-          onClick={handleSubmit(onSubmit, onError)}
+          onClick={() => {
+            //setLoading(true); // ← Show loading right away
+            handleSubmit(onSubmit, onError)(); // ← Trigger form submission
+          }}
           disabled={saving || (isEditMode && !canSave)}
         >
           {saving ? "Saving..." : isEditMode ? "Save Changes" : "Create"}

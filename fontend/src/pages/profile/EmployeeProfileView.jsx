@@ -3,6 +3,7 @@ import { EmployeeAPI } from "../../api/employeeApi";
 import { theme } from "../../theme/theme";
 import CustomLoader from "../../components/common/CustomLoader";
 import Button from "../../components/common/Button";
+import { UploadAPI } from "../../api/uploadApi";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -12,6 +13,7 @@ const EmployeeProfileView = () => {
   const [error, setError] = useState(null);
   const [departments, setDepartments] = useState([]);
   const [managers, setManagers] = useState([]);
+  const [avatarPreview, setAvatarPreview] = useState(null);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -86,7 +88,7 @@ const EmployeeProfileView = () => {
             dateOfJoining: data.joiningDate
               ? new Date(data.joiningDate).toLocaleDateString()
               : "N/A",
-           reportingManager: data?.Manager?.name || "",
+            reportingManager: data?.Manager?.name || "",
             employeeId: data.id || "N/A",
             empCode: data.empCode || "N/A",
             employmentType: data.employmentType || "N/A",
@@ -108,6 +110,30 @@ const EmployeeProfileView = () => {
       }
     };
     loadEmployeeData();
+  }, [id]);
+
+  useEffect(() => {
+    const loadProfileImage = async () => {
+      try {
+        const res = await UploadAPI.getProfileImage(id);
+        if (res && res.length > 0) {
+          const filePath = res[0].file_path;
+          const fileName = filePath.split("\\").pop().split("/").pop();
+
+          console.log("Extracted filename:", fileName);
+
+          const imageUrl = UploadAPI.getFileURL(fileName);
+          console.log("Final image URL:", imageUrl);
+
+          setAvatarPreview(imageUrl + `?t=${Date.now()}`);
+        }
+      } catch (err) {
+        console.log("No profile image or failed to load:", err.message);
+        // Keep avatarPreview as null → shows initials
+      }
+    };
+
+    loadProfileImage();
   }, [id]);
 
   if (loading)
@@ -235,17 +261,16 @@ const EmployeeProfileView = () => {
               fontSize: "24px",
               fontWeight: 600,
               color: theme.colors.text.secondary,
-              backgroundImage: employee.avatar
-                ? `url(${employee.avatar})`
-                : "none",
+              backgroundImage: avatarPreview ? `url(${avatarPreview})` : "none",
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
           >
-            {!employee.avatar &&
+            {!avatarPreview &&
               employee.personalDetails?.fullName
-                ?.split(" ")
-                .map((n) => n[0])
+                .split(" ")
+                .slice(0, 2)
+                .map((n) => n[0]?.toUpperCase())
                 .join("")}
           </div>
 
@@ -263,7 +288,8 @@ const EmployeeProfileView = () => {
                 color: theme.colors.text.secondary,
               }}
             >
-              Employee ID : <strong>{employee.professionalDetails?.empCode || "N/A"}</strong>
+              Employee ID :{" "}
+              <strong>{employee.professionalDetails?.empCode || "N/A"}</strong>
             </p>
           </div>
         </div>
@@ -351,7 +377,7 @@ const EmployeeProfileView = () => {
             employee.professionalDetails?.dateOfJoining
           )}
           {/* {createGridItem("Role", employee.professionalDetails?.role)} */}
-          
+
           {employee.professionalDetails?.reportingManager &&
             createGridItem(
               "Reporting Manager",
