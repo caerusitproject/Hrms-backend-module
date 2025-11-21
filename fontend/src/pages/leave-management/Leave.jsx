@@ -69,13 +69,7 @@ const Leave = () => {
   const [pendingLeaves, setPendingLeaves] = useState([]);
 
   // Holidays
-  const holidays = [
-    "2025-10-05",
-    "2025-10-18",
-    "2025-10-25",
-    "2025-11-05",
-    "2025-11-15",
-  ];
+  const holidays = [];
 
   const isDateAlreadyOnLeave = (dateStr) => {
     return leaves.some((leave) => {
@@ -664,6 +658,13 @@ const Leave = () => {
       <Dialog
         open={reasonDialogOpen}
         onClose={() => setReasonDialogOpen(false)}
+        sx={{
+          "& .MuiPaper-root": {
+            width: "450px",
+            height: "300px",
+            borderRadius: 3,
+          },
+        }}
       >
         <DialogTitle>Reason for Leave</DialogTitle>
         <DialogContent>
@@ -676,20 +677,30 @@ const Leave = () => {
             rows={3}
             value={leaveReason}
             onChange={(e) => setLeaveReason(e.target.value)}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "&.Mui-focused fieldset": {
+                  borderColor: theme.colors.primary,
+                },
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: theme.colors.primary,
+              },
+            }}
           />
         </DialogContent>
         <DialogActions>
-          <MuiButton onClick={() => setReasonDialogOpen(false)}>
+          <Button type="secondary" onClick={() => setReasonDialogOpen(false)}>
             Cancel
-          </MuiButton>
-          <MuiButton
+          </Button>
+          <Button
             onClick={handleApplyWithReason}
             variant="contained"
-            color="primary"
+            type="primary"
             disabled={!leaveReason.trim()}
           >
             Apply Leave
-          </MuiButton>
+          </Button>
         </DialogActions>
       </Dialog>
 
