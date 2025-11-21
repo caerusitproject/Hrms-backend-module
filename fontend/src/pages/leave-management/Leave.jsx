@@ -304,7 +304,7 @@ const Leave = () => {
 
     try {
       const payload = {
-        type: "Casual Leave",
+        //type: "Casual Leave",
         startDate: startDate,
         endDate: endDate,
         reason: leaveReason,

@@ -22,6 +22,7 @@ import {
   Select,
   MenuItem,
   Button as MuiButton,
+  OutlinedInput,
 } from "@mui/material";
 import { Edit, Trash2 } from "lucide-react";
 import { theme as customTheme } from "../../theme/theme";
@@ -618,6 +619,17 @@ export default function AdminConfig() {
                 value={formData.username}
                 disabled
                 margin="normal"
+                sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: customTheme.borderRadius.small,
+                "&.Mui-focused fieldset": {
+                  borderColor: customTheme.colors.primary,
+                },
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: customTheme.colors.primary,
+              },
+            }}
               />
               <TextField
                 fullWidth
@@ -629,6 +641,17 @@ export default function AdminConfig() {
                 }
                 margin="normal"
                 required
+                sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: customTheme.borderRadius.small,
+                "&.Mui-focused fieldset": {
+                  borderColor: customTheme.colors.primary,
+                },
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: customTheme.colors.primary,
+              },
+            }}
               />
             </>
           )}
@@ -644,6 +667,17 @@ export default function AdminConfig() {
                 }
                 margin="normal"
                 required
+                sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: customTheme.borderRadius.small,
+                "&.Mui-focused fieldset": {
+                  borderColor: customTheme.colors.primary,
+                },
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: customTheme.colors.primary,
+              },
+            }}
               />
               <TextField
                 fullWidth
@@ -655,6 +689,17 @@ export default function AdminConfig() {
                 margin="normal"
                 multiline
                 rows={3}
+                sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: customTheme.borderRadius.small,
+                "&.Mui-focused fieldset": {
+                  borderColor: customTheme.colors.primary,
+                },
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: customTheme.colors.primary,
+              },
+            }}
               />
             </>
           )}
@@ -672,6 +717,17 @@ export default function AdminConfig() {
                 InputLabelProps={{ shrink: true }}
                 margin="normal"
                 required
+                sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: customTheme.borderRadius.small,
+                "&.Mui-focused fieldset": {
+                  borderColor: customTheme.colors.primary,
+                },
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: customTheme.colors.primary,
+              },
+            }}
               />
               <TextField
                 fullWidth
@@ -682,6 +738,18 @@ export default function AdminConfig() {
                 }
                 margin="normal"
                 required
+                sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: customTheme.borderRadius.small,
+                "&.Mui-focused fieldset": {
+                  borderColor: customTheme.colors.primary,
+                },
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: customTheme.colors.primary,
+              },
+            }}
+                
               />
             </>
           )}
@@ -719,6 +787,17 @@ export default function AdminConfig() {
               setUserForm({ ...userForm, fullname: e.target.value })
             }
             margin="normal"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: customTheme.borderRadius.small,
+                "&.Mui-focused fieldset": {
+                  borderColor: customTheme.colors.primary,
+                },
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: customTheme.colors.primary,
+              },
+            }}
           />
           <TextField
             fullWidth
@@ -729,6 +808,17 @@ export default function AdminConfig() {
               setUserForm({ ...userForm, username: e.target.value })
             }
             margin="normal"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: customTheme.borderRadius.small,
+                "&.Mui-focused fieldset": {
+                  borderColor: customTheme.colors.primary,
+                },
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: customTheme.colors.primary,
+              },
+            }}
           />
           <TextField
             fullWidth
@@ -739,6 +829,17 @@ export default function AdminConfig() {
               setUserForm({ ...userForm, email: e.target.value })
             }
             margin="normal"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: customTheme.borderRadius.small,
+                "&.Mui-focused fieldset": {
+                  borderColor: customTheme.colors.primary,
+                },
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: customTheme.colors.primary,
+              },
+            }}
           />
           <TextField
             fullWidth
@@ -750,14 +851,45 @@ export default function AdminConfig() {
               setUserForm({ ...userForm, password: e.target.value })
             }
             margin="normal"
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: customTheme.borderRadius.small,
+                "&.Mui-focused fieldset": {
+                  borderColor: customTheme.colors.primary,
+                },
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: customTheme.colors.primary,
+              },
+            }}
           />
           <FormControl fullWidth required margin="normal">
-            <InputLabel>Role</InputLabel>
+            <InputLabel
+              sx={{
+                "&.Mui-focused": {
+                  color: customTheme.colors.primary,
+                },
+              }}
+            >
+              Role
+            </InputLabel>
+
             <Select
               value={userForm.roleId}
               label="Role"
               onChange={(e) =>
                 setUserForm({ ...userForm, roleId: e.target.value })
+              }
+              input={
+                <OutlinedInput
+                  label="Role"
+                  sx={{
+                    borderRadius: customTheme.borderRadius.small,
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: customTheme.colors.primary,
+                    },
+                  }}
+                />
               }
             >
               {roleOptions.map((role) => (
