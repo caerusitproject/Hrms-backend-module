@@ -111,7 +111,7 @@ exports.getLeavesList = async (employeeId) => {
     attributes: ['id', 'startDate', 'endDate', 'reason', 'status', 'createdAt'],
     order: [['createdAt', 'DESC']]
   });
-  if (leaves.length === 0) { return { message: 'No leave requests found', leaves: [] }; }
+ // if (leaves.length === 0) { return { message: 'No leave requests found', leaves: [] }; }
   return leaves;
 };
 

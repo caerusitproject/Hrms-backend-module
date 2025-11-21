@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { EmployeeAPI } from "../../api/employeeApi";
 import { theme } from "../../theme/theme";
+import { UploadAPI } from "../../api/uploadApi";
 import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
 import CustomLoader from "../../components/common/CustomLoader";
@@ -31,16 +32,16 @@ const EmployeeProfileEdit = () => {
   });
 
   const sectionStyle = (highlight) => ({
-      backgroundColor: theme.colors.surface,
-      borderRadius: theme.borderRadius.large,
-      padding: theme.spacing.xl,
-      marginBottom: theme.spacing.lg,
-      boxShadow: highlight ? theme.shadows.medium : theme.shadows.small,
-      borderRight: highlight ? `4px solid ${theme.colors.primary}` : "none",
-      transition: theme.transitions.medium,
-    });
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.large,
+    padding: theme.spacing.xl,
+    marginBottom: theme.spacing.lg,
+    boxShadow: highlight ? theme.shadows.medium : theme.shadows.small,
+    borderRight: highlight ? `4px solid ${theme.colors.primary}` : "none",
+    transition: theme.transitions.medium,
+  });
 
-     const dummyDocuments = [
+  const dummyDocuments = [
     { name: "Offer Letter", icon: "📄" },
     { name: "ID Proof", icon: "🆔" },
     { name: "Tax Document", icon: "📋" },
@@ -53,6 +54,8 @@ const EmployeeProfileEdit = () => {
   const [currentDepartmentId, setCurrentDepartmentId] = useState(null);
   const [currentManagerId, setCurrentManagerId] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
+  const [avatarFile, setAvatarFile] = useState(null); // new
+  const [avatarUploading, setAvatarUploading] = useState(false); // new
   const [showPassword, setShowPassword] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -152,10 +155,10 @@ const EmployeeProfileEdit = () => {
             MANAGER: ROLE_IDS.MANAGER,
             USER: ROLE_IDS.EMPLOYEE, // USER → EMPLOYEE
           };
-          console.log(data.roles?.[0]?.role)
-         
+          console.log(data.roles?.[0]?.role);
+
           const roleId = nameToId[data.roles?.[0]?.role] ?? ROLE_IDS.EMPLOYEE;
-           console.log(roleId)
+          console.log(roleId);
           setValue("professionalDetails.role", roleId);
         } else {
           setValue("professionalDetails.empCode", generateEmpCode());
@@ -170,6 +173,61 @@ const EmployeeProfileEdit = () => {
     };
     loadData();
   }, [id, isEditMode, setValue]);
+
+  // Load real profile image when editing existing employee
+  useEffect(() => {
+    if (!isEditMode || !id) return;
+
+    const loadProfileImage = async () => {
+      try {
+        const res = await UploadAPI.getProfileImage(id);
+        if (res && res.length > 0) {
+  const filePath = res[0].file_path;
+  const fileName = filePath.split("\\").pop().split("/").pop();
+
+  console.log("Extracted filename:", fileName);
+
+  const imageUrl = UploadAPI.getFileURL(fileName);
+  console.log("Final image URL:", imageUrl);
+
+  setAvatarPreview(imageUrl + `?t=${Date.now()}`); 
+}
+
+      } catch (err) {
+        console.log("No profile image or failed to load:", err.message);
+        // Keep avatarPreview as null → shows initials
+      }
+    };
+
+    loadProfileImage();
+  }, [id, isEditMode]);
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !id) return;
+
+    // Immediate preview
+    setAvatarPreview(URL.createObjectURL(file));
+    setAvatarFile(file);
+    setAvatarUploading(true);
+
+    try {
+      await UploadAPI.uploadProfile(id, file);
+
+      // Refresh image URL from server (to avoid cache)
+      const res = await UploadAPI.getProfileImage(id);
+      if (res && res.length > 0) {
+        const fileName = res[0].file_path;
+        console.log("Uploaded file name:", fileName);
+        setAvatarPreview(UploadAPI.getFileURL(fileName));
+      }
+    } catch (err) {
+      setError("Failed to upload profile picture");
+      console.error(err);
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
 
   const onSubmit = async (data) => {
     try {
@@ -315,7 +373,7 @@ const EmployeeProfileEdit = () => {
 
   const isProfessionalFieldDisabled = isEditMode && !isProfessionalEditable;
   const isPersonalFieldDisabled = isEditMode && !canEditPersonal;
-  const isSupportingDocsEditable =  isProfessionalEditable;
+  const isSupportingDocsEditable = isProfessionalEditable;
 
   return (
     <>
@@ -354,50 +412,56 @@ const EmployeeProfileEdit = () => {
               boxShadow: theme.shadows.small,
               display: "flex",
               alignItems: "center",
-              gap: theme.spacing.lg,
+              gap: theme.spacing.xl,
               flexWrap: "wrap",
               flexDirection: isMobile ? "column" : "row",
               marginBottom: theme.spacing.lg,
               justifyContent: isMobile ? "center" : "flex-start",
+              position: "relative",
             }}
           >
             <div style={{ position: "relative" }}>
+              {/* Avatar Circle */}
               <div
                 style={{
-                  width: 100,
-                  height: 100,
+                  width: 120,
+                  height: 120,
                   borderRadius: "50%",
-                  backgroundColor: theme.colors.surfaceVariant,
-                  border: `3px solid ${theme.colors.lightGray}`,
+                  backgroundColor: avatarPreview
+                    ? "transparent"
+                    : theme.colors.surfaceVariant,
+                  border: `4px solid ${theme.colors.primary}`,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontWeight: "600",
-                  fontSize: "24px",
-                  color: theme.colors.text.secondary,
+                  fontWeight: "700",
+                  fontSize: "36px",
+                  color: theme.colors.primary,
                   backgroundImage: avatarPreview
                     ? `url(${avatarPreview})`
-                    : undefined,
+                    : "none",
                   backgroundSize: "cover",
                   backgroundPosition: "center",
+                  boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
                 }}
               >
+                {/* Initials fallback */}
                 {!avatarPreview &&
                   (watch("personalDetails.fullName") || "U")
                     .split(" ")
-                    .map((n) => n[0])
+                    .slice(0, 2)
+                    .map((n) => n[0]?.toUpperCase())
                     .join("")}
               </div>
-              {isEditMode && (
+
+              {/* Upload button - ONLY for HR, ADMIN or Own Profile */}
+              {canEditPersonal && (
                 <>
                   <input
                     id="avatar-upload"
                     type="file"
                     accept="image/*"
-                    onChange={(e) =>
-                      setAvatarPreview(URL.createObjectURL(e.target.files[0]))
-                    }
-                    disabled={!canEditPersonal}
+                    onChange={handleAvatarChange}
                     style={{ display: "none" }}
                   />
                   <label
@@ -407,21 +471,51 @@ const EmployeeProfileEdit = () => {
                       bottom: 0,
                       right: 0,
                       backgroundColor: theme.colors.primary,
-                      color: "#fff",
+                      color: "white",
+                      width: 36,
+                      height: 36,
                       borderRadius: "50%",
-                      width: 28,
-                      height: 28,
                       display: "flex",
-                      justifyContent: "center",
                       alignItems: "center",
-                      cursor: !canEditPersonal ? "default" : "pointer",
-                      opacity: !canEditPersonal ? 0.5 : 1,
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                      fontSize: "18px",
                     }}
+                    title="Change Profile Picture"
                   >
-                    📷
+                    {avatarUploading ? "..." : ""}
                   </label>
                 </>
               )}
+
+              {/* Optional: Loading overlay */}
+              {avatarUploading && (
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    background: "rgba(0,0,0,0.4)",
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "white",
+                    fontSize: "14px",
+                  }}
+                >
+                  Uploading...
+                </div>
+              )}
+            </div>
+
+            <div>
+              <h3 style={{ margin: "0 0 8px 0", fontSize: "18px" }}>
+                {watch("personalDetails.fullName") || "Employee Name"}
+              </h3>
+              <p style={{ margin: 0, color: theme.colors.text.secondary }}>
+                {watch("professionalDetails.designation") || "Designation"}
+              </p>
             </div>
           </div>
         )}
@@ -639,61 +733,65 @@ const EmployeeProfileEdit = () => {
             />
           </div>
         </FormCard>
-{isSupportingDocsEditable &&(
-        <div style={sectionStyle(false)}>
-                <h2
+        {isSupportingDocsEditable && (
+          <div style={sectionStyle(false)}>
+            <h2
+              style={{
+                fontSize: "18px",
+                fontWeight: 700,
+                marginBottom: theme.spacing.md,
+              }}
+            >
+              Supportive Documents
+            </h2>
+            {dummyDocuments.map((doc, i) => (
+              <div
+                key={i}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  backgroundColor: theme.colors.background,
+                  padding: theme.spacing.sm,
+                  borderRadius: theme.borderRadius.small,
+                  border: `1px solid ${theme.colors.lightGray}`,
+                  marginBottom: theme.spacing.sm,
+                }}
+              >
+                <div
                   style={{
-                    fontSize: "18px",
-                    fontWeight: 700,
-                    marginBottom: theme.spacing.md,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: theme.spacing.sm,
                   }}
                 >
-                  Supportive Documents
-                </h2>
-                {dummyDocuments.map((doc, i) => (
-                  <div
-                    key={i}
+                  <span style={{ fontSize: "18px" }}>{doc.icon}</span>
+                  <span
                     style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      backgroundColor: theme.colors.background,
-                      padding: theme.spacing.sm,
-                      borderRadius: theme.borderRadius.small,
-                      border: `1px solid ${theme.colors.lightGray}`,
-                      marginBottom: theme.spacing.sm,
+                      fontWeight: 600,
+                      color: theme.colors.text.primary,
                     }}
                   >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: theme.spacing.sm,
-                      }}
-                    >
-                      <span style={{ fontSize: "18px" }}>{doc.icon}</span>
-                      <span
-                        style={{ fontWeight: 600, color: theme.colors.text.primary }}
-                      >
-                        {doc.name}
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => alert(`Viewing ${doc.name}`)}
-                      style={{
-                        backgroundColor: "transparent",
-                        color: theme.colors.warning,
-                        border: "none",
-                        fontWeight: 500,
-                        cursor: "pointer",
-                        textDecoration: "underline",
-                      }}
-                    >
-                      View
-                    </button>
-                  </div>
-                ))}
-              </div>)}
+                    {doc.name}
+                  </span>
+                </div>
+                <button
+                  onClick={() => alert(`Viewing ${doc.name}`)}
+                  style={{
+                    backgroundColor: "transparent",
+                    color: theme.colors.warning,
+                    border: "none",
+                    fontWeight: 500,
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                  }}
+                >
+                  View
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Fixed Bottom Buttons */}
