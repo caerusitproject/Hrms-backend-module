@@ -45,7 +45,7 @@ Reason: ${data.reason}`,
       reason: leave.reason,
     });
 
-    return leaveInfo;
+    return leave;
   } catch (err) {
     // Pass the error to your existing error handler
     throw err;
@@ -111,7 +111,7 @@ exports.getLeavesList = async (employeeId) => {
     attributes: ['id', 'startDate', 'endDate', 'reason', 'status', 'createdAt'],
     order: [['createdAt', 'DESC']]
   });
-  if (leaves.length === 0) { return { message: 'No leave requests found', leaves: [] }; }
+ // if (leaves.length === 0) { return { message: 'No leave requests found', leaves: [] }; }
   return leaves;
 };
 

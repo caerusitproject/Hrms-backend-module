@@ -10,8 +10,8 @@ const getAuthHeaders = () => {
     };
 };
 export const LeaveAPI = {
-    async getAttendanceByEmployee(empCode, month, year) {
-        const response = await fetch(`${LOCAL_API}/attendance/record/${empCode}/${month}/${year}`, {
+    async getLeaveList() {
+        const response = await fetch(`${LOCAL_API}/leave/leave-list`, {
             headers: getAuthHeaders(),
         });
         if (!response.ok) {

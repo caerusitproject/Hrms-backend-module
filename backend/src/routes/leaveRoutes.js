@@ -15,5 +15,5 @@ router.patch("/approve/:id", authenticate, authorizeRoles("MANAGER","ADMIN"), le
 router.patch("/reject/:id", authenticate,authorizeRoles("MANAGER","ADMIN"), leaveController.rejectLeave);
 router.get("/total", authenticate, authorizeRoles("USER","MANAGER","HR","ADMIN"),leaveController.getLeavesCount);
 router.get("/total/month", authenticate,authorizeRoles("USER","MANAGER","HR","ADMIN"), leaveController.getLeavesCountMonth);
-router.get("/leave-list", authenticate,authorizeRoles("MANAGER","USER","ADMIN"), leaveController.getLeavesList);
+router.get("/leave-list", authenticate,authorizeRoles("MANAGER","HR","USER","ADMIN"), leaveController.getLeavesList);
 module.exports = router;
