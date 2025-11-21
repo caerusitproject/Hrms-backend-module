@@ -89,8 +89,18 @@ const getLeavesList = async (req, res) => {
     const leaves = await leaveService.getLeavesList(employeeId);
     return res.status(200).json({ employeeId, leaves });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
-module.exports = { approveLeave, applyLeave, updateLeave, deleteLeave, getLeavesCount, getLeavesCountMonth, getLeavesList };
+
+const getSubordinateLeaves = async (req, res) => {
+  try {
+    const managerId = req.user.id;
+    const subordinateLeaves = await managerService.getPendingLeaves(managerId);
+    return res.status(200).json({ managerId, subordinateLeaves });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+}
+module.exports = { approveLeave, applyLeave, updateLeave, deleteLeave, getLeavesCount, getLeavesCountMonth, getLeavesList, getSubordinateLeaves };
 

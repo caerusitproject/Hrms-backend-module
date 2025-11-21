@@ -158,7 +158,7 @@ const Dashboard = () => {
       upcomingEvents = [
         {
           id: "no-events",
-          title: dashboardData.upcomingBroadcasts.message || "No events found",
+          title: dashboardData?.upcomingBroadcasts?.message || "No events found",
           date: "",
           color: theme.colors.secondary || "#999", // optional fallback color
         },

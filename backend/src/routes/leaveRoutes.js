@@ -16,4 +16,5 @@ router.patch("/", authenticate, authorizeRoles("MANAGER","ADMIN","HR"), leaveCon
 router.get("/total", authenticate, authorizeRoles("USER","MANAGER","HR","ADMIN"),leaveController.getLeavesCount);
 router.get("/total/month", authenticate,authorizeRoles("USER","MANAGER","HR","ADMIN"), leaveController.getLeavesCountMonth);
 router.get("/leave-list", authenticate,authorizeRoles("MANAGER","USER","ADMIN"), leaveController.getLeavesList);
+router.get("/list", authenticate,authorizeRoles("MANAGER","HR","ADMIN"), leaveController.getSubordinateLeaves);
 module.exports = router;

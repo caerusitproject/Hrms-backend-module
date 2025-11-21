@@ -36,9 +36,9 @@ class DashboardService {
       const teamMembers = await managerService.getTeam(managerId);
       const totalTeamMembers = await managerService.getTeamCount(managerId);
       const pendingLeaves = await managerService.getPendingLeaves(managerId);
-      const recentBroadcast = await managerService.getTodaysBroadcast();
+      const upcomingBroadcasts = await managerService.getTodaysBroadcast();
 
-      return { totalTeamMembers, teamMembers, pendingLeaves, recentBroadcast };
+      return { totalTeamMembers, teamMembers, pendingLeaves, upcomingBroadcasts };
     } catch (error) {
       throw new Error('Failed to fetch manager dashboard data');
     }
@@ -77,14 +77,14 @@ class DashboardService {
         pendingLeavesCount.message = 'No pending leaves';
       }
       // Fetch today’s broadcasts
-      const recentBroadcast = await managerService.getTodaysBroadcast();
+      const upcomingBroadcasts = await managerService.getTodaysBroadcast();
 
       return {
         employeeProfile,
         pendingLeavesCount,
         leaveRequestInfo,
-        recentBroadcast,
-        recentBroadcastCount: recentBroadcast.length
+        upcomingBroadcasts,
+        upcomingBroadcastsCount: upcomingBroadcasts.length
       };
     } catch (error) {
        throw new Error('Failed to fetch employee dashboard data');

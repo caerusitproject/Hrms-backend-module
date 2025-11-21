@@ -29,7 +29,7 @@ export const PayrollApi = {
       throw error;
     }
   },
- async getpayrollById(id) {
+  async getpayrollById(id) {
     try {
       const response = await axios.get(`${LOCAL_API}/compensations/${id}`, {
         headers: getAuthHeaders(),
@@ -51,16 +51,16 @@ export const PayrollApi = {
       throw error;
     }
   },
-   
+
 
 
   async getAllEmployees() {
     try {
       // simulate API delay
-     const response = await axios.get(`${LOCAL_API}/payrolls/employee-list`, { 
-      headers: getAuthHeaders(), 
-    }); 
-     return response.data;
+      const response = await axios.get(`${LOCAL_API}/payrolls/employee-list`, {
+        headers: getAuthHeaders(),
+      });
+      return response.data;
     } catch (error) {
       console.error("Error fetching employees (mock):", error.message);
       return {
@@ -69,6 +69,26 @@ export const PayrollApi = {
       };
     }
   },
+
+
+  async generatePayroll() {
+    try {
+      const now = new Date();
+      const month = (now.getMonth() + 1).toString().padStart(2, '0');
+      const year = now.getFullYear();
+      const response = await axios.post(`${LOCAL_API}/payrolls/finalizepay`, { monthyear: `${month}-${year}` }, {
+        headers: getAuthHeaders(),
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error generating payroll:", error.response?.data || error.message);
+      return {
+        sucess: false,
+        message: "Failed to generate payroll",
+      }
+    }
+  },
+
 
 
 };

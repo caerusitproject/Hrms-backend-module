@@ -28,6 +28,7 @@ import { styled } from "@mui/material/styles";
 import { PayrollApi } from "../../api/payrollApi";
 import { theme } from "../../theme/theme";
 import Button from "../../components/common/Button";
+import { Snackbar, Alert } from "@mui/material";
 
 const StyledCard = styled(Card)(({ theme }) => ({
   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -106,6 +107,7 @@ const Payroll = () => {
   const [employees, setEmployees] = useState([]);
   const [employeeError, setEmployeeError] = useState("");
   const [baseSalaryError, setBaseSalaryError] = useState("");
+  const [snackBar, setSnackBar] = useState({ open: false, message: "", type: "success" });
   const totals = useMemo(() => {
     const totalEarnings = earningsFields.reduce(
       (sum, field) => sum + (Number.parseFloat(formData[field]) || 0),
@@ -141,7 +143,7 @@ const Payroll = () => {
 
   const handleChange = (e) => {
     console.log("Changed field:", e.target.name, "Value:", e.target.value);
-    if(e.target.name === "baseSalary") {
+    if (e.target.name === "baseSalary") {
       {
         const validationMsg = validateBaseSalary(e.target.value);
         setBaseSalaryError(validationMsg);
@@ -237,12 +239,11 @@ const Payroll = () => {
   const handleUpdate = async () => {
     const payload = {
       id: editingPayroll.id,
-       employeeId: editingPayroll.employeeId,
+      employeeId: editingPayroll.employeeId,
       ...formatNumberFields(formData),
       ...totals,
     };
     try {
-      console.log("Updating payroll with payload:", payload); 
       await PayrollApi.craetepayroll(payload);
       setOpenEditModal(false);
       setEditingPayroll(null);
@@ -344,13 +345,35 @@ const Payroll = () => {
 
   return (
     <div>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" fontWeight={800}>
-          Payroll Management
-        </Typography>
-        <Typography variant="body2" sx={{ color: "text.secondary" }}>
-          Manage employee compensation and payroll details
-        </Typography>
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box>
+          <Typography variant="h4" fontWeight={800}>
+            Payroll Management
+          </Typography>
+          <Typography variant="body2" sx={{ color: "text.secondary" }}>
+            Manage employee compensation and payroll details
+          </Typography>
+        </Box>
+
+        <Button
+          variant="contained"
+          sx={{
+            backgroundColor: theme.colors.primaryDark,
+            minWidth: 180,
+            fontWeight: 600,
+            '&:hover': { backgroundColor: theme.colors.primaryDark + 'dd' },
+          }}
+          onClick={async () => {
+            try {
+              const resp = await PayrollApi.generatePayroll();
+              setSnackBar({ open: true, message: resp.message || "Payrolls generated successfully", type: "success" });
+            } catch (err) {
+              setSnackBar({ open: true, message: err.message || "Failed to generate payrolls", type: "error" });
+            }
+          }}
+        >
+          Generate Payroll
+        </Button>
       </Box>
 
       <StyledFormCard sx={{ mb: 4 }}>
@@ -438,7 +461,7 @@ const Payroll = () => {
                       }}
                     />
                     {baseSalaryError && field === "baseSalary" && (
-                      <Typography variant="caption" color="error" sx={{ fontSize: 14, marginLeft:0}}>
+                      <Typography variant="caption" color="error" sx={{ fontSize: 14, marginLeft: 0 }}>
                         {baseSalaryError}
                       </Typography>
                     )}
@@ -869,6 +892,25 @@ const Payroll = () => {
           )}
         </Stack>
       </Box>
+      <Snackbar
+        open={snackBar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackBar({ ...snackBar, open: false })}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={() => setSnackBar({ ...snackBar, open: false })}
+          severity={snackBar.type}
+          sx={{
+            bgcolor: snackBar.type === "success" ? "#22c55e" : "#ef4444",
+            color: "white",
+            fontWeight: 600,
+            width: '100%'
+          }}
+        >
+          {snackBar.message}
+        </Alert>
+      </Snackbar>
     </div >
   );
 };
