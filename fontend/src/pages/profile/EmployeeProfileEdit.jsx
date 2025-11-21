@@ -182,17 +182,16 @@ const EmployeeProfileEdit = () => {
       try {
         const res = await UploadAPI.getProfileImage(id);
         if (res && res.length > 0) {
-  const filePath = res[0].file_path;
-  const fileName = filePath.split("\\").pop().split("/").pop();
+          const filePath = res[0].file_path;
+          const fileName = filePath.split("\\").pop().split("/").pop();
 
-  console.log("Extracted filename:", fileName);
+          console.log("Extracted filename:", fileName);
 
-  const imageUrl = UploadAPI.getFileURL(fileName);
-  console.log("Final image URL:", imageUrl);
+          const imageUrl = UploadAPI.getFileURL(fileName);
+          console.log("Final image URL:", imageUrl);
 
-  setAvatarPreview(imageUrl + `?t=${Date.now()}`); 
-}
-
+          setAvatarPreview(imageUrl + `?t=${Date.now()}`);
+        }
       } catch (err) {
         console.log("No profile image or failed to load:", err.message);
         // Keep avatarPreview as null → shows initials
@@ -231,6 +230,7 @@ const EmployeeProfileEdit = () => {
 
   const onSubmit = async (data) => {
     try {
+      
       setSaving(true);
       const apiPayload = {
         name: data.personalDetails?.fullName,
@@ -455,7 +455,7 @@ const EmployeeProfileEdit = () => {
               </div>
 
               {/* Upload button - ONLY for HR, ADMIN or Own Profile */}
-              {canEditPersonal && (
+              {isProfessionalEditable && (
                 <>
                   <input
                     id="avatar-upload"
@@ -484,7 +484,7 @@ const EmployeeProfileEdit = () => {
                     }}
                     title="Change Profile Picture"
                   >
-                    {avatarUploading ? "..." : ""}
+                    📷
                   </label>
                 </>
               )}
@@ -816,7 +816,10 @@ const EmployeeProfileEdit = () => {
         </Button>
         <Button
           type="primary"
-          onClick={handleSubmit(onSubmit, onError)}
+          onClick={() => {
+            setLoading(true); // ← Show loading right away
+            handleSubmit(onSubmit, onError)(); // ← Trigger form submission
+          }}
           disabled={saving || (isEditMode && !canSave)}
         >
           {saving ? "Saving..." : isEditMode ? "Save Changes" : "Create"}
