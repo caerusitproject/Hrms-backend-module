@@ -1,4 +1,5 @@
 const upload = require("../services/uploadService")
+const fs = require("fs");
 
 exports.uploadFile = async (req, res) => {
   try {
@@ -10,11 +11,16 @@ exports.uploadFile = async (req, res) => {
     }
     if(!id){return res.status(400).json({error:400, message:"no id provided"});}
 
-    const fileRecord = await upload.saveFile({
+    const fileRecord =  await upload.saveFile({
       employee_id: id,
       file_path: file.path,
       file_type: file.mimetype,
     });
+     
+    if (!fs.existsSync(fileRecord.file_path)) {
+    return res.status(404).send("Image not found");
+  }
+
 
     return res.status(201).json({
       message: "File uploaded successfully",
@@ -87,8 +93,12 @@ exports.uploadDocument = async (req, res) => {
 
 exports.getFiles = async (req, res) => {
   try {
-    const { id } = req.params;
-    const files = await upload.getFilesByEmployee(id);
+    const { empId } = req.user;
+    const files = await upload.getFilesByEmployee(empId);
+
+       
+
+
     return res.status(200).json(files);
   } catch (err) {
     return res.status(500).json({ error:500, message: err.message });

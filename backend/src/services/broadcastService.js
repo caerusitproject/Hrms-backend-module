@@ -9,18 +9,14 @@ const createBroadcast = async (title, content) => {
 };
 
 const getAllBroadcastsOnly = async (page = 1, limit = 10) => {
+
   const offset = (page - 1) * limit;
   const broadcastList = await Broadcast.findAll();
   const totalBroadcast = await getBroadcastCount(broadcastList);
-  // if (totalBroadcast === 0) {
-  //   return {
-  //     message: "No broadcast present ",
-  //     data: [],
-  //     pagination: null
-  //   };
-  // }
+  
 
   try {
+      logger.info(`Fetching broadcasts for page ${page} with limit ${limit}`);
     const broad = await Broadcast.findAll({
       
       attributes: ['id', 'title', 'content', 'createdAt', 'updatedAt'],

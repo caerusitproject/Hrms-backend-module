@@ -31,6 +31,16 @@ const EmailTemplateManager = lazy(() =>
   import("../pages/email-templete/EmailTemplateManager")
 );
 const SendMailPage = lazy(() => import("../pages/email-templete/SendMailPage"));
+const WorkflowConfig = lazy(() =>
+  import("../pages/workflow/WorkflowConfig")
+);
+const WorkflowExecution = lazy(() =>
+  import("../pages/workflow/WorkflowExecution")
+);
+
+
+
+
 const ScrollToTop = () => {
   const { pathname } = useLocation();
 
@@ -88,6 +98,7 @@ const AppRoutes = () => {
                 </ProtectedRoute>
               }
             />
+            
             <Route
               path="about"
               element={
@@ -223,6 +234,27 @@ const AppRoutes = () => {
               }
             />
           </Route>
+
+          <Route
+            path="workflow"
+            element={
+              <ProtectedRoute requiredRoles={["ADMIN"]}>
+                <Suspense fallback={<CustomLoader />}>
+                  <WorkflowConfig />
+                </Suspense>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="workflow-execution"
+            element={
+              <ProtectedRoute requiredRoles={["MANAGER", "HR", "ADMIN"]}>
+                <Suspense fallback={<CustomLoader />}>
+                  <WorkflowExecution />
+                </Suspense>
+              </ProtectedRoute>
+            }
+          />
 
           {/* Catch-all route for invalid paths */}
           <Route

@@ -3,7 +3,7 @@ const sequelize = require('../db');
 
 const WorkflowLog = sequelize.define('Workflow', {
   id: {
-    type: DataTypes.BIGINT,
+    type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true
   },
@@ -15,7 +15,7 @@ const WorkflowLog = sequelize.define('Workflow', {
   payload: { type: DataTypes.JSONB }
 }, {
   tableName: 'workflow',
-  timestamps: true
+  timestamps: false
 });
 
 module.exports = WorkflowLog;
