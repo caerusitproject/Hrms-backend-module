@@ -123,4 +123,12 @@ export const menuItems = [
   //   key: "about",
   //   requiredRoles: ["USER", "MANAGER", "HR", "ADMIN"],
   // },
+   {
+    path: "/work",
+    label: "Work",
+    icon: HomeIcon,
+    key: "work",
+    requiredRoles: ["USER", "MANAGER", "HR", "ADMIN"],
+  },                                                                
+ 
 ];

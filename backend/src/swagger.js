@@ -1,28 +1,27 @@
-const swaggerJsdoc = require("swagger-jsdoc");
+const swaggerJSDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 
-// Basic Swagger definition
-const options = {
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "HRMS API Documentation",
-      version: "1.0.0",
-      description: "This is the API documentation for the HRMS application",
-    },
-    servers: [
-      {
-        url: "http://localhost:3000", // change to your server URL
+
+  const options = {
+    definition: {
+      openapi: "3.0.0",
+      info: {
+        title: "HRMS API Docs",
+        version: "1.0.0",
       },
-    ],
-  },
-  apis: ["./routes/*.js"], // Path to your API route files
-};
+    },
+    // IMPORTANT: include all controller & routes!
+  apis: [
+    "./src/routes/**/*.js",
+    "./src/controllers/**/*.js",
+    "./src/models/**/*.js"
+  ]
+  };
 
-const specs = swaggerJsdoc(options);
+ exports.swaggerSpec = swaggerJSDoc(options);
 
-function setupSwagger(app) {
-  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
-}
+  //app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-module.exports = setupSwagger;
+  
+
+

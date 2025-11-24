@@ -196,20 +196,20 @@ const EmployeeProfileEdit = () => {
     if (!isEditMode || !id) return;
 
     const loadProfileImage = async () => {
-      try {
-        const res = await UploadAPI.getProfileImage(id);
-        if (res && res.length > 0) {
-          const filePath = res[0].file_path;
-          const fileName = filePath.split("\\").pop().split("/").pop();
-
-          console.log("Extracted filename:", fileName);
-
-          const imageUrl = UploadAPI.getFileURL(fileName);
-          console.log("Final image URL:", imageUrl);
-
-          setAvatarPreview(imageUrl + `?t=${Date.now()}`);
-        }
-      } catch (err) {
+          try {
+            const res = await UploadAPI.getProfileImage(id);
+            if (res && res) {
+              const filePath = res;
+              const fileName = filePath.split("\\").pop().split("/").pop();
+    
+              console.log("Extracted filename:", fileName);
+    
+              const imageUrl = UploadAPI.getFileURL(fileName);
+              console.log("Final image URL:", imageUrl);
+    
+              setAvatarPreview(imageUrl + `?t=${Date.now()}`);
+            }
+          }  catch (err) {
         console.log("No profile image or failed to load:", err.message);
         // Keep avatarPreview as null → shows initials
       }
@@ -238,11 +238,17 @@ const EmployeeProfileEdit = () => {
 
       // Refresh image URL from server (to avoid cache)
       const res = await UploadAPI.getProfileImage(id);
-      if (res && res.length > 0) {
-        const fileName = res[0].file_path;
-        console.log("Uploaded file name:", fileName);
-        setAvatarPreview(UploadAPI.getFileURL(fileName));
-      }
+      if (res && res) {
+                const filePath = res;
+                const fileName = filePath.split("\\").pop().split("/").pop();
+      
+                console.log("Extracted filename:", fileName);
+      
+                const imageUrl = UploadAPI.getFileURL(fileName);
+                console.log("Final image URL:", imageUrl);
+      
+                setAvatarPreview(imageUrl + `?t=${Date.now()}`);
+              }
     } catch (err) {
       setError("Failed to upload profile picture");
       console.error(err);

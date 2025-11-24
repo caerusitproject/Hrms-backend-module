@@ -2,7 +2,7 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../db');
 
 const SalaryStructure = sequelize.define('SalaryStructure', {
-  id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   empCode: { type: DataTypes.STRING, allowNull: true },
   effectiveFrom: { type: DataTypes.DATEONLY },
   effectiveTo: { type: DataTypes.DATEONLY },

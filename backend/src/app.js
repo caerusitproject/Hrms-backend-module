@@ -21,22 +21,33 @@ const emailTemplateRoutes = require('./routes/emailTemplateRoutes');
 const emailRoutes = require('./routes/emailRoutes');
 const compensationRoutes = require('./routes/payroll/compensationRoutes')
 const payrollRoutes = require('./routes/payroll/payrollRoutes');
-
 const aiRoutes = require("./routes/ai/aiRoutes");
+const swaggerUi = require("swagger-ui-express");
+//const swaggerDocument = require('./openapiv3.json');
+require("./logger");
+
 const app = express();
 const cors = require('cors');
 const path = require('path')
 const PORT = process.env.PORT || 5000;
-
+const { generateSwagger } = require("./util/swaggerAutoGen");
 app.use(express.json());
-
 
 
 // Swagger
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+const swaggerSpec = generateSwagger();
+
+
+
+app.use(express.static(path.join(__dirname, '../uploads')));
+console.log("Static serving from:", path.join(__dirname, "../uploads"));
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 //app.use('/api', routes);
+//swaggerUi.setup
 
 // Admin-only routes
 app.use("/api/admin", adminRoutes);
@@ -58,7 +69,8 @@ app.use("/api/employees", employeeRoutes);
 app.use('/api/departments', departmentRoutes);
 
 //upload profile image and document 
-app.use("/upload", uploadRoutes);
+
+app.use("/api/upload", uploadRoutes);
 //Leave request
 app.use("/api/leave", leaveRoute);
 
@@ -91,7 +103,13 @@ app.use('/api/email/send', emailRoutes);
 
 app.use("/api/ai", aiRoutes);
 
+process.on("uncaughtException", (err) => {
+  logger.error("UNCAUGHT EXCEPTION", err);
+});
 
+process.on("unhandledRejection", (reason) => {
+  logger.error("UNHANDLED PROMISE REJECTION", reason);
+});
 
 
 

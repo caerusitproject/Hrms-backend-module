@@ -98,6 +98,7 @@ const AppRoutes = () => {
                 </ProtectedRoute>
               }
             />
+            
             <Route
               path="about"
               element={

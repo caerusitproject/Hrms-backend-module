@@ -3,7 +3,7 @@ const sequelize = require('../db');
 
 const Employee = sequelize.define('employee', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  empCode: { type: DataTypes.STRING, allowNull: false },
+  empCode: { type: DataTypes.STRING, allowNull: true },
   name: { type: DataTypes.STRING, allowNull: false },
   email: { type: DataTypes.STRING, allowNull: false, unique: true },
   password: {
@@ -15,12 +15,12 @@ const Employee = sequelize.define('employee', {
   status: { type: DataTypes.STRING, defaultValue: "Active" },
   dateOfBirth: { type: DataTypes.DATEONLY, allowNull: true },
   joiningDate: { type: DataTypes.DATEONLY, allowNull: true },
-  gender: { type: DataTypes.STRING, allowNull: false },
+  gender: { type: DataTypes.STRING, allowNull: false ,defaultValue: "Male"},
   maritalStatus: { type: DataTypes.STRING, allowNull: true },
   fatherName: { type: DataTypes.STRING, allowNull: true },
   managerId: {
     type: DataTypes.INTEGER,
-    allowNull:false
+    allowNull:true
   },
   idNumber: { type: DataTypes.STRING, allowNull: true },
   address: { type: DataTypes.STRING, allowNull: true },
@@ -29,10 +29,10 @@ const Employee = sequelize.define('employee', {
   mobile: { type: DataTypes.STRING, allowNull: true },
   phone: { type: DataTypes.STRING, allowNull: true },
   // FK field
-  departmentId: { type: DataTypes.INTEGER, allowNull: true, references: { model: 'department', key: 'id', }, },
+  departmentId: { type: DataTypes.INTEGER, allowNull: true},
 
   state: { type: DataTypes.STRING, allowNull: false, defaultValue: 'OFFER_CREATED' },
-
+  imageId: { type: DataTypes.INTEGER, allowNull: true },
 }, {
   tableName: 'employee',
   timestamps: true

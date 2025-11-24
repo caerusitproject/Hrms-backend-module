@@ -1,20 +1,30 @@
 require('dotenv').config();
 const app = require('./app');
 const sequelize = require('./db');
+const { seedInitialData } = require("./bootstrap/seedInitialData");
+const {  swaggerDocs } = require('./swagger.js')
+const swaggerUi = require('swagger-ui-express');
+
+
 
 const PORT = process.env.PORT || 5000;
 
+
 async function start() {
   try {
+    
     await sequelize.authenticate();
     console.log("Postgres connected");
 
     // Optional in dev only
-    // await sequelize.sync({ alter: true });
+     await sequelize.sync({ alter: false });
 
+      await seedInitialData();
+      //await swaggerDocs(app);
     app.listen(PORT, () =>
       console.log(`🚀 Server running on port ${PORT}`)
     );
+   
   } catch (err) {
     console.error("❌ Failed to start server:", err);
     process.exit(1);
@@ -32,4 +42,3 @@ process.on('SIGINT', async () => {
 if (process.env.NODE_ENV !== 'test') {
   start().catch(err => { console.error(err); process.exit(1); });
 }
-//start();

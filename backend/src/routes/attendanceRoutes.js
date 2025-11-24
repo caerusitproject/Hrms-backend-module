@@ -4,6 +4,8 @@ const AttendanceController = require('../controllers/attendanceController');
 const upload = require('../middleware/uploadMiddleware');
 const { authenticate, authorizeRoles } = require("../middleware/authMiddleWare");
 
+
+
 // Upload CSV and import to database
 router.post('/upload/csv', authenticate, authorizeRoles('HR', 'ADMIN'), AttendanceController.uploadCsv);
 

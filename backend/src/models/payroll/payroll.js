@@ -13,7 +13,5 @@ const Payroll = sequelize.define('Payroll', {
   status: { type: DataTypes.STRING, defaultValue: 'Generated' }, // Generated, Paid
 }, { tableName: 'payrolls' , timestamps: true});
 
-Employee.hasMany(Payroll, { foreignKey: 'employeeId' });
-Payroll.belongsTo(Employee, { foreignKey: 'employeeId' });
 
 module.exports = Payroll;
