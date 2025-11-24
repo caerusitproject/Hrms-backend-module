@@ -397,8 +397,6 @@ class EmployeeService {
   }
 
 
-
-
   // 🧠 Get a specific manager by ID
   static async getManagerById(managerId) {
     logger.info(`Fetching manager with ID ${managerId}`);
