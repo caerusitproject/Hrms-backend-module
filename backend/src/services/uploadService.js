@@ -107,7 +107,7 @@ class UploadService {
     if (!upload || upload.length === 0) return { message: "NO RECORD FOUND AGAINST THE EMPLOYEE!", upload: [] };
     logger.info(`Found ${upload.length} files for employee ID: ${employee_id}`);
     const normalizedUploads = {...upload.dataValues, file_path: await this.normalizePhotoPath(upload.file_path) };
-    const fileName  = upload.file_path;
+    const fileName  =upload.file_path
     const imagePath = path.join(__dirname, "..", "uploads", fileName);
 
     return fileName;
