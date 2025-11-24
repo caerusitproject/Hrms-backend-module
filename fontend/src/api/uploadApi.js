@@ -73,7 +73,7 @@ export const UploadAPI = {
     // Build correct public URL
     console.log("Generated file URL for:", fileNameOnly);
     console.log("Full URL:", `${LOCAL_API}/uploads/${fileNameOnly}`);
-    return `${LOCAL_API}/uploads/${fileNameOnly}`;
+    return `${LOCAL_API}/${fileNameOnly}`;
   },
 
 //  getFileURL(fileName) {
