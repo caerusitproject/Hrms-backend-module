@@ -9,8 +9,7 @@ const EmpFinancialInfo = sequelize.define("emp_financial_info", {
         allowNull: false
       },
       employmentType: {
-        type: DataTypes.ENUM,
-        values: ['Full Time', 'Part Time'],
+        type: DataTypes.STRING,
         allowNull: true
       },
       salaryBasic: {
