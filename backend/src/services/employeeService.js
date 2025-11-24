@@ -492,7 +492,7 @@ class EmployeeService {
   }
 
   static async getAllRoleWiseEmployees(employeeId, roles) {
-    logger.info(`Fetching employees for employee ID ${employeeId} with roles: ${roles.join(", ")}`);
+    logger.info(`Fetching employees for employee ID ${employeeId} with roles: ${roles}`);
     try {
       let employeeList = [];
       let totalEmployees = 0;
