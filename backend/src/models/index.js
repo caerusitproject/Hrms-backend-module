@@ -49,8 +49,8 @@ dbInfo.Employee.belongsTo(dbInfo.Department, {
   as: "department"
 });
 
-dbInfo.Employee.hasMany(dbInfo.Upload, { foreignKey: "imageId", as: "image" });
-dbInfo.Upload.belongsTo(dbInfo.Employee, { foreignKey: "employee_id", as: "employee" });
+//dbInfo.Employee.belongsTo(dbInfo.Upload, { foreignKey: "imageId", as: "image" });
+//dbInfo.Upload.hasMany(dbInfo.Employee, { foreignKey: "imageId", as: "employee" });
 
 dbInfo.Employee.hasMany(dbInfo.Employee, { as: 'Subordinates', foreignKey: 'managerId' });
 dbInfo.Employee.belongsTo(dbInfo.Employee, { as: 'Manager', foreignKey: 'managerId' });

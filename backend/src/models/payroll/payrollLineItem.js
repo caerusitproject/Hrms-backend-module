@@ -1,4 +1,4 @@
-const { DataTypes } = require('sequelize');
+/*const { DataTypes } = require('sequelize');
 const sequelize = require('../../db');
 const Payroll = require('./payroll');
 
@@ -14,4 +14,4 @@ const PayrollLineItem = sequelize.define('PayrollLineItem', {
 //Payroll.hasMany(PayrollLineItem, { foreignKey: 'payrollId' });
 //PayrollLineItem.belongsTo(Payroll, { foreignKey: 'payrollId' });
 
-module.exports = PayrollLineItem;
+module.exports = PayrollLineItem;*/

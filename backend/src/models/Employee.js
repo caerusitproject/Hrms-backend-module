@@ -32,7 +32,7 @@ const Employee = sequelize.define('employee', {
   departmentId: { type: DataTypes.INTEGER, allowNull: true},
 
   state: { type: DataTypes.STRING, allowNull: false, defaultValue: 'OFFER_CREATED' },
-
+  imageId: { type: DataTypes.INTEGER, allowNull: true },
 }, {
   tableName: 'employee',
   timestamps: true
