@@ -394,7 +394,7 @@ const Broadcast = () => {
                         borderColor: theme.colors.border,
                       },
                       "&:hover fieldset": {
-                        borderColor: theme.colors.primary,
+                        borderColor: theme.colors.black,
                       },
                       "&.Mui-focused fieldset": {
                         borderColor: theme.colors.primary,
@@ -428,7 +428,7 @@ const Broadcast = () => {
                         borderColor: theme.colors.border,
                       },
                       "&:hover fieldset": {
-                        borderColor: theme.colors.primary,
+                        borderColor: theme.colors.black,
                       },
                       "&.Mui-focused fieldset": {
                         borderColor: theme.colors.primary,
