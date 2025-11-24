@@ -80,15 +80,15 @@ export default function EmailTemplateManager() {
   }, []);
 
   const fetchTemplates = async () => {
-  try {
-    const data = await EmailTemplateAPI.getAllTemplates();
-    const rows = data?.templates?.rows;
-    setTemplates(Array.isArray(rows) ? rows : []);
-  } catch (error) {
-    console.error("Error fetching templates:", error);
-    setTemplates([]); // <-- prevent undefined
-  }
-};
+    try {
+      const data = await EmailTemplateAPI.getAllTemplates();
+      const rows = data?.templates?.rows;
+      setTemplates(Array.isArray(rows) ? rows : []);
+    } catch (error) {
+      console.error("Error fetching templates:", error);
+      setTemplates([]); // <-- prevent undefined
+    }
+  };
 
   useEffect(() => {
     fetchTemplates();
@@ -518,7 +518,20 @@ export default function EmailTemplateManager() {
             onChange={(e) => setFormData({ ...formData, type: e.target.value })}
             margin="normal"
             variant="outlined"
-            sx={{ mb: 2 }}
+            sx={{
+              mb: 2,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: customTheme.borderRadius.small,
+                fontSize: isMobile ? "14px" : "16px",
+                padding: isMobile ? "10px" : "12px",
+                "&.Mui-focused fieldset": {
+                  borderColor: customTheme.colors.primary,
+                },
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: customTheme.colors.primary,
+              },
+            }}
           />
           <TextField
             inputRef={subjectRef}
@@ -531,7 +544,20 @@ export default function EmailTemplateManager() {
             onFocus={() => setFocusedField("subject")}
             margin="normal"
             variant="outlined"
-            sx={{ mb: 2 }}
+            sx={{
+              mb: 2,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: customTheme.borderRadius.small,
+                fontSize: isMobile ? "14px" : "16px",
+                padding: isMobile ? "10px" : "12px",
+                "&.Mui-focused fieldset": {
+                  borderColor: customTheme.colors.primary,
+                },
+              },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: customTheme.colors.primary,
+              },
+            }}
           />
           {renderVariablesBox()}
           <Typography variant="subtitle1" mt={2} mb={1} fontWeight={500}>

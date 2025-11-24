@@ -18,7 +18,6 @@ class UploadService {
       if (!employee) throw new Error("Employee not found");
 
       const fileName = await this.normalizePhotoPath(payload.file_path);
-
       let upload;
       if (employee.imageId) {
         upload = await Upload.findByPk(employee.imageId, { transaction });
@@ -111,7 +110,6 @@ class UploadService {
     const fileName  =upload.file_path
     const imagePath = path.join(__dirname, "..", "uploads", fileName);
 
-    
     return fileName;
   }
 
