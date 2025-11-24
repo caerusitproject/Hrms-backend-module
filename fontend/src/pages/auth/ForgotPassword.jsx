@@ -44,7 +44,9 @@ const ForgotPassword = () => {
 
     try {
       const data = await ForgotPasswordAPI.forgotPassword({ email });
-      setSuccessMessage(data.message || "Password reset link sent successfully!");
+      setSuccessMessage(
+        data.message || "Password reset link sent successfully!"
+      );
       setEmail("");
     } catch (err) {
       setErrorMessage(err.message);
@@ -132,8 +134,16 @@ const ForgotPassword = () => {
                   width: "100%",
                   padding: isMobile ? "10px" : "12px",
                   borderRadius: theme.borderRadius.small,
-                  border: `1px solid ${theme.colors.lightGray}`,
+                  border: `2px solid ${theme.colors.lightGray}`,
                   fontSize: isMobile ? "14px" : "16px",
+                  outline: "none",
+                  transition: "border-color 0.3s ease",
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = theme.colors.primary;
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = theme.colors.lightGray;
                 }}
               />
             </div>
@@ -209,7 +219,8 @@ const ForgotPassword = () => {
                 fontSize: isMobile ? "13px" : "15px",
               }}
             >
-              We’ve sent a password reset link to your email. Please check your inbox.
+              We’ve sent a password reset link to your email. Please check your
+              inbox.
             </p>
             <button
               onClick={() => navigate("/login")}
