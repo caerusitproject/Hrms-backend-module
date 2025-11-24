@@ -12,5 +12,5 @@ tmp/
 coverage/
 uploads/
 logs/
-payslip/
+payslips/
 package.json
