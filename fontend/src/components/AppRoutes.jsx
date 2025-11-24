@@ -233,9 +233,7 @@ const AppRoutes = () => {
                 </Suspense>
               }
             />
-          </Route>
-
-          <Route
+            <Route
             path="workflow"
             element={
               <ProtectedRoute requiredRoles={["ADMIN"]}>
@@ -256,6 +254,9 @@ const AppRoutes = () => {
             }
           />
 
+          </Route>
+
+          
           {/* Catch-all route for invalid paths */}
           <Route
             path="*"

@@ -13,7 +13,7 @@ import { Payment } from "@mui/icons-material";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import SendOutlinedIcon from "@mui/icons-material/SendOutlined";
 import SchemaIcon from "@mui/icons-material/Schema";
-import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import AccountTreeIcon from "@mui/icons-material/AccountTree";
 
 const user = JSON.parse(localStorage.getItem("user"));
 const userId = user?.id || 1; // fallback to 1 if not found
@@ -95,7 +95,7 @@ export const menuItems = [
     key: "email-templates",
     requiredRoles: ["ADMIN"], // optional, if HR can view
   },
-   {
+  {
     path: "/workflow",
     label: "Workflow",
     icon: SchemaIcon,
@@ -123,5 +123,4 @@ export const menuItems = [
   //   key: "about",
   //   requiredRoles: ["USER", "MANAGER", "HR", "ADMIN"],
   // },
-  
 ];

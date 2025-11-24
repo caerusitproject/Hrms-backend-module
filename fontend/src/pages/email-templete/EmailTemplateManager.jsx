@@ -567,7 +567,13 @@ export default function EmailTemplateManager() {
             sx={{
               border: `1px solid ${customTheme.colors.lightGray}`,
               borderRadius: customTheme.borderRadius.small,
-              minHeight: "200px",
+              // This ensures the container doesn't cut off the editor
+              overflow: "hidden",
+              "& .ck-editor__editable": {
+                minHeight: "260px", // ← Your desired height
+                //maxHeight: "500px", // optional: limit max height
+                overflowY: "auto",
+              },
             }}
           >
             <CKEditor
@@ -579,9 +585,18 @@ export default function EmailTemplateManager() {
               }}
               onReady={(editor) => {
                 setEditorInstance(editor);
-                // Set focus listener on editor
+
                 editor.editing.view.document.on("focus", () => {
                   setFocusedField("body");
+                });
+
+                // Optional: force initial height
+                editor.editing.view.change((writer) => {
+                  writer.setStyle(
+                    "min-height",
+                    "300px",
+                    editor.editing.view.document.getRoot()
+                  );
                 });
               }}
               config={{
@@ -600,10 +615,16 @@ export default function EmailTemplateManager() {
                   "blockQuote",
                   "insertTable",
                   "mediaEmbed",
+                  "|",
                   "undo",
                   "redo",
                 ],
-                height: 200,
+                // Best way: set height via config (CKEditor 5 supports it natively)
+                height: 300, // ← This works in newer versions
+                // OR use editorConfig for full control
+                editorConfig: {
+                  height: "400px", // fallback for older versions
+                },
               }}
             />
           </Box>
