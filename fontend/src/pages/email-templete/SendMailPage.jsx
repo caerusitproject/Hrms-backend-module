@@ -459,9 +459,32 @@ const SendMailPage = () => {
 
           <Grid container spacing={3}>
             {/* To + Template Select */}
+            {/* <Select
+                          value={userForm.roleId}
+                          label="Role"
+                          onChange={(e) =>
+                            setUserForm({ ...userForm, roleId: e.target.value })
+                          }
+                          input={
+                            <OutlinedInput
+                              label="Role"
+                              sx={{
+                                borderRadius: customTheme.borderRadius.small,
+                                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                                  borderColor: customTheme.colors.primary,
+                                },
+                              }}
+                            />
+                          }
+                        ></Select> */}
             <Grid item xs={12} md={6}>
               <FormControl fullWidth size="small" error={errors.to} required>
-                <InputLabel>To</InputLabel>
+                <InputLabel sx={{
+                  "&.Mui-focused": {
+                    color: customTheme.colors.primary,
+                  },
+                }}
+                >To</InputLabel>
                 <Select
                   value={mailForm.to}
                   onChange={(e) => {
@@ -470,22 +493,17 @@ const SendMailPage = () => {
                       setErrors((prev) => ({ ...prev, to: false }));
                   }}
                   label="To *"
-                  inputProps={{
-                    sx: {
-                      borderRadius: 1.5,
-                      "&.MuiOutlinedInput-notchedOutline": {
-                        borderRadius: 1.5,
-                      }
-                    }
-                  }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 1.5,
-                    },
-                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                      borderColor: theme?.colors?.primary,
-                    }
-                  }}
+                  input={
+                    <OutlinedInput
+                      label="Role"
+                      sx={{
+                        borderRadius: customTheme.borderRadius.small,
+                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                          borderColor: customTheme.colors.primary,
+                        },
+                      }}
+                    />
+                  }
                 >
                   {employees.map((emp) => (
                     <MenuItem key={emp.id} value={emp.email}>
@@ -510,7 +528,13 @@ const SendMailPage = () => {
                 required
                 disabled={!mailForm.to}
               >
-                <InputLabel>Select Mail Type</InputLabel>
+                <InputLabel
+                  sx={{
+                    "&.Mui-focused": {
+                      color: customTheme.colors.primary,
+                    },
+                  }}
+                >Select Mail Type</InputLabel>
                 <Select
                   value={mailForm.templateId}
                   onChange={(e) => {
@@ -547,7 +571,12 @@ const SendMailPage = () => {
             {/* CC & BCC with Chips */}
             <Grid item xs={12} md={6}>
               <FormControl fullWidth size="small">
-                <InputLabel>CC</InputLabel>
+                <InputLabel
+                  sx={{
+                    "&.Mui-focused": {
+                      color: customTheme.colors.primary,
+                    },
+                  }}>CC</InputLabel>
                 <Select
                   multiple
                   value={mailForm.cc}
@@ -587,14 +616,33 @@ const SendMailPage = () => {
 
             <Grid item xs={12} md={6}>
               <FormControl fullWidth size="small">
-                <InputLabel>BCC</InputLabel>
+                <InputLabel
+                  sx={{
+                    "&.Mui-focused": {
+                      color: customTheme.colors.primary,
+                    },
+                  }}>BCC</InputLabel>
                 <Select
                   multiple
                   value={mailForm.bcc}
                   onChange={(e) =>
                     setMailForm((prev) => ({ ...prev, bcc: e.target.value }))
                   }
-                  input={<OutlinedInput label="BCC" />}
+                  input={<OutlinedInput label="BCC"
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 1.5,
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: theme?.colors?.primary,
+                      },
+                      "&.Mui-focused": {
+                        color: theme?.colors?.primary, // selected text when focused
+                      },
+                      "& .MuiInputLabel-root.Mui-focused": {
+                        color: theme?.colors?.primary, // floating label
+                      }
+                    }} />}
                   renderValue={(selected) => (
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                       {selected.map((email) => (

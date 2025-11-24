@@ -29,6 +29,7 @@ import { PayrollApi } from "../../api/payrollApi";
 import { theme } from "../../theme/theme";
 import Button from "../../components/common/Button";
 import { Snackbar, Alert } from "@mui/material";
+import { theme as customTheme } from "../../theme/theme";
 
 const StyledCard = styled(Card)(({ theme }) => ({
   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -110,7 +111,7 @@ const Payroll = () => {
   const [loading, setLoading] = useState(false);
   const [generate, setGenerate] = useState(false);
   const [snackBar, setSnackBar] = useState({ open: false, message: "", type: "success" });
-  
+
   const totals = useMemo(() => {
     const totalEarnings = earningsFields.reduce(
       (sum, field) => sum + (Number.parseFloat(formData[field]) || 0),
@@ -405,7 +406,12 @@ const Payroll = () => {
           <Grid container spacing={3}>
             <Grid item xs={12}>
               <FormControl fullWidth>
-                <InputLabel>Select Employee</InputLabel>
+                <InputLabel
+                  sx={{
+                    "&.Mui-focused": {
+                      color: customTheme.colors.primary,
+                    },
+                  }}>Select Employee</InputLabel>
                 <Select
                   value={selectedEmployee}
                   label="Select Employee"
@@ -414,9 +420,10 @@ const Payroll = () => {
                     setEmployeeError(""); // clear error when user chooses a value
                   }}
                   sx={{
-                    "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                      borderColor: theme.colors.primary,  // orange
-                    }
+                    borderRadius: customTheme.borderRadius.small,
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: customTheme.colors.primary,
+                    },
                   }}
                 >
 
@@ -465,6 +472,11 @@ const Payroll = () => {
                             borderColor: theme.colors.primary, // or theme.palette.border.large
                           },
                         },
+                        "& .MuiInputLabel-root.Mui-focused": {
+                          color: "orange !important",
+                        }
+
+
                       }}
                     />
                     {baseSalaryError && field === "baseSalary" && (
@@ -505,6 +517,10 @@ const Payroll = () => {
                             borderColor: theme.colors.primary, // or theme.palette.border.large
                           },
                         },
+                        "& .MuiInputLabel-root.Mui-focused": {
+                          color: "orange !important",
+                        }
+
                       }}
                     />
                   </Grid>
@@ -531,6 +547,10 @@ const Payroll = () => {
                       borderColor: theme.colors.primary, // or theme.palette.border.large
                     },
                   },
+
+                  "& .MuiInputLabel-root.Mui-focused": {
+                    color: "orange !important",
+                  }
                 }}
               />
             </Grid>
@@ -552,6 +572,9 @@ const Payroll = () => {
                       borderColor: theme.colors.primary, // or theme.palette.border.large
                     },
                   },
+                  "& .MuiInputLabel-root.Mui-focused": {
+                    color: "orange !important",
+                  }
                 }}
               />
             </Grid>

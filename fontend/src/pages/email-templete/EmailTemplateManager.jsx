@@ -527,6 +527,10 @@ export default function EmailTemplateManager() {
                   borderColor: theme.colors.primary, // or theme.palette.border.large
                 },
               },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: "orange !important",
+              }
+
             }}
           />
           <TextField
@@ -548,6 +552,9 @@ export default function EmailTemplateManager() {
                   borderColor: theme.colors.primary, // or theme.palette.border.large
                 },
               },
+              "& .MuiInputLabel-root.Mui-focused": {
+                color: "orange !important",
+              }
             }}
           />
           {renderVariablesBox()}
@@ -586,7 +593,7 @@ export default function EmailTemplateManager() {
                   writer.setStyle("min-height", "300px", editor.editing.view.document.getRoot());
                 });
               }}
-              
+
               config={{
                 toolbar: [
                   "heading", "|",
