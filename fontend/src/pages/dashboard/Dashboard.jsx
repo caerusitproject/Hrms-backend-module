@@ -255,7 +255,7 @@ const Dashboard = () => {
                   }}
                   onClick={() => navigate("/employee/create")}
                 >
-                  Add Employee
+                  + Add Employee
                 </Button>
               ) : (
                 <Button

@@ -116,8 +116,8 @@ const EmployeeProfileView = () => {
     const loadProfileImage = async () => {
       try {
         const res = await UploadAPI.getProfileImage(id);
-        if (res && res) {
-          const filePath = res;
+        if (res && res.length > 0) {
+          const filePath = res[0].file_path;
           const fileName = filePath.split("\\").pop().split("/").pop();
 
           console.log("Extracted filename:", fileName);

@@ -304,7 +304,7 @@ const Leave = () => {
 
     try {
       const payload = {
-        //type: "Casual Leave",
+        type: "Casual Leave",
         startDate: startDate,
         endDate: endDate,
         reason: leaveReason,
@@ -341,6 +341,7 @@ const Leave = () => {
   const confirmDelete = async () => {
     if (!leaveToDelete) return;
     try {
+      //console.log("Deleting leave ID:", leaveToDelete.id);
       await LeaveAPI.deleteLeave(leaveToDelete.id);
       setLeaves((prev) => prev.filter((l) => l.id !== leaveToDelete.id));
     } catch (err) {
@@ -713,12 +714,12 @@ const Leave = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <MuiButton onClick={() => setDeleteModalOpen(false)}>
+          <Button type="secondary" onClick={() => setDeleteModalOpen(false)}>
             Cancel
-          </MuiButton>
-          <MuiButton onClick={confirmDelete} color="error" variant="contained">
+          </Button>
+          <Button type="primary" onClick={confirmDelete} color="error" variant="contained">
             Delete
-          </MuiButton>
+          </Button>
         </DialogActions>
       </Dialog>
 

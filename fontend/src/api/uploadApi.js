@@ -1,8 +1,7 @@
 import axios from "axios";
 import { getCookie } from "../utils/cookiesUtil";
 
-const LOCAL_API = process.env.BACKEND_API || "http://localhost:3000/api";
-const IMAGE_URL = process.env.IMAGE_URL || "http://localhost:3000";
+const LOCAL_API = process.env.BACKEND_API || "http://localhost:3000";
 
 const getAuthHeaders = () => {
   const token = getCookie("accessToken");
@@ -73,8 +72,8 @@ export const UploadAPI = {
     
     // Build correct public URL
     console.log("Generated file URL for:", fileNameOnly);
-    console.log("Full URL:", `${IMAGE_URL}/${fileNameOnly}`);
-    return `${IMAGE_URL}/${fileNameOnly}`;
+    console.log("Full URL:", `${LOCAL_API}/uploads/${fileNameOnly}`);
+    return `${LOCAL_API}/uploads/${fileNameOnly}`;
   },
 
 //  getFileURL(fileName) {

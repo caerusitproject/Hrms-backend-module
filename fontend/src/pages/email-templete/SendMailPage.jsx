@@ -23,6 +23,7 @@ import { EmailSendApi } from "../../api/emailSendApi";
 import { Snackbar, Alert } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send"; // email send icon
 import { keyframes } from "@emotion/react";
+import { theme } from "../../theme/theme";
 
 const SendMailPage = () => {
   const [employees, setEmployees] = useState([]);
@@ -59,6 +60,7 @@ const SendMailPage = () => {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 `;
+
 
   // Fetch Employees
   useEffect(() => {
@@ -208,17 +210,45 @@ const SendMailPage = () => {
     return updated;
   };
 
-  // Handle file upload
+
   const handleFileUpload = (e) => {
     const uploadedFiles = Array.from(e.target.files).filter(
       (file) => file.name.trim() !== ""
-    ); // Filter out empty filenames
+    );
+
+    // 🔹 1. Check file count
+    if (uploadedFiles.length > 1) {
+      setToast({
+        open: true,
+        message: "Please upload only one file",
+        severity: "error",
+      });
+      e.target.value = null;
+      return; // stop here
+    }
+
+    const file = uploadedFiles[0]; // only file available now
+
+    // 🔹 2. Validate file size
+    if (file && file.size > 20 * 1024) {
+      setToast({
+        open: true,
+        message: `"${file.name}" exceeds 20KB size limit`,
+        severity: "error",
+      });
+      e.target.value = null;
+      return; // stop here
+    }
+
+    // 🔹 3. Safe: File is valid → add to attachments
     setMailForm((prev) => ({
       ...prev,
-      attachments: [...(prev.attachments || []), ...uploadedFiles],
+      attachments: [...(prev.attachments || []), file],
     }));
-    e.target.value = null;
+
+    e.target.value = null; // reset input so selecting same file works again
   };
+
 
   // Remove file
   const handleDeleteFile = (idx) => {
@@ -440,6 +470,22 @@ const SendMailPage = () => {
                       setErrors((prev) => ({ ...prev, to: false }));
                   }}
                   label="To *"
+                  inputProps={{
+                    sx: {
+                      borderRadius: 1.5,
+                      "&.MuiOutlinedInput-notchedOutline": {
+                        borderRadius: 1.5,
+                      }
+                    }
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 1.5,
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: theme?.colors?.primary,
+                    }
+                  }}
                 >
                   {employees.map((emp) => (
                     <MenuItem key={emp.id} value={emp.email}>
@@ -447,10 +493,13 @@ const SendMailPage = () => {
                     </MenuItem>
                   ))}
                 </Select>
+                {!errors.to && !mailForm.to && (<FormHelperText>Please select this feild </FormHelperText>)}
                 {errors.to && (
                   <FormHelperText error>This field is required.</FormHelperText>
                 )}
+
               </FormControl>
+
             </Grid>
 
             <Grid item xs={12} md={6}>
@@ -473,6 +522,15 @@ const SendMailPage = () => {
                       setErrors((prev) => ({ ...prev, templateId: false }));
                   }}
                   label="Select Mail Type *"
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 1.5,
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: theme?.colors?.primary,
+                    }
+                  }}
+
                 >
                   {templates.map((t) => (
                     <MenuItem key={t.id} value={t.id}>
@@ -496,7 +554,12 @@ const SendMailPage = () => {
                   onChange={(e) =>
                     setMailForm((prev) => ({ ...prev, cc: e.target.value }))
                   }
-                  input={<OutlinedInput label="CC" />}
+                  input={<OutlinedInput label="CC" sx={{
+                    borderRadius: customTheme.borderRadius.small,
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: customTheme.colors.primary,
+                    },
+                  }} />}
                   renderValue={(selected) => (
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                       {selected.map((email) => (
@@ -728,7 +791,7 @@ const SendMailPage = () => {
         open={toast.open}
         autoHideDuration={3000}
         onClose={() => setToast((prev) => ({ ...prev, open: false }))}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Alert
           onClose={() => setToast((prev) => ({ ...prev, open: false }))}

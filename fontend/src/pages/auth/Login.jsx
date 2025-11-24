@@ -8,6 +8,7 @@ import { theme } from "../../theme/theme";
 import { COMPANY_INFO } from "../../utils/constants";
 import CompanyLogo from "../../assets/caerus-logo.png";
 import CustomLoader from "../../components/common/CustomLoader";
+import { Box, CircularProgress, Typography } from '@mui/material';
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -53,13 +54,61 @@ const Login = () => {
   const handleForgotPasswordClick = () => {
     navigate("/forgot-password");
   };
-  if (loading) {
-    return (
-      <div>
-        <CustomLoader />
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <Box
+  //       sx={{
+  //         position: 'fixed',
+  //         inset: 0,
+  //         display: 'flex',
+  //         alignItems: 'center',
+  //         justifyContent: 'center',
+  //         background: 'linear-gradient(135deg, rgba(255,98,0,0.1) 0%, rgba(255,152,0,0.05) 100%)',
+  //         backdropFilter: 'blur(8px)',
+  //         zIndex: 9999,
+  //       }}
+  //     >
+  //       <Box
+  //         sx={{
+  //           display: 'flex',
+  //           flexDirection: 'column',
+  //           alignItems: 'center',
+  //           gap: 3,
+  //           p: 4,
+  //           borderRadius: 4,
+  //           background: 'rgba(255, 255, 255, 0.15)',
+  //           boxShadow: '0 8px 32px rgba(255,98,0,0.25)',
+  //           backdropFilter: 'blur(12px)',
+  //           border: '1px solid rgba(255,98,0,0.2)',
+  //         }}
+  //       >
+  //         <CircularProgress
+  //           size={64}
+  //           thickness={4}
+  //           sx={{
+  //             color: '#FF6200',
+  //             '& .MuiCircularProgress-circle': {
+  //               strokeLinecap: 'round',
+  //             },
+  //           }}
+  //         />
+  //         <Typography
+  //           variant="h5"
+  //           sx={{
+  //             background: 'linear-gradient(90deg, #FF6200, #FF8A00)',
+  //             backgroundClip: 'text',
+  //             WebkitBackgroundClip: 'text',
+  //             WebkitTextFillColor: 'transparent',
+  //             fontWeight: 700,
+  //             letterSpacing: '0.5px',
+  //           }}
+  //         >
+  //           Signing you in...
+  //         </Typography>
+  //       </Box>
+  //     </Box>
+  //   );
+  // }
 
   return (
     <div
@@ -171,6 +220,9 @@ const Login = () => {
                 border: `1px solid ${theme.colors.lightGray}`,
                 fontSize: isMobile ? "14px" : "16px",
                 transition: "border-color 0.3s ease",
+                opacity: loading ? 0.65 : 1,
+                backgroundColor: loading ? '#f9f9f9' : 'white',
+                cursor: loading ? 'not-allowed' : 'text',
               }}
               onFocus={(e) =>
                 (e.target.style.borderColor = theme.colors.primary)
@@ -221,6 +273,9 @@ const Login = () => {
                   fontSize: isMobile ? "14px" : "16px",
                   transition: "border-color 0.3s ease",
                   paddingRight: "45px", // Space for eye icon
+                  opacity: loading ? 0.65 : 1,
+                  backgroundColor: loading ? '#f9f9f9' : 'white',
+                  cursor: loading ? 'not-allowed' : 'text',
                 }}
                 onFocus={(e) =>
                   (e.target.style.borderColor = theme.colors.primary)
@@ -311,24 +366,30 @@ const Login = () => {
               padding: isMobile ? "12px" : "14px",
               fontSize: isMobile ? "14px" : "16px",
               fontWeight: "600",
-              background: `linear-gradient(90deg, ${theme.colors.primary} 0%, ${theme.colors.primary}cc 100%)`,
+              background: `linear-gradient(
+      90deg,
+      ${theme.colors.primary} 0%,
+      ${theme.colors.primary}cc 100%
+    )`,
               color: theme.colors.white,
               border: "none",
               borderRadius: theme.borderRadius.medium,
-              opacity: loading ? 0.7 : 1,
+              opacity: loading ? 0.6 : 1,
               cursor: loading ? "not-allowed" : "pointer",
               transition: "opacity 0.3s ease, transform 0.3s ease",
               letterSpacing: "0.5px",
               marginBottom: "10px",
+              transform: loading ? "scale(0.98)" : "scale(1)",
+              filter: loading ? "grayscale(30%) brightness(90%)" : "none",
             }}
-            onMouseOver={(e) =>
-              !loading && (e.currentTarget.style.transform = "scale(1.05)")
-            }
-            onMouseOut={(e) =>
-              !loading && (e.currentTarget.style.transform = "scale(1)")
-            }
+            onMouseOver={(e) => {
+              if (!loading) e.currentTarget.style.transform = "scale(1.05)";
+            }}
+            onMouseOut={(e) => {
+              if (!loading) e.currentTarget.style.transform = "scale(1)";
+            }}
           >
-            {loading ? "Signing In..." : "Sign In"}
+            {loading ? "Signing you in..." : "Sign In"}
           </button>
 
           {/* Forgot Password Button */}

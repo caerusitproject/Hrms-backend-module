@@ -6,7 +6,6 @@ import CustomLoader from "../../components/common/CustomLoader";
 import Button from "../../components/common/Button";
 import { FiEdit2 } from "react-icons/fi";
 import { ChevronDown } from "lucide-react";
-import { TextField } from "@mui/material";
 
 const Broadcast = () => {
   const { user } = useAuth();
@@ -378,66 +377,82 @@ const Broadcast = () => {
               }}
             >
               <div>
-                <TextField
-                  label="Heading"
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "14px",
+                    fontWeight: 500,
+                    color: theme.colors.text.primary,
+                    marginBottom: theme.spacing.sm,
+                  }}
+                >
+                  Heading
+                </label>
+                <input
+                  type="text"
                   placeholder="Enter broadcast heading"
                   value={newBroadcast.title}
                   onChange={(e) =>
                     setNewBroadcast({ ...newBroadcast, title: e.target.value })
                   }
-                  fullWidth
-                  size="small"
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: theme.borderRadius.small,
-                      "& fieldset": {
-                        borderColor: theme.colors.border,
-                      },
-                      "&:hover fieldset": {
-                        borderColor: theme.colors.black,
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: theme.colors.primary,
-                      },
-                    },
-                    "& .MuiInputLabel-root.Mui-focused": {
-                      color: theme.colors.primary,
-                    },
+                  style={{
+                    width: "100%",
+                    padding: theme.spacing.sm,
+                    border: `1px solid ${theme.colors.border}`,
+                    borderRadius: theme.borderRadius.small,
+                    fontSize: "15px",
+                    color: theme.colors.text.primary,
+                    backgroundColor: theme.colors.surface,
+                    boxSizing: "border-box",
                   }}
+                  onFocus={(e) =>
+                    (e.target.style.borderColor = theme.colors.primary)
+                  }
+                  onBlur={(e) =>
+                    (e.target.style.borderColor = theme.colors.border)
+                  }
                 />
               </div>
               <div>
-                <TextField
-                  label="Details"
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "14px",
+                    fontWeight: 500,
+                    color: theme.colors.text.primary,
+                    marginBottom: theme.spacing.sm,
+                  }}
+                >
+                  Details
+                </label>
+                <textarea
+                  rows={6}
                   placeholder="Enter broadcast details"
                   value={newBroadcast.content}
-                  multiline
-                  rows={6}
                   onChange={(e) =>
                     setNewBroadcast({
                       ...newBroadcast,
                       content: e.target.value,
                     })
                   }
-                  fullWidth
-                  size="small"
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: theme.borderRadius.small,
-                      "& fieldset": {
-                        borderColor: theme.colors.border,
-                      },
-                      "&:hover fieldset": {
-                        borderColor: theme.colors.black,
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: theme.colors.primary,
-                      },
-                    },
-                    "& .MuiInputLabel-root.Mui-focused": {
-                      color: theme.colors.primary,
-                    },
+                  style={{
+                    width: "100%",
+                    padding: theme.spacing.sm,
+                    border: `1px solid ${theme.colors.border}`,
+                    borderRadius: theme.borderRadius.small,
+                    fontSize: "15px",
+                    color: theme.colors.text.primary,
+                    backgroundColor: theme.colors.surface,
+                    resize: "vertical",
+                    fontFamily: "inherit",
+                    boxSizing: "border-box",
                   }}
+                  onFocus={(e) =>
+                    (e.target.style.borderColor = theme.colors.primary)
+                  }
+                  onBlur={(e) =>
+                    (e.target.style.borderColor = theme.colors.border)
+                  }
                 />
               </div>
             </div>

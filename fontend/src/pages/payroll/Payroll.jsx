@@ -107,7 +107,10 @@ const Payroll = () => {
   const [employees, setEmployees] = useState([]);
   const [employeeError, setEmployeeError] = useState("");
   const [baseSalaryError, setBaseSalaryError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [generate, setGenerate] = useState(false);
   const [snackBar, setSnackBar] = useState({ open: false, message: "", type: "success" });
+  
   const totals = useMemo(() => {
     const totalEarnings = earningsFields.reduce(
       (sum, field) => sum + (Number.parseFloat(formData[field]) || 0),
@@ -357,6 +360,7 @@ const Payroll = () => {
 
         <Button
           variant="contained"
+          disabled={generate}
           sx={{
             backgroundColor: theme.colors.primaryDark,
             minWidth: 180,
@@ -365,14 +369,17 @@ const Payroll = () => {
           }}
           onClick={async () => {
             try {
+              setGenerate(true);
               const resp = await PayrollApi.generatePayroll();
               setSnackBar({ open: true, message: resp.message || "Payrolls generated successfully", type: "success" });
             } catch (err) {
               setSnackBar({ open: true, message: err.message || "Failed to generate payrolls", type: "error" });
+            } finally {
+              setGenerate(false);
             }
           }}
         >
-          Generate Payroll
+          {generate ? "Generating..." : "Generate Payroll"}
         </Button>
       </Box>
 
