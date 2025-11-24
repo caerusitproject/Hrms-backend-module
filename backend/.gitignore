@@ -1,6 +1,7 @@
 # Node.js
 node_modules/
 npm-debug.log
+packahge-lock.json
 .env
 *.log
 .DS_Store
@@ -10,3 +11,6 @@ dist/
 tmp/
 coverage/
 uploads/
+logs/
+payslip/
+package.json
