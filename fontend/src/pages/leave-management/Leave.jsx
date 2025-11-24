@@ -30,7 +30,7 @@ import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import CustomLoader from "../../components/common/CustomLoader";
 import Button from "../../components/common/Button";
-
+import { ManagerAPI } from "../../api/managerApi";
 const Leave = () => {
   const { user } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -140,8 +140,8 @@ const Leave = () => {
               l.status === "PENDING"
                 ? "Pending"
                 : l.status === "APPROVED"
-                ? "Approved"
-                : "Rejected",
+                  ? "Approved"
+                  : "Rejected",
             days: 0, // will be recalculated if needed
           }));
           setLeaves(formattedLeaves);
@@ -157,33 +157,19 @@ const Leave = () => {
   }, [selectedEmpCode]);
 
   // Manager pending leaves - YOUR EXACT BLOCK (unchanged)
+  const fetchPendingLeaves = async () => {
+    try {
+      const res = await ManagerAPI.leaveList();
+
+      // res.subordinateLeaves contains all pending leave objects
+      setPendingLeaves(res?.subordinateLeaves || []);
+    } catch (err) {
+      console.error("Error fetching pending leaves:", err);
+    }
+  };
+
   useEffect(() => {
     if (role === "MANAGER") {
-      const fetchPendingLeaves = async () => {
-        try {
-          const mockPending = [
-            {
-              id: 3,
-              empCode: "EMP002",
-              start: "2025-11-01",
-              end: "2025-11-08",
-              days: 8,
-              status: "Pending",
-            },
-            {
-              id: 4,
-              empCode: "EMP003",
-              start: "2025-11-10",
-              end: "2025-11-10",
-              days: 1,
-              status: "Pending",
-            },
-          ];
-          setPendingLeaves(mockPending);
-        } catch (err) {
-          console.error("Error fetching pending leaves:", err);
-        }
-      };
       fetchPendingLeaves();
     }
   }, [role]);
@@ -368,24 +354,31 @@ const Leave = () => {
     setActionModalOpen(true);
   };
 
-  const handleActionConfirm = () => {
-    // Mock update only (as per your request)
-    setPendingLeaves((prev) =>
-      prev
-        .map((r) =>
-          r.id === selectedRequest.id
-            ? {
-                ...r,
-                status: actionType === "approve" ? "Approved" : "Rejected",
-              }
-            : r
-        )
-        .filter((r) => r.status === "Pending")
-    );
+  const handleActionConfirm = async () => {
+    if (!selectedRequest) return;
+
+    const newStatus =
+      actionType === "approve" ? "APPROVED" : "REJECTED";
+
+    try {
+      console.log("Req:", selectedRequest.id, newStatus);
+
+      // 🔥 1. Call API to update status
+      await ManagerAPI.leaveStatus(selectedRequest.id, newStatus);
+
+      // 🔥 2. Re-fetch fresh leave data from backend
+      await fetchPendingLeaves();
+
+    } catch (err) {
+      console.error("Failed to update leave status:", err);
+    }
+
+    // 🔥 3. Close modal + reset
     setActionModalOpen(false);
     setSelectedRequest(null);
     setActionType("");
   };
+
 
   // Styles remain 100% unchanged
   const boxStyle = {
@@ -412,12 +405,12 @@ const Leave = () => {
   };
   const summariesContainerStyle = isMobile
     ? {
-        width: "100%",
-        display: "flex",
-        gap: "20px",
-        justifyContent: "center",
-        paddingBottom: "3px",
-      }
+      width: "100%",
+      display: "flex",
+      gap: "20px",
+      justifyContent: "center",
+      paddingBottom: "3px",
+    }
     : summaryBoxesStyle;
 
   if (loading || employeesLoading) return <CustomLoader />;
@@ -456,9 +449,8 @@ const Leave = () => {
             style={{
               ...boxStyle,
               backgroundColor: "transparent",
-              border: `${isMobile ? "1px" : "2px"} solid ${
-                theme.colors.secondary
-              }`,
+              border: `${isMobile ? "1px" : "2px"} solid ${theme.colors.secondary
+                }`,
               borderRadius: isMobile ? "10px" : "8px",
               padding: isMobile ? "6px 8px" : "8px 12px",
             }}
@@ -472,9 +464,8 @@ const Leave = () => {
             style={{
               ...boxStyle,
               backgroundColor: "transparent",
-              border: `${isMobile ? "1px" : "2px"} solid ${
-                theme.colors.success
-              }`,
+              border: `${isMobile ? "1px" : "2px"} solid ${theme.colors.success
+                }`,
               borderRadius: isMobile ? "10px" : "8px",
               padding: isMobile ? "6px 8px" : "8px 12px",
             }}
@@ -548,12 +539,12 @@ const Leave = () => {
             isSelectingRef.current &&
             setShowNextMonthButton(
               dir === "next" &&
-                day ===
-                  new Date(
-                    currentDate.getFullYear(),
-                    currentDate.getMonth() + 1,
-                    0
-                  ).getDate()
+              day ===
+              new Date(
+                currentDate.getFullYear(),
+                currentDate.getMonth() + 1,
+                0
+              ).getDate()
             )
           }
           onPrevMonth={() => handleMonthChange(-1)}
@@ -633,8 +624,8 @@ const Leave = () => {
                 <TableBody>
                   {leaves.map((leave) => (
                     <TableRow key={leave.id}>
-                      <TableCell>{leave.start}</TableCell>
-                      <TableCell>{leave.end}</TableCell>
+                      <TableCell>{leave.start.slice(0, 10)}</TableCell>
+                      <TableCell>{leave.end.slice(0, 10)}</TableCell>
                       <TableCell>{leave.reason || "-"}</TableCell>
                       <TableCell>{leave.status}</TableCell>
                       <TableCell align="center">
@@ -752,7 +743,7 @@ const Leave = () => {
                     >
                       <TableCell>Start Date</TableCell>
                       <TableCell>End Date</TableCell>
-                      <TableCell>Days</TableCell>
+                      {/* <TableCell>Days</TableCell> */}
                       <TableCell>Status</TableCell>
                       <TableCell align="center">Action</TableCell>
                     </TableRow>
@@ -760,9 +751,9 @@ const Leave = () => {
                   <TableBody>
                     {pendingLeaves.map((request) => (
                       <TableRow key={request.id}>
-                        <TableCell>{request.start}</TableCell>
-                        <TableCell>{request.end}</TableCell>
-                        <TableCell>{request.days}</TableCell>
+                        <TableCell>{request.startDate}</TableCell>
+                        <TableCell>{request.endDate}</TableCell>
+                        {/* <TableCell>{request.days}</TableCell> */}
                         <TableCell>{request.status}</TableCell>
                         <TableCell align="center">
                           <IconButton
@@ -800,16 +791,17 @@ const Leave = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <MuiButton onClick={() => setActionModalOpen(false)}>
+          <Button type="secondary" onClick={() => setActionModalOpen(false)}>
             Cancel
-          </MuiButton>
-          <MuiButton
+          </Button>
+          <Button
+            type="primary"
             onClick={handleActionConfirm}
             color={actionType === "approve" ? "success" : "error"}
             variant="contained"
           >
             {actionType === "approve" ? "Approve" : "Reject"}
-          </MuiButton>
+          </Button>
         </DialogActions>
       </Dialog>
     </div>
