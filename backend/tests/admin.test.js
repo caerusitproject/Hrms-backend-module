@@ -2,6 +2,12 @@ const adminController = require("../src/controllers/admin/adminController");
 const adminService = require("../src/services/admin/adminService");
 
 jest.mock("../src/services/admin/adminService");
+jest.mock("../src/logger", () => ({
+  info: jest.fn(),
+  error: jest.fn(),
+  warn: jest.fn(),
+  debug: jest.fn()
+}));
 
 describe("AdminController", () => {
     let req, res;

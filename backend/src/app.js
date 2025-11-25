@@ -44,7 +44,7 @@ const swaggerSpec = generateSwagger();
 
 
 app.use(express.static(path.join(__dirname, '../uploads')));
-console.log("Static serving from:", path.join(__dirname, "../uploads"));
+//console.log("Static serving from:", path.join(__dirname, "../uploads"));
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 //app.use('/api', routes);

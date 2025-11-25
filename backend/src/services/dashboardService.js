@@ -5,6 +5,7 @@ const Broadcast = require('../models/Broadcast.js');
 const { Op, where } = require('sequelize');
 const managerService = require('./managerService.js');
 const { stat } = require('fs');
+const logger = require("../logger");
 
 class DashboardService {
 
@@ -105,8 +106,7 @@ class DashboardService {
         recentBroadcastCount: recentBroadcast.length
       };
     } catch (error) {
-      logger.error('❌ Failed to fetch employee dashboard data', error);
-       throw new Error('Failed to fetch employee dashboard data');
+        throw new Error('Failed to fetch employee dashboard data');
     }
   }
 }
