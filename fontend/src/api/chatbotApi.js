@@ -1,7 +1,7 @@
 // src/api/ChatApi.js
 import axios from "../utils/axiosInterceptor";
 import { getCookie } from "../utils/cookiesUtil";
-const LOCAL_API = process.env.BACKEND_API || 'http://localhost:3000/api';
+const LOCAL_API = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
 
 const getAuthHeaders = () => {
   const token = getCookie("accessToken");
