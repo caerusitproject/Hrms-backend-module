@@ -1,5 +1,6 @@
 const Broadcast = require('../models/Broadcast.js');
 const { Op } = require('sequelize');
+const logger = require("../logger");
 
 const createBroadcast = async (title, content) => {
   if (!title || !content) {
@@ -41,6 +42,7 @@ const getAllBroadcastsOnly = async (page = 1, limit = 10) => {
       }
     };
     } catch (error) {
+      logger.error('❌ Failed to fetch broadcasts', error);
       throw new Error(error.message || 'Failed to fetch broadcasts');
     }
   };

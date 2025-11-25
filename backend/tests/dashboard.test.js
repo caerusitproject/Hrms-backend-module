@@ -28,6 +28,13 @@ jest.mock('../src/services/managerService.js', () => ({
   getTodaysBroadcast: jest.fn(),
 }));
 
+jest.mock("../src/logger", () => ({
+  info: jest.fn(),
+  error: jest.fn(),
+  warn: jest.fn(),
+  debug: jest.fn()
+}));
+
 const dashboardService = require('../src/services/dashboardService.js');
 
 describe('Dashboard Service & Controller', () => {
