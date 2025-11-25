@@ -240,6 +240,17 @@ const HrPolicy = () => {
         />
 
         {/* Documents List */}
+         <div
+        style={{
+            marginTop: theme.spacing.xl,
+          background: theme.colors.surface,
+          borderRadius: theme.borderRadius.large,
+          padding: isMobile ? theme.spacing.xl : "40px",
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.06)",
+          border: `1px solid ${theme.colors.primary}`,
+          //paddingBottom: isMobile ? theme.spacing.xxl : "100px",
+        }}
+      >
         <Box mb={3} display="flex" justifyContent="flex-end">
           {isAdminOrHR && (
             <Button
@@ -294,7 +305,7 @@ const HrPolicy = () => {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  minHeight: 80,
+                  minHeight: 40,
                   transition: theme.transitions.medium,
                   marginBottom: theme.spacing.lg,
                   "&:hover": {
@@ -342,9 +353,9 @@ const HrPolicy = () => {
                     <>
                       <IconButton
                         sx={{
-                          color: theme.colors.secondary,
+                          color: theme.colors.mediumGray,
                           "&:hover": {
-                            bgcolor: `${theme.colors.secondary}20`,
+                            bgcolor: `${theme.colors.black}20`,
                           },
                         }}
                         onClick={() => handleEditClick(doc)}
@@ -369,6 +380,7 @@ const HrPolicy = () => {
             ))
           )}
         </Box>
+        </div>
 
         {/* Create New Dialog */}
         <Dialog
@@ -409,7 +421,7 @@ const HrPolicy = () => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               margin="normal"
-              disabled={uploading}
+              disabled={uploading || openEditDialog}
               sx={{
                 mb: 3,
                 "& .MuiInputBase-root": {
@@ -522,7 +534,7 @@ const HrPolicy = () => {
               color="primary"
               onClick={handleUpload}
               disabled={
-                uploading || !title.trim() || (!selectedFile)
+                uploading || !title.trim() || (!selectedFile )
               }
               startIcon={
                 uploading ? <CircularProgress size={20} /> : <UploadFileIcon />

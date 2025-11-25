@@ -105,13 +105,13 @@ export const menuItems = [
     key: "hr-policies",
     requiredRoles: ["USER", "MANAGER", "HR", "ADMIN"],
   },
-  {
-    path: "/workflow",
-    label: "Workflow",
-    icon: SchemaIcon,
-    key: "workflow",
-    requiredRoles: ["ADMIN"],
-  },
+  // {
+  //   path: "/workflow",
+  //   label: "Workflow",
+  //   icon: SchemaIcon,
+  //   key: "workflow",
+  //   requiredRoles: ["ADMIN"],
+  // },
   // {
   //   path: "/workflow-exution",
   //   label: "Workflow Execution",
