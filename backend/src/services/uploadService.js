@@ -99,7 +99,9 @@ class UploadService {
     const emp = await Employee.findByPk(employee_id);
     if (!emp) throw new Error("Employee Does Not Exist!");
 
-    const upload = await Upload.findOne({ employee_id : employee_id });
+    const upload = await Upload.findOne ({
+      where: { employee_id },
+    });
 
     if (!upload || upload.length === 0) return { message: "NO RECORD FOUND AGAINST THE EMPLOYEE!", upload: [] };
     logger.info(`Found ${upload.length} files for employee ID: ${employee_id}`);
