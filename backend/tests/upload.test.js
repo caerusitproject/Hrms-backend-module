@@ -1,169 +1,178 @@
-/**
- * UploadService Tests (Fully Fixed)
- */
 process.env.NODE_ENV = "test";
-jest.mock("fs", () => {
-  const realFs = jest.requireActual("fs");
-  return {
-    ...realFs,
-    promises: {
-      ...realFs.promises,
-      writeFile: jest.fn()
-    }
-  };
-});
 
-// mock models/index.js
-jest.mock("../src/models", () => {
-  return {
-    Upload: {
-      sequelize: {
-        transaction: jest.fn().mockResolvedValue({
-          commit: jest.fn(),
-          rollback: jest.fn()
-        })
-      },
-      create: jest.fn(),
-      findByPk: jest.fn(),
-      sequelize: { transaction: jest.fn(() => ({ commit: jest.fn(), rollback: jest.fn() })) }
-    },
-    Employee: {
-      findByPk: jest.fn()
-    },
-    Document: {
-      create: jest.fn(),
-      findAll: jest.fn(),
-      destroy: jest.fn(),
-    }
-  };
-});
-
+// ---------------------------
+// MOCK LOGGER
+// ---------------------------
 jest.mock("../src/logger", () => ({
   info: jest.fn(),
-  error: jest.fn(),
-  warn: jest.fn(),
-  debug: jest.fn()
+  error: jest.fn()
 }));
 
-const UploadService = require("../src/services/uploadService");
+// ---------------------------
+// MOCK MODELS (DB)
+// ---------------------------
+jest.mock("../src/models", () => ({
+  Upload: {
+    create: jest.fn(),
+    findByPk: jest.fn(),
+    update: jest.fn(),
+    sequelize: {
+      transaction: jest.fn(async () => ({
+        commit: jest.fn(),
+        rollback: jest.fn()
+      }))
+    }
+  },
+  Employee: {
+    findByPk: jest.fn()
+  },
+  Document: {
+    create: jest.fn(),
+    findAll: jest.fn(),
+    destroy: jest.fn()
+  }
+}));
+
+// ---------------------------
+// MOCK DIRECT Document import
+// because the service does:
+// const Document = require("../models/Document");
+// ---------------------------
+jest.mock("../src/models/Document", () => ({
+  create: jest.fn(),
+  findAll: jest.fn(),
+  destroy: jest.fn()
+}));
+
+// Load mocks
 const db = require("../src/models");
+const Document = require("../src/models/Document");
 
-describe("UploadService", () => {
+// Service
+const UploadService = require("../src/services/uploadService");
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-  
+describe("UploadService Tests", () => {
 
-  // ---------------------------------------------------------------------
-  // 🔥 TEST 1 — saveFile()
-  // ---------------------------------------------------------------------
-  it("should create a new upload when employee has no imageId", async () => {
+  // ------------------------------------------------------------------
+  test("saveDocFile() should save a document", async () => {
+    db.Employee.findByPk.mockResolvedValue({ id: 1 });
+
+    Document.create.mockResolvedValue({ id: 99 });
+
     const payload = {
       employee_id: 1,
-      file_path: "test/photo.png",
-      file_type: "image/png"
+      file_path: "C:/docs/resume.pdf",
+      file_type: "pdf",
+      type: "resume",
+      title: "Resume Document",
+      uploadedBy: 10
     };
 
+    const result = await UploadService.saveDocFile(payload);
+
+    expect(db.Employee.findByPk).toHaveBeenCalledWith(1);
+    expect(Document.create).toHaveBeenCalled();
+    expect(result.id).toBe(99);
+  });
+
+  // ------------------------------------------------------------------
+  test("saveFile() should create new upload when employee has no previous image", async () => {
     db.Employee.findByPk.mockResolvedValue({
       id: 1,
       imageId: null,
       update: jest.fn()
     });
 
-    db.Upload.create.mockResolvedValue({
-      id: 10,
-      employee_id: 1,
-      file_path: "uploads/photo.png",
-      file_type: "image/png"
+    db.Upload.create.mockResolvedValue({ id: 10 });
+    db.Upload.sequelize.transaction.mockResolvedValue({
+      commit: jest.fn(),
+      rollback: jest.fn()
     });
+
+    const payload = {
+      employee_id: 1,
+      file_path: "C:/photos/img1.png",
+      file_type: "png"
+    };
 
     const result = await UploadService.saveFile(payload);
 
-    expect(db.Upload.create).toHaveBeenCalled();
     expect(db.Employee.findByPk).toHaveBeenCalledWith(1);
+    expect(db.Upload.create).toHaveBeenCalled();
     expect(result.id).toBe(10);
   });
 
-  // ---------------------------------------------------------------------
-  // 🔥 TEST 2 — getFilesByEmployee()
-  // ---------------------------------------------------------------------
-  test("getFilesByEmployee() should fetch uploads", async () => {
-    const payload = {
-      employee_id: 1,
-      file_path: "test/photo.png",
-      file_type: "image/png"
-    };
+  // ------------------------------------------------------------------
+  test("getFilesByEmployee() should return file name", async () => {
+    db.Employee.findByPk.mockResolvedValue({ id: 1 });
 
-    db.Employee.findByPk.mockResolvedValue({
-      id: 1,
-      imageId: null,
-      update: jest.fn()
-    });
-
-    
     db.Upload.findByPk.mockResolvedValue({
-      id: 10,
-      employee_id: 1,
+      id: 5,
       file_path: "image123.png",
-      file_type: "image/png"
+      dataValues: { file_path: "image123.png" }
     });
 
     const result = await UploadService.getFilesByEmployee(1);
 
     expect(db.Employee.findByPk).toHaveBeenCalledWith(1);
     expect(db.Upload.findByPk).toHaveBeenCalled();
-
     expect(result).toBe("image123.png");
   });
 
-  // ---------------------------------------------------------------------
-  // 🔥 TEST 3 — saveDocFile()
-  // ---------------------------------------------------------------------
-  test("saveDocFile() should save a document", async () => {
-     db.Employee.findByPk.mockResolvedValue({ id: 1 });
-  db.Document.create.mockResolvedValue({ id: 99 });
+  // ------------------------------------------------------------------
+  test("getDocByEmployee() should return list of documents", async () => {
+    db.Employee.findByPk.mockResolvedValue({ id: 1 });
 
-  const payload = {
+    Document.findAll.mockResolvedValue([
+      { id: 1, title: "Resume" },
+      { id: 2, title: "Offer Letter" }
+    ]);
+
+    const result = await UploadService.getDocByEmployee(1);
+
+    expect(Document.findAll).toHaveBeenCalled();
+    expect(result.length).toBe(2);
+  });
+
+  // ------------------------------------------------------------------
+  test("deleteFile() should delete document", async () => {
+    Document.destroy.mockResolvedValue(1);
+
+    const result = await UploadService.deleteFile(5);
+
+    expect(Document.destroy).toHaveBeenCalled();
+    expect(result).toBe(1);
+  });
+
+  // ------------------------------------------------------------------
+  test("deleteImage() should delete uploaded image", async () => {
+    db.Upload.sequelize.transaction.mockResolvedValue({
+      commit: jest.fn(),
+      rollback: jest.fn()
+    });
+
+    db.Upload.findByPk.mockResolvedValue({
+      id: 5,
       employee_id: 1,
-      file_path: "C:/docs/resume.pdf",
-      file_type: "pdf",
-      type: "resume",
-      title: "Resume",
-      uploadedBy: 10,
-    };
+      destroy: jest.fn()
+    });
 
-    const result = await UploadService.saveDocFile(payload);
+    db.Employee.findByPk.mockResolvedValue({
+      id: 1,
+      imageId: 5,
+      update: jest.fn()
+    });
 
-    //expect(db.Document.create).toHaveBeenCalled(); // Correct
-    //expect(result.id).toBe(99);
-    
+    const result = await UploadService.deleteImage(5);
+
+    expect(db.Upload.findByPk).toHaveBeenCalled();
+    expect(result).toBe(true);
   });
 
-  // ---------------------------------------------------------------------
-  // 🔥 TEST 4 — deleteImage()
-  // ---------------------------------------------------------------------
-  test("deleteImage() should delete photo", async () => {
-   db.Upload.findByPk.mockResolvedValue({
-    id: 5,
-    employee_id: 1,
-    destroy: jest.fn()
-  });
-
-  db.Employee.findByPk.mockResolvedValue({
-    id: 1,
-    imageId: 5,
-    update: jest.fn()
-  });
-
-  db.Upload.sequelize.transaction.mockResolvedValue({
-    commit: jest.fn(),
-    rollback: jest.fn()
-  });
-
-  const result = await UploadService.deleteImage(5);
-
-  expect(result).toBe(true);
+  // ------------------------------------------------------------------
+  test("normalizePhotoPath() should return formatted path", async () => {
+    const result = await UploadService.normalizePhotoPath("C:\\pics\\m.png");
+    expect(result).toBe("uploads/m.png");
   });
 
 });
