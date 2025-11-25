@@ -93,7 +93,7 @@ exports.uploadDocument = async (req, res) => {
 
 exports.getFiles = async (req, res) => {
   try {
-    const { empId } = req.user;
+    const  empId  = req.user.empId;
     const files = await upload.getFilesByEmployee(empId);
 
        
