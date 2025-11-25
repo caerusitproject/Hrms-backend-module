@@ -4,7 +4,6 @@ const Employee = db.Employee;
 const Document = require("../models/Document");
 const fs = require("fs");
 const path = require("path");
-const logger = require("../logger");
 
 class UploadService {
   /**
@@ -54,7 +53,6 @@ class UploadService {
         logger.info(`Rolled back transaction for employee ID: ${payload.employee_id}`);
       throw err;
     }
-    
   }
 
   static async saveDocFile(payload) {
@@ -81,10 +79,10 @@ class UploadService {
         file_type: payload.file_type,
         uploadedBy: payload.uploadedBy,
       });
-      //logger.info(`Document saved with ID: ${document.id} for employee ID: ${payload.employee_id}`);
+      logger.info(`Document saved with ID: ${document.id} for employee ID: ${payload.employee_id}`);
       return document;
     } catch (err) {
-      //logger.error('❌ Failed to save document', err);
+      logger.error('❌ Failed to save document', err);
       throw err;
     }
   }
@@ -101,9 +99,8 @@ class UploadService {
     const emp = await Employee.findByPk(employee_id);
     if (!emp) throw new Error("Employee Does Not Exist!");
 
-    const upload = await Upload.findByPk ({
+    const upload = await Upload.findOne ({
       where: { employee_id },
-      order: [["uploaded_at", "DESC"]],
     });
 
     if (!upload || upload.length === 0) return { message: "NO RECORD FOUND AGAINST THE EMPLOYEE!", upload: [] };
@@ -151,9 +148,8 @@ class UploadService {
 
   static async deleteImage(fileId) {
     const transaction = await Upload.sequelize.transaction();
-    
+    logger.info(`Starting transaction to delete image with ID: ${fileId}`);
     try {
-      logger.info(`Starting transaction to delete image with ID: ${fileId}`);
       const upload = await Upload.findByPk(fileId, { transaction });
       if (!upload) throw new Error("File not found");
 

@@ -97,30 +97,30 @@ const Leave = () => {
   }, []);
 
   // Fetch employees
-  useEffect(() => {
-    if (canViewAll) {
-      const fetchEmployees = async () => {
-        try {
-          setEmployeesLoading(true);
-          const response = await AllemployeeApi.getEmployeesByRole();
-          if (response.success) {
-            setEmployees(response.data.employeeList || []);
-            if (user?.id) {
-              const currentEmp = response.data.employeeList.find(
-                (emp) => emp.id === user.id.toString()
-              );
-              if (currentEmp) setSelectedEmpCode(currentEmp.empCode);
-            }
-          }
-        } catch (err) {
-          console.error("Error fetching employees:", err);
-        } finally {
-          setEmployeesLoading(false);
-        }
-      };
-      fetchEmployees();
-    }
-  }, [canViewAll, user]);
+  // useEffect(() => {
+  //   if (canViewAll) {
+  //     const fetchEmployees = async () => {
+  //       try {
+  //         setEmployeesLoading(true);
+  //         const response = await AllemployeeApi.getEmployeesByRole();
+  //         if (response.success) {
+  //           setEmployees(response.data.employeeList || []);
+  //           if (user?.id) {
+  //             const currentEmp = response.data.employeeList.find(
+  //               (emp) => emp.id === user.id.toString()
+  //             );
+  //             if (currentEmp) setSelectedEmpCode(currentEmp.empCode);
+  //           }
+  //         }
+  //       } catch (err) {
+  //         console.error("Error fetching employees:", err);
+  //       } finally {
+  //         setEmployeesLoading(false);
+  //       }
+  //     };
+  //     fetchEmployees();
+  //   }
+  // }, [canViewAll, user]);
 
   // Fetch leaves from API
   useEffect(() => {

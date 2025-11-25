@@ -1,65 +1,77 @@
 import React, { useState } from "react";
+import { theme } from "../../theme/theme";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemText from "@mui/material/ListItemText";
+import Divider from "@mui/material/Divider";
+import Typography from "@mui/material/Typography";
 
-const WorkflowBuilder = ({ componentLibrary }) => {
+export default function WorkflowBuilder({ componentLibrary }) {
   const [workflow, setWorkflow] = useState([]);
   const [stepName, setStepName] = useState("");
   const [selectedComponents, setSelectedComponents] = useState([]);
 
-  const addComponent = (c) => {
-    setSelectedComponents([...selectedComponents, c]);
-  };
+  const addComponent = (c) => setSelectedComponents([...selectedComponents, c]);
 
   const saveStep = () => {
-    if (!stepName) return alert("Please enter step name");
-
-    const newStep = {
-      stepName,
-      components: selectedComponents
-    };
-
-    setWorkflow([...workflow, newStep]);
+    if (!stepName.trim()) return alert("Step name required");
+    setWorkflow([...workflow, { stepName, components: selectedComponents }]);
     setStepName("");
     setSelectedComponents([]);
   };
 
   return (
     <div>
-      <h3>Create Workflow Step</h3>
-
-      <input
-        placeholder="Step Name"
+      <TextField
+        fullWidth
+        label="Step Name"
         value={stepName}
         onChange={(e) => setStepName(e.target.value)}
+        sx={{ mb: 3 }}
       />
 
-      <h4>Select Components:</h4>
-      {/* Primitive components */}
-      {componentLibrary.primitive.map((c) => (
-        <button key={c.id} onClick={() => addComponent(c)}>
-          {c.label}
-        </button>
-      ))}
+      <div style={{ marginBottom: theme.spacing.xl }}>
+        <strong>Primitive Components:</strong>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", mt: 1 }}>
+          {componentLibrary.primitive.map((c) => (
+            <Button key={c.id} variant="outlined" size="small" onClick={() => addComponent(c)}>
+              {c.label}
+            </Button>
+          ))}
+        </div>
+      </div>
 
-      {/* Composite components */}
-      {componentLibrary.composite.map((c) => (
-        <button key={c.id} onClick={() => addComponent(c)}>
-          {c.label} (Composite)
-        </button>
-      ))}
+      <div style={{ marginBottom: theme.spacing.xl }}>
+        <strong>Composite Components:</strong>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", mt: 1 }}>
+          {componentLibrary.composite.map((c) => (
+            <Button key={c.id} variant="contained" size="small" color="primary" onClick={() => addComponent(c)}>
+              {c.label}
+            </Button>
+          ))}
+        </div>
+      </div>
 
-      <h4>Step Preview:</h4>
-      <ul>
-        {selectedComponents.map((c, idx) => (
-          <li key={idx}>{c.label}</li>
-        ))}
-      </ul>
+      <div style={{ marginBottom: theme.spacing.xl }}>
+        <strong>Current Step Preview:</strong>
+        <List dense>
+          {selectedComponents.map((c, i) => (
+            <ListItem key={i}><ListItemText primary={c.label} /></ListItem>
+          ))}
+        </List>
+      </div>
 
-      <button onClick={saveStep}>Save Step</button>
+      <Button variant="contained" color="secondary" size="large" onClick={saveStep}>
+        Save Step to Workflow
+      </Button>
 
-      <h3>Workflow JSON</h3>
-      <pre>{JSON.stringify(workflow, null, 2)}</pre>
+      <Divider sx={{ my: 4 }} />
+      <Typography variant="h6" gutterBottom>Final Workflow JSON</Typography>
+      <pre style={{ background: "#f9f9f9", padding: 16, borderRadius: 8, fontSize: "13px" }}>
+        {JSON.stringify(workflow, null, 2)}
+      </pre>
     </div>
   );
-};
-
-export default WorkflowBuilder;
+}

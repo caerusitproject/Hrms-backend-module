@@ -158,7 +158,7 @@ const Dashboard = () => {
       upcomingEvents = [
         {
           id: "no-events",
-          title: dashboardData.recentBroadcast.message || "No events found",
+          title: dashboardData?.upcomingBroadcasts?.message || "No events found",
           date: "",
           color: theme.colors.secondary || "#999", // optional fallback color
         },
@@ -255,7 +255,7 @@ const Dashboard = () => {
                   }}
                   onClick={() => navigate("/employee/create")}
                 >
-                  Add Employee
+                  + Add Employee
                 </Button>
               ) : (
                 <Button

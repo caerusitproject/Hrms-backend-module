@@ -13,7 +13,10 @@ import { Payment } from "@mui/icons-material";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import SendOutlinedIcon from "@mui/icons-material/SendOutlined";
 import SchemaIcon from "@mui/icons-material/Schema";
-import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import AccountTreeIcon from "@mui/icons-material/AccountTree";
+import ArticleIcon from "@mui/icons-material/Article";
+
+
 
 const user = JSON.parse(localStorage.getItem("user"));
 const userId = user?.id || 1; // fallback to 1 if not found
@@ -95,13 +98,20 @@ export const menuItems = [
     key: "email-templates",
     requiredRoles: ["ADMIN"], // optional, if HR can view
   },
-   {
-    path: "/workflow",
-    label: "Workflow",
-    icon: SchemaIcon,
-    key: "workflow",
-    requiredRoles: ["ADMIN"],
+  {
+    path: "/hr-policies",
+    label: "HR Policies",
+    icon: ArticleIcon,
+    key: "hr-policies",
+    requiredRoles: ["USER", "MANAGER", "HR", "ADMIN"],
   },
+  // {
+  //   path: "/workflow",
+  //   label: "Workflow",
+  //   icon: SchemaIcon,
+  //   key: "workflow",
+  //   requiredRoles: ["ADMIN"],
+  // },
   // {
   //   path: "/workflow-exution",
   //   label: "Workflow Execution",
@@ -116,6 +126,7 @@ export const menuItems = [
     key: "admin-config",
     requiredRoles: ["ADMIN"],
   },
+  
   // {
   //   path: "/about",
   //   label: "About",
@@ -123,5 +134,4 @@ export const menuItems = [
   //   key: "about",
   //   requiredRoles: ["USER", "MANAGER", "HR", "ADMIN"],
   // },
-  
 ];

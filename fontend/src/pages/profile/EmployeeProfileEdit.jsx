@@ -474,7 +474,7 @@ const EmployeeProfileEdit = () => {
                   backgroundColor: avatarPreview
                     ? "transparent"
                     : theme.colors.surfaceVariant,
-                  border: `4px solid ${theme.colors.primary}`,
+                  border: `3px solid ${theme.colors.lightGray}`,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",

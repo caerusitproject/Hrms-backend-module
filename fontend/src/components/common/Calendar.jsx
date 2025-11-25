@@ -363,10 +363,10 @@ const Calendar = ({
                 touchAction: effectiveIsMobile && dayInfo ? "none" : "auto",
                 ...cellStyle,
               }}
-              onMouseEnter={(e) => {
-                const tooltip = e.currentTarget.querySelector(".tooltip");
-                if (tooltip) tooltip.style.opacity = 1;
-              }}
+              // onMouseEnter={(e) => {
+              //   const tooltip = e.currentTarget.querySelector(".tooltip");
+              //   if (tooltip) tooltip.style.opacity = 1;
+              // }}
               onMouseLeave={(e) => {
                 const tooltip = e.currentTarget.querySelector(".tooltip");
                 if (tooltip) tooltip.style.opacity = 0;
