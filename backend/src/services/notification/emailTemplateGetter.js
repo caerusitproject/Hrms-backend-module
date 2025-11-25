@@ -9,7 +9,7 @@ exports.emailTemplateGetter = async (payload) => {
     });
 
     if (!template) {
-      console.log(`⚠️ No email template found for event type: ${payload.type}`);
+      //console.log(`⚠️ No email template found for event type: ${payload.type}`);
       let attachments = [];
       if (payload.attachmentFilePath) {
         attachments.push({
@@ -67,7 +67,7 @@ exports.emailTemplateGetter = async (payload) => {
       attachments: attachments
     }
   } catch (err) {
-    console.log("❌ Error while getting the email template or processing the attachments :", err.message);
+    //console.log("❌ Error while getting the email template or processing the attachments :", err.message);
     throw err;
   }
 };

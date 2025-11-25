@@ -82,10 +82,10 @@ class UploadService {
         file_type: payload.file_type,
         uploadedBy: payload.uploadedBy,
       });
-      logger.info(`Document saved with ID: ${document.id} for employee ID: ${payload.employee_id}`);
+      //logger.info(`Document saved with ID: ${document.id} for employee ID: ${payload.employee_id}`);
       return document;
     } catch (err) {
-      logger.error('❌ Failed to save document', err);
+      //logger.error('❌ Failed to save document', err);
       throw err;
     }
   }
