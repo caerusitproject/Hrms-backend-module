@@ -122,12 +122,7 @@ Object.values(dbInfo).forEach(model => {
 });
 
 // ✅ Sync models
-if (process.env.NODE_ENV !== "test") {
-  sequelize
-    .sync({ alter: false })
-    .then(() => console.log("✅ All models synced successfully"))
-    .catch((err) => console.error("❌ Model sync failed:", err));
-}
+
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
