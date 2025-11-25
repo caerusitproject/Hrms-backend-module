@@ -11,8 +11,8 @@ import EmployeeProfileEdit from "../pages/profile/EmployeeProfileEdit";
 import EmployeeProfileView from "../pages/profile/EmployeeProfileView";
 import EmployeeList from "../pages/profile/EmployeeList";
 import Teamemployee from "../pages/profile/Teamemployee";
-import ForgotPassword from '../pages/auth/ForgotPassword';
-import ResetPassword from '../pages/auth/ResetPassword';
+import ForgotPassword from "../pages/auth/ForgotPassword";
+import ResetPassword from "../pages/auth/ResetPassword";
 // Lazy load components
 const Login = lazy(() => import("../pages/auth/Login"));
 const MainLayout = lazy(() => import("./layout/MainLayout"));
@@ -27,19 +27,15 @@ const Attendance = lazy(() => import("../pages/leave-management/Attendance"));
 const Leave = lazy(() => import("../pages/leave-management/Leave"));
 const Broadcast = lazy(() => import("../pages/broadcast/Broadcast"));
 const Payroll = lazy(() => import("../pages/payroll/Payroll"));
+const Hrpolicy = lazy(() => import("../pages/hrpolicy/HrPolicy"));
 const EmailTemplateManager = lazy(() =>
   import("../pages/email-templete/EmailTemplateManager")
 );
 const SendMailPage = lazy(() => import("../pages/email-templete/SendMailPage"));
-const WorkflowConfig = lazy(() =>
-  import("../pages/workflow/WorkflowConfig")
-);
+const WorkflowConfig = lazy(() => import("../pages/workflow/WorkflowConfig"));
 const WorkflowExecution = lazy(() =>
   import("../pages/workflow/WorkflowExecution")
 );
-
-
-
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -52,7 +48,7 @@ const ScrollToTop = () => {
 };
 const AppRoutes = () => {
   const { isAuthenticated } = useAuth();
-  
+
   return (
     <div className="app">
       <Suspense fallback={<CustomLoader />}>
@@ -69,7 +65,6 @@ const AppRoutes = () => {
               isAuthenticated ? <Navigate to="/home" replace /> : <Login />
             }
           />
-
 
           {/* Protected routes with nested layout */}
           <Route
@@ -98,7 +93,7 @@ const AppRoutes = () => {
                 </ProtectedRoute>
               }
             />
-            
+
             <Route
               path="about"
               element={
@@ -123,7 +118,7 @@ const AppRoutes = () => {
               <Route
                 path="create"
                 element={
-                  <ProtectedRoute requiredRoles={["ADMIN", "HR",]}>
+                  <ProtectedRoute requiredRoles={["ADMIN", "HR"]}>
                     <EmployeeProfileEdit />
                   </ProtectedRoute>
                 }
@@ -234,29 +229,35 @@ const AppRoutes = () => {
               }
             />
             <Route
-            path="workflow"
-            element={
-              <ProtectedRoute requiredRoles={["ADMIN"]}>
+              path="hr-policies"
+              element={
                 <Suspense fallback={<CustomLoader />}>
-                  <WorkflowConfig />
+                  <Hrpolicy />
                 </Suspense>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="workflow-execution"
-            element={
-              <ProtectedRoute requiredRoles={["MANAGER", "HR", "ADMIN"]}>
-                <Suspense fallback={<CustomLoader />}>
-                  <WorkflowExecution />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          />
-
+              }
+            />
+            <Route
+              path="workflow"
+              element={
+                <ProtectedRoute requiredRoles={["ADMIN"]}>
+                  <Suspense fallback={<CustomLoader />}>
+                    <WorkflowConfig />
+                  </Suspense>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="workflow-execution"
+              element={
+                <ProtectedRoute requiredRoles={["MANAGER", "HR", "ADMIN"]}>
+                  <Suspense fallback={<CustomLoader />}>
+                    <WorkflowExecution />
+                  </Suspense>
+                </ProtectedRoute>
+              }
+            />
           </Route>
 
-          
           {/* Catch-all route for invalid paths */}
           <Route
             path="*"

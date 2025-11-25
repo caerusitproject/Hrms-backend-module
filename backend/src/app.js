@@ -23,6 +23,7 @@ const compensationRoutes = require('./routes/payroll/compensationRoutes')
 const payrollRoutes = require('./routes/payroll/payrollRoutes');
 const aiRoutes = require("./routes/ai/aiRoutes");
 const swaggerUi = require("swagger-ui-express");
+const handbookRoutes = require("./routes/handbookRoutes");
 //const swaggerDocument = require('./openapiv3.json');
 require("./logger");
 
@@ -102,6 +103,10 @@ app.use('/api/email/send', emailRoutes);
 //AI chat 
 
 app.use("/api/ai", aiRoutes);
+
+//Handbook routes
+
+app.use("/api/handbooks", handbookRoutes);
 
 process.on("uncaughtException", (err) => {
   logger.error("UNCAUGHT EXCEPTION", err);
