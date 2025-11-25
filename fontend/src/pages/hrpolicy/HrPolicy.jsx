@@ -92,25 +92,51 @@ const HrPolicy = () => {
   };
 
   const handleUpload = async () => {
-    if (!title.trim()) return setError("Title is required");
-    if (!selectedFile) return setError("Please select a file");
+  if (!title.trim()) return setError("Title is required");
+  if (!selectedFile && !openEditDialog) return setError("Please select a file");
 
-    setUploading(true);
-    setError("");
-    try {
-      await HandbookAPI.uploadHandbook(title, selectedFile, user.id);
-      setSuccess("Document uploaded successfully!");
-      setTitle("");
-      setSelectedFile(null);
-      setOpenDialog(false);
-      fetchHandbooks();
-      setTimeout(() => setSuccess(""), 3000);
-    } catch (err) {
-      setError("Upload failed. Please try again.");
-    } finally {
-      setUploading(false);
-    }
-  };
+  setUploading(true);
+  setError("");
+
+  try {
+  setUploading(true);
+  let response;
+
+  if (openEditDialog && editingDoc) {
+    // Update existing document
+    response = await HandbookAPI.updateHandbook(editingDoc.id, title, selectedFile);
+  } else {
+    // Create new document
+    response = await HandbookAPI.uploadHandbook(title, selectedFile, user.id);
+  }
+
+  // Check response status
+  if (response?.success) {
+    setSuccess(response.message || "Document saved successfully!");
+    
+    // Refresh the list
+    fetchHandbooks();
+
+    // Close dialogs
+    setOpenDialog(false);
+    setOpenEditDialog(false);
+
+    // Reset form
+    setTitle("");
+    setSelectedFile(null);
+    setEditingDoc(null);
+
+    setTimeout(() => setSuccess(""), 3000);
+  } else {
+    setError(response?.message || "Save failed. Please try again.");
+  }
+} catch (err) {
+  setError(err?.message || "Save failed. Please try again.");
+} finally {
+  setUploading(false);
+}
+
+};
 
   const handleDeleteClick = (id) => {
     setDeleteDocId(id);
@@ -123,28 +149,38 @@ const HrPolicy = () => {
     setOpenEditDialog(true);
   };
 
-  const handleConfirmDelete = async () => {
-    try {
-      await HandbookAPI.deleteHandbook(deleteDocId);
-      setSuccess("Document deleted");
-      fetchHandbooks();
-      setOpenDeleteDialog(false);
-      setDeleteDocId(null);
-      setTimeout(() => setSuccess(""), 3000);
-    } catch (err) {
-      setError("Failed to delete");
-      setOpenDeleteDialog(false);
-    }
-  };
-  const closeUploadDialog = () => {
-    setOpenDialog(false);
-    setOpenEditDialog(false);
-    setTitle("");
-    setSelectedFile(null);
-    setEditingDoc(null);
-    setError("");
-  };
+ const handleConfirmDelete = async () => {
+  try {
+    const response = await HandbookAPI.deleteHandbook(deleteDocId);
 
+    if (response?.success) {
+      setSuccess(response.message || "Document deleted successfully!");
+      fetchHandbooks();
+    } else {
+      setError(response?.message || "Failed to delete document.");
+    }
+
+    setOpenDeleteDialog(false);
+    setDeleteDocId(null);
+
+    setTimeout(() => setSuccess(""), 3000);
+  } catch (err) {
+    setError(err?.message || "Failed to delete document.");
+    setOpenDeleteDialog(false);
+    setDeleteDocId(null);
+  }
+};
+
+  const closeUploadDialog = () => {
+  if (uploading) return; // prevent closing during upload
+
+  setOpenDialog(false);
+  setOpenEditDialog(false);
+  setTitle("");
+  setSelectedFile(null);
+  setEditingDoc(null);
+  setError("");
+};
   const handleDownload = (contentUrl) => {
     window.open(HandbookAPI.getFileURL(contentUrl), "_blank");
   };
@@ -486,7 +522,7 @@ const HrPolicy = () => {
               color="primary"
               onClick={handleUpload}
               disabled={
-                uploading || !title.trim() || (!selectedFile && !openEditDialog)
+                uploading || !title.trim() || (!selectedFile)
               }
               startIcon={
                 uploading ? <CircularProgress size={20} /> : <UploadFileIcon />
